@@ -24,15 +24,28 @@ interface AIProvider {
 - `getAIProvider()` returns `null` when unconfigured → every AI surface shows an honest
   "Coach offline" state. Nothing is faked.
 
-## Tool use (Part 51)
+## Tool use (Part 51) — BUILT (audit P1)
 
-The LLM never executes SQL. It calls validated tools (zod-checked input, user-scoped,
-authorization enforced server-side): createGoal, updateGoal, createProject, createTask,
-completeTask, createHabit, logHabit, startFocusSession, createJournalEntry,
-createGratitude, createMemory, searchMemory, deleteMemory, getDailyPlan,
-getWeeklyProgress, getGoalProgress, … Tools live in `src/lib/mainxp/ai/tools/` and are
-the same service functions the UI's server actions use — one code path, one
-authorization model. XP awards happen inside services, never at the LLM's request.
+The LLM never executes SQL. It calls validated tools (hand-validated input,
+user-scoped, executed server-side) from the registry in
+`src/lib/mainxp/ai/tools.ts`:
+
+- **Read**: get_today_context, get_north_star, get_goals (with pace verdicts),
+  get_projects, get_priorities (the What-Now engine — same computation as the
+  Today card), get_capacity (caps + slots left), search_memory.
+- **Write**: create_task (cap-aware via `tasks.ts`, same path as the UI),
+  postpone_task, create_goal, create_non_negotiable (cap 7), create_habit
+  (cap 15), create_memory (scoped), create_journal_entry, log_gratitude
+  (event-first, day-idempotent).
+
+The agent loop lives in `coach.ts` (bounded rounds); providers only translate
+the neutral AgentMessage/ToolWireSpec shapes to their wire format
+(`provider.ts` — Anthropic tool_use blocks, Gemini functionDeclarations).
+Tool errors return as `{ ok:false, error }` data so the coach explains
+honestly instead of crashing. Mutations run only on a clear user ask; caps are
+enforced by the tools, not by the prompt. XP awards happen inside the event
+engine, never at the LLM's request. Phase 3+: completeTask-by-voice,
+finance/body tools (createExpense, logWorkout…), deleteMemory with confirm.
 
 ## Context assembly (Part 66 — cost control)
 
