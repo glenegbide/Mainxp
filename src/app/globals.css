@@ -57,11 +57,15 @@ body {
 
 h1 {
   font-family: var(--font-display), var(--font-geist), sans-serif;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  font-size: 1.15rem;
+  letter-spacing: 0.01em;
+  text-transform: none;
 }
 .font-displaymx {
   font-family: var(--font-display), var(--font-geist), sans-serif;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 ::selection {

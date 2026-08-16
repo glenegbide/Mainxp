@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Geist } from "next/font/google";
+import { Geist, Unbounded } from "next/font/google";
 import "./globals.css";
 import { NativeBridge } from "./components/NativeBridge";
 
@@ -9,10 +9,13 @@ const geist = Geist({
   display: "swap",
 });
 
-// Display face: Bricolage Grotesque — characterful, slightly game-y, still premium.
-const display = Bricolage_Grotesque({
+// Display face: Unbounded — geometric, expanded, unmistakably game-premium.
+// Used for identity moments only (wordmark, headings, big numerals); Geist
+// carries all reading text.
+const display = Unbounded({
   variable: "--font-display",
   subsets: ["latin"],
+  weight: ["500", "600", "700"],
   display: "swap",
 });
 
