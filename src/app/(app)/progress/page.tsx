@@ -36,7 +36,17 @@ export default async function ProgressPage() {
     <main className="px-4 pt-5">
       <h1 className="text-xl font-semibold">Progression</h1>
 
-      <div className="mt-4 grid grid-cols-2 gap-2">
+      <Link
+        href="/progress/week"
+        className="mxp-card mt-4 block p-4 text-sm font-semibold"
+      >
+        📅 Revue hebdomadaire
+        <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
+          la semaine en chiffres, 3 questions, +25 XP
+        </span>
+      </Link>
+
+      <div className="mt-3 grid grid-cols-2 gap-2">
         <Link
           href="/goals"
           className="mxp-card p-4 text-sm font-semibold transition hover:border-mxp-purple/50"

@@ -7,6 +7,7 @@ import { goalPace, isGoalAtRisk } from "@/lib/mainxp/goals";
 import { xpTotals } from "@/lib/mainxp/xp/ledger";
 import { levelProgress } from "@/lib/mainxp/xp/curve";
 import { PixelHero } from "../../components/PixelHero";
+import { elanReport } from "@/lib/mainxp/elan";
 import {
   addNonNegotiable,
   addTask,
@@ -16,6 +17,7 @@ import {
   setMainQuest,
   toggleNonNegotiable,
 } from "./actions";
+import { tapHabit } from "../habits/actions";
 
 export default async function TodayPage() {
   const user = await getMxUser();
@@ -42,6 +44,17 @@ export default async function TodayPage() {
     prisma.mxGoal.findMany({ where: { userId: user.id, status: "ACTIVE" } }),
     prisma.mxDayPlan.findUnique({ where: { userId_dayKey: { userId: user.id, dayKey: today } } }),
   ]);
+  const [elan, gearEquipped, goodHabits] = await Promise.all([
+    elanReport(user.id, user.timezone, user.restMode),
+    prisma.mxGearOwned.findMany({ where: { userId: user.id, equipped: true } }),
+    prisma.mxHabit.findMany({
+      where: { userId: user.id, active: true, kind: "good" },
+      include: { logs: { where: { periodKey: today } } },
+      take: 4,
+      orderBy: { createdAt: "asc" },
+    }),
+  ]);
+  const equippedIds = gearEquipped.map((g) => g.gearId);
 
   // Goal at risk (behind pace, deadline near) — surfaces here and in coach context.
   const goalAtRisk = activeGoals.find((g) => {
@@ -96,7 +109,7 @@ export default async function TodayPage() {
       <section className="mxp-hero p-5 text-white">
         <div className="relative z-10 flex items-center gap-4">
           <div className="flex h-[68px] w-16 flex-none items-end justify-center rounded-2xl bg-white/12 pb-1 ring-1 ring-white/25">
-            <PixelHero level={lp.level} size={46} />
+            <PixelHero level={lp.level} size={46} gear={equippedIds} />
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate font-displaymx text-xl font-bold">{user.name}</p>
@@ -122,6 +135,30 @@ export default async function TodayPage() {
           <div className="mxp-xpbar mt-1.5">
             <i style={{ width: `${Math.max(2, Math.round(lp.ratio * 100))}%` }} />
           </div>
+          <div className="mt-2.5 flex justify-between text-[11px] font-medium text-white/85">
+            <span className="tracking-wide">ÉLAN</span>
+            <span className="tabular-nums">
+              {elan.value === null
+                ? "🌙 récupération"
+                : `${elan.value}/100${elan.missedDays > 0 ? ` · ${elan.missedDays} j manqué${elan.missedDays > 1 ? "s" : ""}` : ""}`}
+            </span>
+          </div>
+          <div className="mt-1 h-2 overflow-hidden rounded-full bg-white/20">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${elan.value ?? 100}%`,
+                background:
+                  elan.value === null
+                    ? "rgba(255,255,255,.45)"
+                    : elan.value >= 70
+                      ? "linear-gradient(90deg,#6ee7b7,#34d399)"
+                      : elan.value >= 40
+                        ? "linear-gradient(90deg,#fdba74,#fb923c)"
+                        : "linear-gradient(90deg,#fda4af,#f87171)",
+              }}
+            />
+          </div>
         </div>
       </section>
 
@@ -135,7 +172,7 @@ export default async function TodayPage() {
       )}
 
       {/* ── Quick actions ── */}
-      <div className="mt-3 grid grid-cols-3 gap-2">
+      <div className="mt-3 grid grid-cols-4 gap-2">
         <Link
           href="/today/morning"
           className={`rounded-xl border px-3 py-2.5 text-center text-xs font-semibold ${
@@ -151,6 +188,12 @@ export default async function TodayPage() {
           className="rounded-xl border border-mxp-blue/40 bg-mxp-card px-3 py-2.5 text-center text-xs font-semibold text-mxp-blue"
         >
           ⏱ Focus
+        </Link>
+        <Link
+          href="/habits"
+          className="rounded-xl border border-mxp-green/40 bg-mxp-card px-3 py-2.5 text-center text-xs font-semibold text-mxp-green"
+        >
+          ➕ Habitudes
         </Link>
         <Link
           href="/today/night"
@@ -297,6 +340,44 @@ export default async function TodayPage() {
           </form>
         )}
       </section>
+
+      {/* ── Habit quick taps ── */}
+      {goodHabits.length > 0 && (
+        <section className="mxp-card mt-4 p-4">
+          <div className="flex items-baseline justify-between">
+            <p className="mxp-label text-mxp-green">Habitudes · +10 XP</p>
+            <Link href="/habits" className="text-xs font-medium text-mxp-green">
+              Gérer →
+            </Link>
+          </div>
+          <ul className="mt-2 space-y-2.5">
+            {goodHabits.map((h) => {
+              const taps = h.logs[0]?.value ?? 0;
+              return (
+                <li key={h.id} className="flex items-center gap-3">
+                  <form action={tapHabit}>
+                    <input type="hidden" name="id" value={h.id} />
+                    <button
+                      title="Fait !"
+                      className="mxp-btn h-8 w-8 rounded-full p-0 text-sm leading-none"
+                    >
+                      +
+                    </button>
+                  </form>
+                  <span className="min-w-0 flex-1 text-sm">
+                    {h.title}
+                    {taps > 0 && (
+                      <span className="ml-2 rounded-full bg-mxp-green/12 px-2 py-0.5 text-[10px] font-bold text-mxp-green tabular-nums">
+                        ×{taps}
+                      </span>
+                    )}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       {/* ── Side Quests ── */}
       <section className="mt-4 mb-6 mxp-card p-4">

@@ -82,6 +82,7 @@ model MxUser {
   notificationMode String   @default("normal") // quiet | normal | coach_me | beast
   quietHoursStart  Int? // hour 0-23, user timezone
   quietHoursEnd    Int?
+  restMode         Boolean  @default(false) // "Récupération" — pauses élan decay, never punishes rest
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -102,6 +103,7 @@ model MxUser {
   memories          MxMemory[]
   conversations     MxConversation[]
   rewards           MxReward[]
+  gearOwned         MxGearOwned[]
 
   @@map("mainxp_users")
 }
@@ -273,6 +275,7 @@ model MxHabit {
   goalId    String?
   goal      MxGoal?      @relation(fields: [goalId], references: [id], onDelete: SetNull)
   title     String
+  kind      String       @default("good") // good (tap = XP) | bad (tap = élan hit, zero XP)
   category  String       @default("") // body|money|mind|people|business|learning
   attribute MxAttribute? // which attribute logging feeds
   cadence   MxCadence    @default(DAILY)
@@ -371,6 +374,18 @@ model MxXpTransaction {
   @@index([userId, createdAt])
   @@index([userId, sourceType])
   @@map("mainxp_xp_transactions")
+}
+
+model MxGearOwned {
+  id       String   @id @default(cuid())
+  userId   String
+  user     MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gearId   String // catalog id from src/lib/mainxp/gear.ts
+  equipped Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, gearId])
+  @@map("mainxp_gear_owned")
 }
 
 model MxReward {

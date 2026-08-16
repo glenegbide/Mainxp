@@ -15,10 +15,11 @@ Coins + real-life Rewards (Habitica-inspired mechanics, original implementation)
 Remaining for 1.x: Brain Dump structured extraction · weekly non-negotiables UI ·
 in-app notification inbox · WHAT NOW via AI.
 
-## Phase 2 — Retention
-Habits · Routines · Weekly/Monthly reviews · stats · character progression visuals ·
-Titles/archetypes foundation · challenges · rewards · Journal · Gratitude · Books ·
-Playbook · learning engine.
+## Phase 2 — Retention (first wave done)
+Done: Habits ± (Habitica-inspired, original) · Élan momentum gauge · recovery mode ·
+cosmetic gear shop · titles foundation (5 archetypes, tiers I–III) · weekly review.
+Remaining: routines · monthly review · books · playbook · learning engine ·
+challenges · character tiers 50/75/100.
 
 ## Phase 3 — Money + Body
 Receipt scanning · expenses/budgets · finance coach · Safe to Spend · workouts ·

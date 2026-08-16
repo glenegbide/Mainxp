@@ -2,6 +2,20 @@
 
 _Last updated: 2026-08-16 (standalone repository `mainxp`, branch `main`)_
 
+## Phase 2 (first wave, Habitica-inspired — original implementation): DONE
+
+| Item | Status |
+|---|---|
+| Habits ± : good habits award XP (per-habit same-day diminishing), bad habits never remove XP — they feed Élan | ✅ /habits + quick-tap card on Today |
+| Élan (momentum): derived 0–100 gauge over last 7 days (missed non-negotiable days −10, bad taps −3 capped, floor 10, no death) | ✅ hero gauge, unit-tested |
+| Recovery mode ("the inn"): pauses Élan decay; rest is part of the game | ✅ toggle in Me |
+| Cosmetic gear shop: original pixel layers bought with Coins through the ledger, one item per slot, equip/unequip | ✅ 5 items; never prestige |
+| Titles foundation: Discipliné/Stratège/Focalisé/Moine/Bâtisseur, tiers I–III from non-reversed ledger evidence | ✅ Me page, unit-tested |
+| Weekly review: ISO-week stats (XP, coins, quests, NN rate, focus minutes) + 3 questions → journal + idempotent +25 XP | ✅ /progress/week |
+
+Still open in Phase 2: routines, monthly review, books/playbook, learning engine,
+challenges, deeper character tiers (50/75/100).
+
 ## Phase 1 — Core loop: DONE (this commit)
 
 | Item | Status |

@@ -1,6 +1,7 @@
 // Original MAINXP pixel hero (no licensed IP — Part 57). Starts plain, earns
-// visual upgrades at level tiers: 10 (gold headband), 25 (cape). Later tiers
-// (50/75/100) arrive with the Phase 2 character system.
+// visual upgrades at level tiers (10: gold headband, 25: cape; 50/75/100 with
+// the full Phase 2+ character system) and can wear cosmetic gear bought with
+// Coins (src/lib/mainxp/gear.ts) — cosmetics only, never prestige.
 
 const SKIN = "#e9b48a";
 const SKIN_D = "#d99f74";
@@ -50,11 +51,35 @@ const CAPE_PX: Px[] = [
   [11, 7, 1, CAPE], [11, 8, 1, CAPE], [11, 9, 1, CAPE], [11, 10, 1, CAPE],
 ];
 
-export function PixelHero({ level = 1, size = 56 }: { level?: number; size?: number }) {
+/** Cosmetic layers: recolors swap palette colors; overlays add pixels on top. */
+const GEAR_RECOLOR: Record<string, Array<[from: string, to: string]>> = {
+  hoodie_vert: [[HOODIE, "#10b981"], [HOODIE_D, "#047857"], [ZIP, "#a7f3d0"]],
+  hoodie_or: [[HOODIE, "#eab308"], [HOODIE_D, "#a16207"], [ZIP, "#fef08a"]],
+  chaussures_rouges: [[SHOE, "#ef4444"]],
+  bandana_bleu: [[HAIR, HAIR]], // handled as overlay below; recolor entry keeps ids uniform
+};
+const GEAR_OVERLAY: Record<string, Px[]> = {
+  lunettes: [[3, 3, 6, "#1f2937"], [4, 3, 1, "#93c5fd"], [7, 3, 1, "#93c5fd"]],
+  bandana_bleu: [[3, 0, 6, "#2563eb"], [2, 1, 8, "#3b82f6"], [10, 2, 1, "#2563eb"]],
+};
+
+export function PixelHero({
+  level = 1,
+  size = 56,
+  gear = [],
+}: {
+  level?: number;
+  size?: number;
+  gear?: string[];
+}) {
+  const recolor = new Map<string, string>();
+  for (const id of gear) for (const [from, to] of GEAR_RECOLOR[id] ?? []) recolor.set(from, to);
+
   const pixels: Px[] = [
     ...(level >= 25 ? CAPE_PX : []),
-    ...BASE,
+    ...BASE.map(([x, y, w, c]) => [x, y, w, recolor.get(c) ?? c] as Px),
     ...(level >= 10 ? HEADBAND : []),
+    ...gear.flatMap((id) => GEAR_OVERLAY[id] ?? []),
   ];
   return (
     <svg
