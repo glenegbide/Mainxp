@@ -6,7 +6,7 @@ import { requireMxUser } from "@/lib/mainxp/auth";
 import { addDays, dayKey } from "@/lib/mainxp/day";
 import { countAwardGenerations, reverseLatestAward } from "@/lib/mainxp/xp/ledger";
 import { emitEvent } from "@/lib/mainxp/events";
-import type { MxTaskTier } from "@/generated/prisma/enums";
+import { createCappedTask } from "@/lib/mainxp/tasks";
 
 const refresh = () => revalidatePath("/today");
 
@@ -35,27 +35,13 @@ export async function addTask(formData: FormData): Promise<void> {
   const user = await requireMxUser();
   const title = String(formData.get("title") ?? "").trim();
   const tierRaw = String(formData.get("tier") ?? "DAILY_MISSION");
-  const tier: MxTaskTier = tierRaw === "SIDE_QUEST" ? "SIDE_QUEST" : "DAILY_MISSION";
+  const tier = tierRaw === "SIDE_QUEST" ? ("SIDE_QUEST" as const) : ("DAILY_MISSION" as const);
   if (!title || title.length > 300) return;
   const today = dayKey(new Date(), user.timezone);
 
-  if (tier === "DAILY_MISSION") {
-    // Part 9: 3–5 useful actions. Hard cap at 5 missions per day — counting
-    // completed ones too, otherwise "complete 5, add 5 more" farms +25 XP
-    // without limit. Extra real work still belongs in the day: as side quests.
-    const missionsToday = await prisma.mxTask.count({
-      where: { userId: user.id, dayKey: today, tier: "DAILY_MISSION" },
-    });
-    if (missionsToday >= 5) {
-      await prisma.mxTask.create({
-        data: { userId: user.id, title, tier: "SIDE_QUEST", dayKey: today },
-      });
-      refresh();
-      return;
-    }
-  }
-
-  await prisma.mxTask.create({ data: { userId: user.id, title, tier, dayKey: today } });
+  // Caps live in createCappedTask (shared with the coach's create_task tool):
+  // a 6th mission of the day honestly becomes a side quest.
+  await createCappedTask(user.id, title, tier, today);
   refresh();
 }
 

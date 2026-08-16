@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { addDays, dayKey, daysBetween } from "@/lib/mainxp/day";
 import { goalPace, isGoalAtRisk } from "@/lib/mainxp/goals";
+import { whatNow } from "@/lib/mainxp/priority";
+import { contextFromRows } from "@/lib/mainxp/priority-context";
 import { xpTotals } from "@/lib/mainxp/xp/ledger";
 import { levelProgress } from "@/lib/mainxp/xp/curve";
 import { PixelHero } from "../../components/PixelHero";
@@ -100,20 +102,19 @@ export default async function TodayPage() {
     cursor = addDays(cursor, -1);
   }
 
-  // WHAT NOW? — Phase 0 deterministic heuristic (AI version arrives in Phase 1).
-  const openMissions = missions.filter((t) => t.status === "OPEN");
-  const unmetNn = nonNegotiables.filter((n) => !doneByNn.get(n.id));
-  let whatNow: string;
-  if (minimum)
-    whatNow = "Journée minimum — protège l'essentiel et appelle ça une victoire.";
-  else if (!mainQuest) whatNow = "Définis ta Main Quest : le résultat le plus important du jour.";
-  else if (mainQuest.status === "OPEN")
-    whatNow = `Ta Main Quest n'a pas bougé : « ${mainQuest.title} ». C'est l'action à plus fort impact.`;
-  else if (openMissions.length > 0)
-    whatNow = `Main Quest accomplie. Prochaine mission : « ${openMissions[0].title} ».`;
-  else if (unmetNn.length > 0)
-    whatNow = `Il te reste ${unmetNn.length} non-négociable${unmetNn.length > 1 ? "s" : ""} : « ${unmetNn[0].title} ».`;
-  else whatNow = "Journée accomplie. Prépare demain ou récupère — c'est aussi du jeu.";
+  // WHAT NOW? — the Priority Engine (audit P2): one action + concrete WHY,
+  // same computation the coach's get_priorities tool sees.
+  const recommendation = whatNow(
+    contextFromRows({
+      tasks,
+      goals: activeGoals,
+      nonNegotiables,
+      nnLogs,
+      dayPlan,
+      restMode: user.restMode,
+      timezone: user.timezone,
+    })
+  );
 
   const dateLabel = new Intl.DateTimeFormat(user.locale === "en" ? "en-GB" : "fr-CH", {
     weekday: "long",
@@ -310,12 +311,19 @@ export default async function TodayPage() {
         </form>
       )}
 
-      {/* ── WHAT NOW? ── */}
+      {/* ── WHAT NOW? — one action, explained (never a list of orders) ── */}
       <section className="mt-4 mxp-card mxp-alert p-4">
         <p className="mxp-label text-mxp-orange">
           Et maintenant ?
         </p>
-        <p className="mt-1 text-sm">{whatNow}</p>
+        <p className="mt-1 text-sm font-medium">{recommendation.action}</p>
+        <ul className="mt-1.5 space-y-0.5">
+          {recommendation.why.map((fact) => (
+            <li key={fact} className="text-xs text-mxp-muted">
+              · {fact}
+            </li>
+          ))}
+        </ul>
       </section>
 
       {/* ── Main Quest ── */}

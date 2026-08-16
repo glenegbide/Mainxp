@@ -8,7 +8,7 @@ const fail = m => { console.error("FAIL:", m); process.exitCode = 1; };
 
 await page.goto(`${BASE}/signup`);
 await page.fill('input[name="name"]', "Glen");
-await page.fill('input[name="email"]', "glen@coach.local");
+await page.fill('input[name="email"]', "glen"+Date.now()+"@coach.local");
 await page.fill('input[name="password"]', "supersecret1");
 await page.click('button[type="submit"]');
 await page.waitForURL("**/onboarding");

@@ -13,7 +13,7 @@ const body = () => page.textContent("body");
 // 1. Signup → lands on GET TO KNOW ME onboarding
 await page.goto(`${BASE}/signup`);
 await page.fill('input[name="name"]', "Glen");
-await page.fill('input[name="email"]', "glen@phase1.local");
+await page.fill('input[name="email"]', "glen"+Date.now()+"@phase1.local");
 await page.fill('input[name="password"]', "supersecret1");
 await page.click('button[type="submit"]');
 await page.waitForURL("**/onboarding");
