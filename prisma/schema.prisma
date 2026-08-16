@@ -348,6 +348,12 @@ model MxDayPlan {
   focus     Int?
   startedAt DateTime? // morning flow completed
 
+  // Minimum Day (addendum #7): protect the essentials on a bad day
+  minimumDay      Boolean @default(false)
+  minBodyDone     Boolean @default(false)
+  minProgressDone Boolean @default(false)
+  minMindDone     Boolean @default(false)
+
   // Night review (Part 31)
   reviewedAt       DateTime?
   reviewWentWell   String    @default("")

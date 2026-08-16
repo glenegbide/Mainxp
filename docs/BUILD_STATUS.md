@@ -2,6 +2,14 @@
 
 _Last updated: 2026-08-16 (standalone repository `mainxp`, branch `main`)_
 
+## Phase 2 wave 2: DONE
+
+| Item | Status |
+|---|---|
+| Minimum Day (#7): bad-day mode protecting Body/Progress/Mind — +8 XP each, +15 for all three; activation is free; a recovery day is a successful day | ✅ e2e-verified (exact 39 XP) |
+| Comeback Quest (#8): ≥4 days away → no-guilt card (what changed → journal, one priority → temporary coach memory, third mission = a Main Quest) +40 XP once/day | ✅ e2e-verified via backdated events |
+| Brain Dump (#18): /dump — one utterance → AI-typed proposals (task/reminder/idea/journal/habit) → CONFIRM ALL; mission cap respected, overflow → side quests; honest offline state without key | ✅ parser unit-tested; offline state e2e-verified |
+
 ## Hardening wave (35-point addendum): DONE
 
 | Item | Status |

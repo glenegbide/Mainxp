@@ -19,6 +19,7 @@ import {
 } from "./actions";
 import { addTaskNote } from "./actions";
 import { tapHabit } from "../habits/actions";
+import { activateMinimumDay, submitComeback, toggleMinimumSlot } from "./day-actions";
 
 export default async function TodayPage() {
   const user = await getMxUser();
@@ -45,7 +46,7 @@ export default async function TodayPage() {
     prisma.mxGoal.findMany({ where: { userId: user.id, status: "ACTIVE" } }),
     prisma.mxDayPlan.findUnique({ where: { userId_dayKey: { userId: user.id, dayKey: today } } }),
   ]);
-  const [elan, gearEquipped, goodHabits] = await Promise.all([
+  const [elan, gearEquipped, goodHabits, lastEvent, comebackDoneToday] = await Promise.all([
     elanReport(user.id, user.timezone, user.restMode),
     prisma.mxGearOwned.findMany({ where: { userId: user.id, equipped: true } }),
     prisma.mxHabit.findMany({
@@ -54,8 +55,23 @@ export default async function TodayPage() {
       take: 4,
       orderBy: { createdAt: "asc" },
     }),
+    prisma.mxEvent.findFirst({
+      where: { userId: user.id, type: { not: "comeback_completed" } },
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    }),
+    prisma.mxEvent.findFirst({
+      where: { userId: user.id, type: "comeback_completed", dayKey: today },
+    }),
   ]);
   const equippedIds = gearEquipped.map((g) => g.gearId);
+
+  // Comeback Quest (addendum #8): away ≥ 4 days → welcome back, no guilt.
+  const awayDays = lastEvent
+    ? daysBetween(dayKey(lastEvent.createdAt, user.timezone), today)
+    : 0;
+  const showComeback = awayDays >= 4 && !comebackDoneToday;
+  const minimum = dayPlan?.minimumDay ?? false;
 
   // Goal at risk (behind pace, deadline near) — surfaces here and in coach context.
   const goalAtRisk = activeGoals.find((g) => {
@@ -88,7 +104,9 @@ export default async function TodayPage() {
   const openMissions = missions.filter((t) => t.status === "OPEN");
   const unmetNn = nonNegotiables.filter((n) => !doneByNn.get(n.id));
   let whatNow: string;
-  if (!mainQuest) whatNow = "Définis ta Main Quest : le résultat le plus important du jour.";
+  if (minimum)
+    whatNow = "Journée minimum — protège l'essentiel et appelle ça une victoire.";
+  else if (!mainQuest) whatNow = "Définis ta Main Quest : le résultat le plus important du jour.";
   else if (mainQuest.status === "OPEN")
     whatNow = `Ta Main Quest n'a pas bougé : « ${mainQuest.title} ». C'est l'action à plus fort impact.`;
   else if (openMissions.length > 0)
@@ -208,6 +226,13 @@ export default async function TodayPage() {
         </Link>
       </div>
 
+      <Link
+        href="/dump"
+        className="mt-2 block rounded-xl border border-mxp-purple/40 bg-mxp-card px-4 py-2.5 text-center text-xs font-semibold text-mxp-purple transition hover:bg-mxp-bg"
+      >
+        🧠 Vide-tête — dis tout d&apos;un coup, je range
+      </Link>
+
       {goalAtRisk && (
         <Link
           href={`/goals/${goalAtRisk.id}`}
@@ -220,6 +245,75 @@ export default async function TodayPage() {
 
       <h1 className="mt-6 text-xl font-semibold">Aujourd&apos;hui</h1>
       <p className="text-sm capitalize text-mxp-muted">{dateLabel}</p>
+
+      {/* ── Comeback Quest ── */}
+      {showComeback && (
+        <section className="mxp-card mxp-quest mt-4 p-4">
+          <p className="mxp-label text-mxp-purple">Quête de retour · +40 XP</p>
+          <p className="mt-1 text-sm">
+            {awayDays} jours sans MAINXP. <strong>Aucune culpabilité</strong> — on
+            reconstruit, c&apos;est dans le jeu.
+          </p>
+          <form action={submitComeback} className="mt-3 space-y-2.5">
+            <input
+              type="text"
+              name="whatChanged"
+              maxLength={500}
+              placeholder="1 · Qu'est-ce qui a changé pendant ton absence ?"
+              className="w-full mxp-input px-3 py-2.5 text-sm"
+            />
+            <input
+              type="text"
+              name="priority"
+              maxLength={300}
+              placeholder="2 · Une seule priorité pour reprendre"
+              className="w-full mxp-input px-3 py-2.5 text-sm"
+            />
+            <button className="w-full mxp-btn px-4 py-2.5 text-sm">
+              Reprendre — mission 3 : une Main Quest
+            </button>
+          </form>
+        </section>
+      )}
+
+      {/* ── Minimum Day ── */}
+      {minimum ? (
+        <section className="mxp-card mt-4 border-mxp-teal/50 p-4">
+          <p className="mxp-label text-mxp-teal">Journée minimum</p>
+          <p className="mt-1 text-sm text-mxp-muted">
+            Aujourd&apos;hui n&apos;a pas besoin d&apos;être parfait. Protège ces trois
+            choses et appelle ça une journée de récupération réussie. +8 XP chacune,
+            +15 si les trois.
+          </p>
+          <ul className="mt-3 space-y-2.5">
+            {(
+              [
+                ["body", "Corps — une action minimum (marcher, s'étirer, dormir tôt)", dayPlan?.minBodyDone],
+                ["progress", "Progrès — une seule action qui compte vraiment", dayPlan?.minProgressDone],
+                ["mind", "Esprit — une action de reset (respirer, écrire 3 lignes)", dayPlan?.minMindDone],
+              ] as const
+            ).map(([slot, label, done]) => (
+              <li key={slot} className="flex items-center justify-between gap-3">
+                <span className={`text-sm ${done ? "text-mxp-muted line-through" : ""}`}>
+                  {label}
+                </span>
+                <form action={toggleMinimumSlot}>
+                  <input type="hidden" name="slot" value={slot} />
+                  <button aria-pressed={!!done} className={`mxp-check ${done ? "on" : ""}`}>
+                    ✓
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : (
+        <form action={activateMinimumDay} className="mt-3">
+          <button className="w-full rounded-xl border border-mxp-teal/40 bg-mxp-card px-3 py-2 text-xs font-semibold text-mxp-teal transition hover:bg-mxp-bg">
+            😮‍💨 Journée difficile ? Passe en journée minimum
+          </button>
+        </form>
+      )}
 
       {/* ── WHAT NOW? ── */}
       <section className="mt-4 mxp-card mxp-alert p-4">

@@ -30,7 +30,12 @@ export type MxEventType =
   | "weekly_review_completed"
   | "reward_redeemed"
   | "gear_purchased"
-  | "task_note_added";
+  | "task_note_added"
+  | "minimum_day_activated"
+  | "minimum_action_completed"
+  | "minimum_day_completed"
+  | "comeback_completed"
+  | "brain_dump_processed";
 
 export interface EventPayload {
   [key: string]: string | number | boolean | null | undefined;
@@ -191,6 +196,44 @@ export function xpForEvent(
       };
     case "task_note_added":
       return null; // notes are memory, not merit
+    case "minimum_day_activated":
+      return null; // choosing to protect the essentials costs nothing
+    case "minimum_action_completed": {
+      const slot = String(p.slot ?? "");
+      const attr =
+        slot === "body" ? { STRENGTH: 6 } : slot === "mind" ? { MIND: 6 } : undefined;
+      return {
+        sourceType: "minimum_action",
+        sourceId: slot,
+        reason:
+          slot === "body"
+            ? "Journée minimum : le corps est protégé"
+            : slot === "mind"
+              ? "Journée minimum : l'esprit est posé"
+              : "Journée minimum : une action qui compte",
+        mainDelta: 8,
+        coinsDelta: 4,
+        attributeDeltas: attr as AwardInput["attributeDeltas"],
+      };
+    }
+    case "minimum_day_completed":
+      return {
+        sourceType: "minimum_day",
+        reason: "Journée de récupération réussie — l'essentiel est protégé",
+        mainDelta: 15,
+        coinsDelta: 8,
+        attributeDeltas: { MIND: 10 },
+      };
+    case "comeback_completed":
+      return {
+        sourceType: "comeback",
+        reason: "Comeback — de retour dans l'arène",
+        mainDelta: 40,
+        coinsDelta: 20,
+        attributeDeltas: { MIND: 15 },
+      };
+    case "brain_dump_processed":
+      return null; // organizing thoughts is input, not achievement
   }
 }
 

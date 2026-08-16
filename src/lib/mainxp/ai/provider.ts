@@ -24,7 +24,8 @@ export interface ChatResult {
 export interface AIProvider {
   /** Coach conversation. Tool-use loop arrives in Phase 1. */
   chat(req: ChatRequest): Promise<ChatResult>;
-  /** Brain Dump / receipt extraction, voice, embeddings: implemented in their phases. */
+  /** One-shot structured extraction (Brain Dump, receipts). Returns raw model text. */
+  structuredExtract(instruction: string, input: string): Promise<string>;
 }
 
 class AnthropicProvider implements AIProvider {
@@ -32,6 +33,15 @@ class AnthropicProvider implements AIProvider {
     private apiKey: string,
     private model = process.env.MAINXP_AI_MODEL || "claude-sonnet-5"
   ) {}
+
+  async structuredExtract(instruction: string, input: string): Promise<string> {
+    const result = await this.chat({
+      system: instruction,
+      messages: [{ role: "user", content: input }],
+      maxTokens: 1200,
+    });
+    return result.text;
+  }
 
   async chat(req: ChatRequest): Promise<ChatResult> {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -67,6 +77,9 @@ class AnthropicProvider implements AIProvider {
     };
   }
 }
+
+// (structuredExtract uses a plain chat turn with a strict-JSON instruction;
+// cheap model override via MAINXP_AI_MODEL applies to both.)
 
 /** Null when MAINXP_ANTHROPIC_API_KEY is not configured — callers must handle it. */
 export function getAIProvider(): AIProvider | null {

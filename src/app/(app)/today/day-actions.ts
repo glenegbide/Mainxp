@@ -135,3 +135,96 @@ export async function saveNight(formData: FormData): Promise<void> {
   revalidatePath("/today");
   redirect("/today");
 }
+
+// ── Minimum Day (addendum #7): on a bad day, protect the essentials ──
+
+export async function activateMinimumDay(): Promise<void> {
+  const user = await requireMxUser();
+  const today = dayKey(new Date(), user.timezone);
+  await prisma.mxDayPlan.upsert({
+    where: { userId_dayKey: { userId: user.id, dayKey: today } },
+    create: { userId: user.id, dayKey: today, minimumDay: true },
+    update: { minimumDay: true },
+  });
+  await emitEvent(
+    user,
+    "minimum_day_activated",
+    { day: today },
+    { idempotencyKey: `minday:${user.id}:${today}` }
+  );
+  revalidatePath("/today");
+}
+
+const MIN_SLOTS = ["body", "progress", "mind"] as const;
+
+export async function toggleMinimumSlot(formData: FormData): Promise<void> {
+  const user = await requireMxUser();
+  const slot = String(formData.get("slot") ?? "") as (typeof MIN_SLOTS)[number];
+  if (!MIN_SLOTS.includes(slot)) return;
+  const today = dayKey(new Date(), user.timezone);
+  const plan = await prisma.mxDayPlan.findUnique({
+    where: { userId_dayKey: { userId: user.id, dayKey: today } },
+  });
+  if (!plan?.minimumDay) return;
+
+  const field =
+    slot === "body" ? "minBodyDone" : slot === "progress" ? "minProgressDone" : "minMindDone";
+  const nowDone = !plan[field];
+  const updated = await prisma.mxDayPlan.update({
+    where: { id: plan.id },
+    data: { [field]: nowDone },
+  });
+
+  if (nowDone) {
+    await emitEvent(
+      user,
+      "minimum_action_completed",
+      { day: today, slot },
+      { idempotencyKey: `minslot:${user.id}:${today}:${slot}` }
+    );
+    if (updated.minBodyDone && updated.minProgressDone && updated.minMindDone) {
+      await emitEvent(
+        user,
+        "minimum_day_completed",
+        { day: today },
+        { idempotencyKey: `minday-done:${user.id}:${today}` }
+      );
+    }
+  }
+  revalidatePath("/today");
+}
+
+// ── Comeback Quest (addendum #8): returning is part of the game — no guilt ──
+
+export async function submitComeback(formData: FormData): Promise<void> {
+  const user = await requireMxUser();
+  const today = dayKey(new Date(), user.timezone);
+  const whatChanged = s(formData.get("whatChanged"));
+  const priority = s(formData.get("priority"), 300);
+
+  if (whatChanged) {
+    await prisma.mxJournalEntry.create({
+      data: { userId: user.id, kind: "comeback", content: whatChanged, dayKey: today },
+    });
+  }
+  if (priority) {
+    // The chosen priority becomes a temporary memory the coach respects.
+    await prisma.mxMemory.create({
+      data: {
+        userId: user.id,
+        type: "commitment",
+        content: `Priorité de reprise : ${priority}`,
+        source: "user_stated",
+        scope: "temporary",
+        expiresAt: new Date(Date.now() + 7 * 24 * 3600_000),
+      },
+    });
+  }
+  await emitEvent(
+    user,
+    "comeback_completed",
+    { day: today, priority: priority || null },
+    { idempotencyKey: `comeback:${user.id}:${today}` }
+  );
+  revalidatePath("/today");
+}

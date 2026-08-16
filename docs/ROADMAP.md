@@ -18,9 +18,10 @@ in-app notification inbox · WHAT NOW via AI.
 ## Phase 2 — Retention (first wave done)
 Done: Habits ± (Habitica-inspired, original) · Élan momentum gauge · recovery mode ·
 cosmetic gear shop · titles foundation (5 archetypes, tiers I–III) · weekly review.
+Wave 2 done: Minimum Day · Comeback Quest · Brain Dump.
 Remaining: routines · monthly review · books · playbook · learning engine ·
-challenges · character tiers 50/75/100 · Minimum Day · Comeback Quest ·
-personal difficulty · Brain Dump · capacity model · seasons with endings.
+challenges · character tiers 50/75/100 · personal difficulty · capacity model ·
+seasons with endings.
 
 ## Phase 3 — Money + Body
 Receipt scanning · expenses/budgets · finance coach · Safe to Spend · workouts ·

@@ -41,6 +41,17 @@ describe("xpForEvent — centralized XP policy (system of record)", () => {
     expect(xpForEvent("focus_completed", { blocks: 0 })).toBeNull();
   });
 
+  it("rewards protecting a bad day and coming back — never punishes", () => {
+    expect(xpForEvent("minimum_day_activated", {})).toBeNull();
+    expect(xpForEvent("minimum_action_completed", { slot: "body" }))
+      .toMatchObject({ mainDelta: 8, attributeDeltas: { STRENGTH: 6 } });
+    expect(xpForEvent("minimum_action_completed", { slot: "mind" }))
+      .toMatchObject({ mainDelta: 8, attributeDeltas: { MIND: 6 } });
+    expect(xpForEvent("minimum_day_completed", {})).toMatchObject({ mainDelta: 15 });
+    expect(xpForEvent("comeback_completed", {})).toMatchObject({ mainDelta: 40, coinsDelta: 20 });
+    expect(xpForEvent("brain_dump_processed", { count: 5 })).toBeNull();
+  });
+
   it("spends coins (never XP) on rewards and gear", () => {
     expect(xpForEvent("reward_redeemed", { rewardId: "r1", title: "Resto", cost: 300 }))
       .toMatchObject({ mainDelta: 0, coinsDelta: -300 });
