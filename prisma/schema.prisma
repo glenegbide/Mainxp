@@ -1,0 +1,444 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+// MAINXP — an AI life OS wrapped inside a real-life RPG.
+// Totals (XP, streaks) are always derived from ledger/log rows, never stored
+// as standalone truth. See docs/DATABASE_SCHEMA.md and docs/XP_SYSTEM.md.
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum MxAttribute {
+  STRENGTH
+  ENDURANCE
+  FOCUS
+  DISCIPLINE
+  KNOWLEDGE
+  STRATEGY
+  WEALTH
+  MIND
+  SOCIAL
+}
+
+enum MxGoalHorizon {
+  LIFETIME
+  THREE_YEAR
+  ONE_YEAR
+  NINETY_DAY
+  MONTHLY
+  WEEKLY
+}
+
+enum MxGoalStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ABANDONED
+}
+
+enum MxProjectStatus {
+  IDEA
+  PLANNING
+  ACTIVE
+  WAITING
+  BLOCKED
+  AT_RISK
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum MxTaskTier {
+  MAIN_QUEST
+  DAILY_MISSION
+  SIDE_QUEST
+  BACKLOG
+}
+
+enum MxTaskStatus {
+  OPEN
+  DONE
+  CANCELLED
+}
+
+enum MxCadence {
+  DAILY
+  WEEKLY
+}
+
+model MxUser {
+  id               String   @id @default(cuid())
+  email            String   @unique
+  passwordHash     String
+  name             String
+  timezone         String   @default("Europe/Zurich") // IANA; defines the user's "day"
+  locale           String   @default("fr")
+  onboardingStage  String   @default("new") // new | bio_started | bio_done
+  coachTone        String   @default("balanced") // concise|detailed × soft|demanding presets
+  notificationMode String   @default("normal") // quiet | normal | coach_me | beast
+  quietHoursStart  Int? // hour 0-23, user timezone
+  quietHoursEnd    Int?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  sessions          MxSession[]
+  northStar         MxNorthStar?
+  goals             MxGoal[]
+  projects          MxProject[]
+  tasks             MxTask[]
+  nonNegotiables    MxNonNegotiable[]
+  nonNegotiableLogs MxNonNegotiableLog[]
+  habits            MxHabit[]
+  habitLogs         MxHabitLog[]
+  dayPlans          MxDayPlan[]
+  focusSessions     MxFocusSession[]
+  xpTransactions    MxXpTransaction[]
+  journalEntries    MxJournalEntry[]
+  gratitudeEntries  MxGratitudeEntry[]
+  memories          MxMemory[]
+  conversations     MxConversation[]
+
+  @@map("mainxp_users")
+}
+
+model MxSession {
+  id        String   @id @default(cuid())
+  userId    String
+  user      MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique // SHA-256 of the cookie token — plaintext never stored
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("mainxp_sessions")
+}
+
+model MxNorthStar {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  why             String   @default("")
+  values          Json     @default("[]")
+  futureSelf      String   @default("")
+  vision1Year     String   @default("")
+  mission90Days   String   @default("")
+  season          String   @default("") // e.g. "Revenue Season"
+  priorities      Json     @default("[]")
+  personalRules   Json     @default("[]")
+  importantPeople Json     @default("[]")
+  refusals        String   @default("") // "what I refuse to become"
+  updatedAt       DateTime @updatedAt
+
+  @@map("mainxp_north_stars")
+}
+
+model MxGoal {
+  id           String        @id @default(cuid())
+  userId       String
+  user         MxUser        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title        String
+  description  String        @default("")
+  why          String        @default("")
+  lifeArea     String        @default("") // body|purpose|progress|people|mind|character|money|…
+  horizon      MxGoalHorizon @default(NINETY_DAY)
+  targetValue  Float?
+  currentValue Float         @default(0)
+  unit         String?
+  deadline     DateTime?
+  priority     Int           @default(3) // 1 (top) – 5
+  status       MxGoalStatus  @default(ACTIVE)
+  reward       String? // user-defined real-life reward
+  createdAt    DateTime      @default(now())
+  completedAt  DateTime?
+
+  projects       MxProject[]
+  tasks          MxTask[]
+  nonNegotiables MxNonNegotiable[]
+  habits         MxHabit[]
+  focusSessions  MxFocusSession[]
+
+  @@index([userId, status])
+  @@map("mainxp_goals")
+}
+
+model MxProject {
+  id             String          @id @default(cuid())
+  userId         String
+  user           MxUser          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goalId         String?
+  goal           MxGoal?         @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  title          String
+  desiredOutcome String          @default("")
+  why            String          @default("")
+  priority       Int             @default(3)
+  deadline       DateTime?
+  status         MxProjectStatus @default(PLANNING)
+  progress       Int             @default(0) // 0-100, derived from milestones when present
+  nextAction     String          @default("") // every active project must name one
+  blockers       String          @default("")
+  createdAt      DateTime        @default(now())
+  completedAt    DateTime?
+
+  milestones MxMilestone[]
+  tasks      MxTask[]
+
+  @@index([userId, status])
+  @@map("mainxp_projects")
+}
+
+model MxMilestone {
+  id          String    @id @default(cuid())
+  projectId   String
+  project     MxProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  order       Int       @default(0)
+  done        Boolean   @default(false)
+  completedAt DateTime?
+
+  @@index([projectId])
+  @@map("mainxp_milestones")
+}
+
+model MxTask {
+  id            String       @id @default(cuid())
+  userId        String
+  user          MxUser       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goalId        String?
+  goal          MxGoal?      @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  projectId     String?
+  project       MxProject?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title         String
+  notes         String       @default("")
+  tier          MxTaskTier   @default(DAILY_MISSION)
+  status        MxTaskStatus @default(OPEN)
+  dayKey        String? // "YYYY-MM-DD" in the user's timezone; null = backlog
+  order         Int          @default(0)
+  estimateMin   Int?
+  postponeCount Int          @default(0) // feeds hard-mode XP + anti-drift
+  createdAt     DateTime     @default(now())
+  completedAt   DateTime?
+
+  focusSessions MxFocusSession[]
+
+  @@index([userId, dayKey])
+  @@index([userId, status])
+  @@map("mainxp_tasks")
+}
+
+model MxNonNegotiable {
+  id        String    @id @default(cuid())
+  userId    String
+  user      MxUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goalId    String?
+  goal      MxGoal?   @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  title     String
+  cadence   MxCadence @default(DAILY)
+  target    Float     @default(1)
+  unit      String? // calls, pages, workouts…
+  minimum   Float? // smallest acceptable version
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+
+  logs MxNonNegotiableLog[]
+
+  @@index([userId, active])
+  @@map("mainxp_non_negotiables")
+}
+
+model MxNonNegotiableLog {
+  id              String          @id @default(cuid())
+  userId          String
+  user            MxUser          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nonNegotiableId String
+  nonNegotiable   MxNonNegotiable @relation(fields: [nonNegotiableId], references: [id], onDelete: Cascade)
+  periodKey       String // dayKey (daily) or weekKey (weekly)
+  value           Float           @default(0)
+  completed       Boolean         @default(false)
+  updatedAt       DateTime        @updatedAt
+
+  @@unique([nonNegotiableId, periodKey])
+  @@index([userId, periodKey])
+  @@map("mainxp_non_negotiable_logs")
+}
+
+model MxHabit {
+  id        String       @id @default(cuid())
+  userId    String
+  user      MxUser       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goalId    String?
+  goal      MxGoal?      @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  title     String
+  category  String       @default("") // body|money|mind|people|business|learning
+  attribute MxAttribute? // which attribute logging feeds
+  cadence   MxCadence    @default(DAILY)
+  target    Float        @default(1)
+  unit      String?
+  minimum   Float?
+  reminder  String? // "HH:MM" user timezone
+  active    Boolean      @default(true)
+  createdAt DateTime     @default(now())
+
+  logs MxHabitLog[]
+
+  @@index([userId, active])
+  @@map("mainxp_habits")
+}
+
+model MxHabitLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  habitId   String
+  habit     MxHabit  @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  periodKey String // dayKey or weekKey per cadence
+  value     Float    @default(1)
+  createdAt DateTime @default(now())
+
+  @@unique([habitId, periodKey])
+  @@index([userId, periodKey])
+  @@map("mainxp_habit_logs")
+}
+
+model MxDayPlan {
+  id     String @id @default(cuid())
+  userId String
+  user   MxUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayKey String // "YYYY-MM-DD" user timezone
+
+  // Morning check-in (Part 12)
+  mood      Int? // 1-10
+  energy    Int?
+  stress    Int?
+  focus     Int?
+  startedAt DateTime? // morning flow completed
+
+  // Night review (Part 31)
+  reviewedAt       DateTime?
+  reviewWentWell   String    @default("")
+  reviewMissedWhy  String    @default("")
+  reviewLesson     String    @default("")
+  tomorrowBigThing String    @default("")
+  preparedAt       DateTime? // tomorrow draft generated
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, dayKey])
+  @@map("mainxp_day_plans")
+}
+
+model MxFocusSession {
+  id            String    @id @default(cuid())
+  userId        String
+  user          MxUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskId        String?
+  task          MxTask?   @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  goalId        String?
+  goal          MxGoal?   @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  plannedMin    Int // 25 | 50 | 90 | custom
+  startedAt     DateTime  @default(now())
+  endedAt       DateTime?
+  interruptions Int       @default(0)
+  completed     Boolean   @default(false)
+  notes         String    @default("")
+
+  @@index([userId, startedAt])
+  @@map("mainxp_focus_sessions")
+}
+
+// Append-only XP ledger — the single source of truth for all progression.
+// Rows are never updated or deleted; corrections are compensating rows.
+model MxXpTransaction {
+  id             String   @id @default(cuid())
+  userId         String
+  user           MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceType     String // task | non_negotiable | habit | focus | goal | milestone | journal | gratitude | review | reversal | …
+  sourceId       String?
+  reason         String
+  multiplier     Float    @default(1)
+  mainDelta      Int // MAINXP change (may be negative on reversal)
+  attributeDeltas Json    @default("{}") // { "FOCUS": 15, … }
+  idempotencyKey String?  @unique // "<sourceType>:<sourceId>:<event>" — blocks duplicates
+  reversesId     String?  @unique // id of the transaction this row compensates
+  createdAt      DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([userId, sourceType])
+  @@map("mainxp_xp_transactions")
+}
+
+model MxJournalEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  user      MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      String   @default("free") // free|morning|night|decision|business|relationship|victory|lesson
+  content   String
+  dayKey    String
+  createdAt DateTime @default(now())
+
+  @@index([userId, dayKey])
+  @@map("mainxp_journal_entries")
+}
+
+model MxGratitudeEntry {
+  id          String   @id @default(cuid())
+  userId      String
+  user        MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayKey      String
+  content     String
+  whyItMatter String   @default("")
+  thankWho    String   @default("")
+  createdAt   DateTime @default(now())
+
+  @@index([userId, dayKey])
+  @@map("mainxp_gratitude_entries")
+}
+
+model MxMemory {
+  id                String    @id @default(cuid())
+  userId            String
+  user              MxUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type              String // identity|preference|goal|commitment|person|project|decision|lesson|event|pattern|financial_context|health_context|journal_insight
+  content           String
+  importance        Int       @default(3) // 1-5
+  confidence        Float     @default(0.8)
+  source            String    @default("user_stated") // user_stated | ai_inferred | onboarding
+  sensitivity       String    @default("normal") // normal | private
+  doNotUseInCoaching Boolean  @default(false)
+  embeddingRef      String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  lastAccessedAt    DateTime?
+
+  @@index([userId, type])
+  @@map("mainxp_memories")
+}
+
+model MxConversation {
+  id        String   @id @default(cuid())
+  userId    String
+  user      MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages MxMessage[]
+
+  @@index([userId, updatedAt])
+  @@map("mainxp_conversations")
+}
+
+model MxMessage {
+  id             String         @id @default(cuid())
+  conversationId String
+  conversation   MxConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String // user | assistant | tool
+  content        String
+  createdAt      DateTime       @default(now())
+
+  @@index([conversationId, createdAt])
+  @@map("mainxp_messages")
+}

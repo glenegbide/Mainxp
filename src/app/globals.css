@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  /* ── MAINXP design tokens — Part 58 palette, light mode default ── */
+  --mxp-bg: #faf9f7; /* warm near-white */
+  --mxp-card: #ffffff;
+  --mxp-ink: #1c1917;
+  --mxp-muted: #78716c;
+  --mxp-line: #e7e5e4;
+  --mxp-purple: #7c3aed; /* MAINXP identity / progression */
+  --mxp-purple-deep: #5b21b6;
+  --mxp-purple-soft: #ede9fe;
+  --mxp-green: #10b981; /* body / health / success */
+  --mxp-blue: #3b82f6; /* knowledge / clarity / focus */
+  --mxp-gold: #ca8a04; /* wealth / rewards / achievements */
+  --mxp-coral: #fb7185; /* people / community */
+  --mxp-teal: #14b8a6; /* mind / journal / reflection */
+  --mxp-orange: #f97316; /* challenge / momentum */
+  --mxp-red: #ef4444; /* urgent warnings / Beast Mode only */
+}
+
+@theme inline {
+  --color-mxp-bg: var(--mxp-bg);
+  --color-mxp-card: var(--mxp-card);
+  --color-mxp-ink: var(--mxp-ink);
+  --color-mxp-muted: var(--mxp-muted);
+  --color-mxp-line: var(--mxp-line);
+  --color-mxp-purple: var(--mxp-purple);
+  --color-mxp-purple-deep: var(--mxp-purple-deep);
+  --color-mxp-purple-soft: var(--mxp-purple-soft);
+  --color-mxp-green: var(--mxp-green);
+  --color-mxp-blue: var(--mxp-blue);
+  --color-mxp-gold: var(--mxp-gold);
+  --color-mxp-coral: var(--mxp-coral);
+  --color-mxp-teal: var(--mxp-teal);
+  --color-mxp-orange: var(--mxp-orange);
+  --color-mxp-red: var(--mxp-red);
+  --font-sans: var(--font-geist);
+}
+
+body {
+  font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--mxp-purple);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--mxp-purple);
+  outline-offset: 2px;
+}
+
+.tabular-nums,
+dd {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
