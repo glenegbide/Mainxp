@@ -30,7 +30,7 @@ export async function signup(formData: FormData): Promise<void> {
     data: { name, email, passwordHash: hashPassword(password), timezone },
   });
   await createSession(user.id);
-  redirect("/today");
+  redirect("/onboarding");
 }
 
 export async function login(formData: FormData): Promise<void> {

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
@@ -35,9 +36,29 @@ export default async function ProgressPage() {
     <main className="px-4 pt-5">
       <h1 className="text-xl font-semibold">Progression</h1>
 
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <Link
+          href="/goals"
+          className="rounded-2xl border border-mxp-line bg-mxp-card p-4 text-sm font-semibold transition hover:border-mxp-purple/50"
+        >
+          🎯 Objectifs
+          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">rythme &amp; échéances</span>
+        </Link>
+        <Link
+          href="/projects"
+          className="rounded-2xl border border-mxp-line bg-mxp-card p-4 text-sm font-semibold transition hover:border-mxp-orange/50"
+        >
+          🛠 Projets
+          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">jalons &amp; moteurs</span>
+        </Link>
+      </div>
+
       <section className="mt-4 rounded-2xl border border-mxp-line bg-mxp-card p-4">
         <p className="text-sm text-mxp-muted">MAINXP total</p>
-        <p className="mt-1 text-3xl font-bold text-mxp-purple tabular-nums">{totals.main}</p>
+        <p className="mt-1 text-3xl font-bold text-mxp-purple tabular-nums">
+          {totals.main}
+          <span className="ml-3 align-middle text-base font-semibold text-mxp-gold">🪙 {totals.coins}</span>
+        </p>
         <p className="mt-1 text-sm text-mxp-muted">
           Niveau {lp.level} · {lp.intoLevel}/{lp.neededForNext} vers le niveau {lp.level + 1}
         </p>
@@ -98,9 +119,7 @@ export default async function ProgressPage() {
             ))}
           </ul>
         )}
-        <p className="mt-3 text-xs text-mxp-muted">
-          Objectifs, projets et revues arrivent en Phase 1 (voir docs/ROADMAP.md).
-        </p>
+
       </section>
     </main>
   );

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getMxUser } from "@/lib/mainxp/auth";
 import { xpTotals } from "@/lib/mainxp/xp/ledger";
@@ -52,9 +53,26 @@ export default async function MePage() {
         </dl>
       </section>
 
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <Link
+          href="/me/north-star"
+          className="rounded-2xl border border-mxp-line bg-mxp-card p-4 text-sm font-semibold transition hover:border-mxp-purple/50"
+        >
+          🧭 North Star
+          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">pourquoi, saison, règles</span>
+        </Link>
+        <Link
+          href="/me/rewards"
+          className="rounded-2xl border border-mxp-line bg-mxp-card p-4 text-sm font-semibold transition hover:border-mxp-gold/60"
+        >
+          🪙 Récompenses
+          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">vraies, payées en pièces</span>
+        </Link>
+      </div>
+
       <section className="mt-4 rounded-2xl border border-mxp-line bg-mxp-card p-4 text-sm text-mxp-muted">
-        North Star, préférences du coach, mémoire de l&apos;IA et export des données
-        arrivent en Phase 1 (voir docs/ROADMAP.md).
+        Mémoire de l&apos;IA, préférences de notifications et export des données arrivent
+        dans les prochaines itérations (voir docs/ROADMAP.md).
       </section>
 
       <form action={logout} className="mt-6 mb-6">

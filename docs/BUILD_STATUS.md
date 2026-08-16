@@ -2,6 +2,26 @@
 
 _Last updated: 2026-08-16 (standalone repository `mainxp`, branch `main`)_
 
+## Phase 1 — Core loop: DONE (this commit)
+
+| Item | Status |
+|---|---|
+| GET TO KNOW ME onboarding (5 questions, progressive — never 80) | ✅ signup lands here |
+| North Star (why, values, season, priorities, rules, refusals) | ✅ editable, feeds coach |
+| Goals: create, pace math (target/actual/required/projection/verdict), at-risk surfacing | ✅ |
+| Projects: create, milestones (+40 XP Stratégie, reversible), next action, statuses, anti-drift warning | ✅ |
+| Morning Start: state check → why → standing → Main Quest proposal | ✅ +10 XP idempotent/day |
+| Night Review: recap, questions, gratitude, One Big Thing → tomorrow auto-prepared (carry-overs + MQ candidate) | ✅ +15 XP |
+| Focus mode: 25/50/90/custom, server-verified blocks (early stop = 0 XP, overtime capped) | ✅ |
+| AI Coach chat: real conversation w/ bounded context (North Star, today, goals pace); honest offline state without key | ✅ |
+| Coins economy + Rewards (Habitica-inspired, original): real-life rewards bought with earned coins, same auditable ledger | ✅ |
+| Vercel readiness: build-time `prisma db push` when DATABASE_URL set; DEPLOY.md | ✅ |
+
+Verified: lint, tsc, 21 unit tests, production build, Playwright end-to-end
+(onboarding → goal+pace → project+milestone → morning → main quest → focus →
+night review → exact ledger totals 175 XP / 87 coins → reward redeem → coach
+offline state).
+
 ## Phase 0 — Foundation: DONE
 
 | Item | Status |

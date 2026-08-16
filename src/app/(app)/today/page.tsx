@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
-import { addDays, dayKey } from "@/lib/mainxp/day";
+import Link from "next/link";
+import { addDays, dayKey, daysBetween } from "@/lib/mainxp/day";
+import { goalPace, isGoalAtRisk } from "@/lib/mainxp/goals";
 import { xpTotals } from "@/lib/mainxp/xp/ledger";
 import { levelProgress } from "@/lib/mainxp/xp/curve";
 import {
@@ -19,7 +21,7 @@ export default async function TodayPage() {
   if (!user) redirect("/login");
   const today = dayKey(new Date(), user.timezone);
 
-  const [tasks, nonNegotiables, nnLogs, totals, recentTx] = await Promise.all([
+  const [tasks, nonNegotiables, nnLogs, totals, recentTx, activeGoals, dayPlan] = await Promise.all([
     prisma.mxTask.findMany({
       where: { userId: user.id, dayKey: today },
       orderBy: [{ createdAt: "asc" }],
@@ -36,7 +38,21 @@ export default async function TodayPage() {
       orderBy: { createdAt: "desc" },
       take: 500,
     }),
+    prisma.mxGoal.findMany({ where: { userId: user.id, status: "ACTIVE" } }),
+    prisma.mxDayPlan.findUnique({ where: { userId_dayKey: { userId: user.id, dayKey: today } } }),
   ]);
+
+  // Goal at risk (behind pace, deadline near) — surfaces here and in coach context.
+  const goalAtRisk = activeGoals.find((g) => {
+    if (!g.targetValue || !g.deadline) return false;
+    const report = goalPace({
+      targetValue: g.targetValue,
+      currentValue: g.currentValue,
+      createdAt: g.createdAt,
+      deadline: g.deadline,
+    });
+    return isGoalAtRisk(report, daysBetween(today, dayKey(g.deadline, user.timezone)));
+  });
 
   const lp = levelProgress(totals.main);
   const mainQuest = tasks.find((t) => t.tier === "MAIN_QUEST");
@@ -88,6 +104,7 @@ export default async function TodayPage() {
             <p className="truncate text-lg font-semibold">{user.name}</p>
             <p className="text-sm text-white/80">
               Niveau {lp.level} · {lp.level === 1 && totals.main === 0 ? "Novice · 0 XP" : `${totals.main} XP`}
+              <span className="ml-2 text-white/70">🪙 {totals.coins}</span>
             </p>
           </div>
         </div>
@@ -114,6 +131,55 @@ export default async function TodayPage() {
           {streak} jour{streak === 1 ? "" : "s"} 🔥
         </span>
       </section>
+
+      {user.onboardingStage === "new" && (
+        <Link
+          href="/onboarding"
+          className="mt-3 block rounded-2xl border-2 border-mxp-purple/50 bg-mxp-purple-soft px-5 py-3 text-sm font-medium text-mxp-purple-deep"
+        >
+          ✦ Apprends à me connaître — 5 questions pour que le coach comprenne ta vie →
+        </Link>
+      )}
+
+      {/* ── Quick actions ── */}
+      <div className="mt-3 grid grid-cols-3 gap-2">
+        <Link
+          href="/today/morning"
+          className={`rounded-xl border px-3 py-2.5 text-center text-xs font-semibold ${
+            dayPlan?.startedAt
+              ? "border-mxp-line bg-mxp-card text-mxp-muted"
+              : "border-mxp-purple/40 bg-mxp-card text-mxp-purple"
+          }`}
+        >
+          {dayPlan?.startedAt ? "Matin ✓" : "☀️ Matin"}
+        </Link>
+        <Link
+          href="/focus"
+          className="rounded-xl border border-mxp-blue/40 bg-mxp-card px-3 py-2.5 text-center text-xs font-semibold text-mxp-blue"
+        >
+          ⏱ Focus
+        </Link>
+        <Link
+          href="/today/night"
+          className={`rounded-xl border px-3 py-2.5 text-center text-xs font-semibold ${
+            dayPlan?.reviewedAt
+              ? "border-mxp-line bg-mxp-card text-mxp-muted"
+              : "border-mxp-teal/40 bg-mxp-card text-mxp-teal"
+          }`}
+        >
+          {dayPlan?.reviewedAt ? "Soir ✓" : "🌙 Soir"}
+        </Link>
+      </div>
+
+      {goalAtRisk && (
+        <Link
+          href={`/goals/${goalAtRisk.id}`}
+          className="mt-3 block rounded-2xl border border-mxp-orange/50 bg-mxp-card px-5 py-3 text-sm"
+        >
+          <span className="font-semibold text-mxp-orange">Objectif à risque : </span>
+          {goalAtRisk.title} →
+        </Link>
+      )}
 
       <h1 className="mt-6 text-xl font-semibold">Aujourd&apos;hui</h1>
       <p className="text-sm capitalize text-mxp-muted">{dateLabel}</p>

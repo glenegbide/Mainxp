@@ -76,7 +76,8 @@ model MxUser {
   name             String
   timezone         String   @default("Europe/Zurich") // IANA; defines the user's "day"
   locale           String   @default("fr")
-  onboardingStage  String   @default("new") // new | bio_started | bio_done
+  onboardingStage  String   @default("new") // new | bio_done
+  occupation       String   @default("")
   coachTone        String   @default("balanced") // concise|detailed × soft|demanding presets
   notificationMode String   @default("normal") // quiet | normal | coach_me | beast
   quietHoursStart  Int? // hour 0-23, user timezone
@@ -100,6 +101,7 @@ model MxUser {
   gratitudeEntries  MxGratitudeEntry[]
   memories          MxMemory[]
   conversations     MxConversation[]
+  rewards           MxReward[]
 
   @@map("mainxp_users")
 }
@@ -360,6 +362,7 @@ model MxXpTransaction {
   reason         String
   multiplier     Float    @default(1)
   mainDelta      Int // MAINXP change (may be negative on reversal)
+  coinsDelta     Int      @default(0) // spendable Coins (rewards economy) — same ledger, same auditability
   attributeDeltas Json    @default("{}") // { "FOCUS": 15, … }
   idempotencyKey String?  @unique // "<sourceType>:<sourceId>:<event>" — blocks duplicates
   reversesId     String?  @unique // id of the transaction this row compensates
@@ -368,6 +371,20 @@ model MxXpTransaction {
   @@index([userId, createdAt])
   @@index([userId, sourceType])
   @@map("mainxp_xp_transactions")
+}
+
+model MxReward {
+  id            String   @id @default(cuid())
+  userId        String
+  user          MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String
+  costCoins     Int
+  redeemedCount Int      @default(0)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  @@index([userId, active])
+  @@map("mainxp_rewards")
 }
 
 model MxJournalEntry {

@@ -31,18 +31,31 @@ export function levelProgress(xp: number): LevelProgress {
 // ── Base award values (see docs/XP_SYSTEM.md; tuning changes go through the ledger,
 //    past transactions are never rewritten) ──
 export const XP_VALUES = {
-  MAIN_QUEST: { main: 100 },
-  DAILY_MISSION: { main: 25 },
-  SIDE_QUEST: { main: 8 },
-  BACKLOG: { main: 8 }, // completing an unscheduled task counts like a side quest
-  NON_NEGOTIABLE: { main: 20, discipline: 15 },
-  ALL_NON_NEGOTIABLES_BONUS: { main: 30, discipline: 20 },
-  FOCUS_PER_25MIN: { main: 15, focus: 15 },
-  HABIT_LOG: { main: 10, attribute: 8 },
-  JOURNAL: { main: 10, mind: 8 },
-  GRATITUDE: { main: 10, mind: 8 },
-  NIGHT_REVIEW: { main: 10, mind: 8 },
+  MAIN_QUEST: { main: 100, coins: 50 },
+  DAILY_MISSION: { main: 25, coins: 10 },
+  SIDE_QUEST: { main: 8, coins: 3 },
+  BACKLOG: { main: 8, coins: 3 }, // completing an unscheduled task counts like a side quest
+  NON_NEGOTIABLE: { main: 20, discipline: 15, coins: 10 },
+  ALL_NON_NEGOTIABLES_BONUS: { main: 30, discipline: 20, coins: 15 },
+  FOCUS_PER_25MIN: { main: 15, focus: 15, coins: 8 },
+  HABIT_LOG: { main: 10, attribute: 8, coins: 4 },
+  JOURNAL: { main: 10, mind: 8, coins: 4 },
+  GRATITUDE: { main: 10, mind: 8, coins: 4 },
+  MORNING_START: { main: 10, mind: 8, coins: 5 },
+  NIGHT_REVIEW: { main: 15, mind: 10, coins: 8 },
+  GOAL_COMPLETED: { main: 150, coins: 100 },
+  MILESTONE: { main: 40, strategy: 30, coins: 20 },
 } as const;
+
+/**
+ * Focus XP is verified server-side: only whole 25-minute blocks actually elapsed
+ * (capped at the planned duration) count. Ending a session early is honest — a
+ * session under one block earns nothing.
+ */
+export function focusBlocks(plannedMin: number, elapsedMin: number): number {
+  const verified = Math.max(0, Math.min(plannedMin, Math.floor(elapsedMin)));
+  return Math.floor(verified / 25);
+}
 
 /**
  * Hard mode (Part 18): an important task postponed repeatedly and finally done

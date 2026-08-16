@@ -8,11 +8,12 @@ Repository audit · architecture + docs suite · Prisma core schema · design to
 multi-user auth · navigation shell · Today page core · XP ledger + curve ·
 testing foundation (vitest). ✅ see BUILD_STATUS.md
 
-## Phase 1 — Core loop
-GET TO KNOW ME onboarding · North Star · Goals (+pace) · Projects/Milestones · Tasks
-full CRUD · Daily/Weekly Non-Negotiables · Morning Start · Night Review · Tomorrow prep
-· AI Coach basic (chat + Brain Dump) · WHAT NOW heuristic → AI · Focus mode · in-app
-notifications · streaks.
+## Phase 1 — Core loop (done)
+GET TO KNOW ME onboarding · North Star · Goals (+pace) · Projects/Milestones ·
+Morning Start · Night Review · Tomorrow prep · AI Coach chat · Focus mode · streaks ·
+Coins + real-life Rewards (Habitica-inspired mechanics, original implementation).
+Remaining for 1.x: Brain Dump structured extraction · weekly non-negotiables UI ·
+in-app notification inbox · WHAT NOW via AI.
 
 ## Phase 2 — Retention
 Habits · Routines · Weekly/Monthly reviews · stats · character progression visuals ·

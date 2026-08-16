@@ -15,6 +15,8 @@ export interface AwardInput {
   sourceId?: string;
   reason: string;
   mainDelta: number;
+  /** Spendable Coins (rewards economy). Positive on awards, negative on redemptions. */
+  coinsDelta?: number;
   attributeDeltas?: AttributeDeltas;
   multiplier?: number;
   /** Unique per source event, e.g. "task:<id>:completed". Replays become no-ops. */
@@ -25,6 +27,7 @@ export interface AwardInput {
 
 export interface XpTotals {
   main: number;
+  coins: number;
   attributes: Record<MxAttribute, number>;
 }
 
@@ -53,12 +56,13 @@ export async function awardXp(input: AwardInput) {
   }
 
   const mainDelta = scale(input.mainDelta, factor);
+  const coinsDelta = scale(input.coinsDelta ?? 0, factor);
   const attributeDeltas: Record<string, number> = {};
   for (const [attr, delta] of Object.entries(input.attributeDeltas ?? {})) {
     const scaled = scale(delta ?? 0, factor);
     if (scaled !== 0) attributeDeltas[attr] = scaled;
   }
-  if (mainDelta === 0 && Object.keys(attributeDeltas).length === 0) return null;
+  if (mainDelta === 0 && coinsDelta === 0 && Object.keys(attributeDeltas).length === 0) return null;
 
   try {
     return await prisma.mxXpTransaction.create({
@@ -69,6 +73,7 @@ export async function awardXp(input: AwardInput) {
         reason: input.reason,
         multiplier: factor,
         mainDelta,
+        coinsDelta,
         attributeDeltas,
         idempotencyKey: input.idempotencyKey,
       },
@@ -105,6 +110,7 @@ export async function reverseXp(userId: string, transactionId: string, reason: s
         sourceId: original.sourceId,
         reason,
         mainDelta: -original.mainDelta,
+        coinsDelta: -original.coinsDelta,
         attributeDeltas: negated,
         reversesId: original.id,
       },
@@ -119,7 +125,7 @@ export async function reverseXp(userId: string, transactionId: string, reason: s
 export async function xpTotals(userId: string): Promise<XpTotals> {
   const rows = await prisma.mxXpTransaction.findMany({
     where: { userId },
-    select: { mainDelta: true, attributeDeltas: true },
+    select: { mainDelta: true, coinsDelta: true, attributeDeltas: true },
   });
   const attributes = {
     STRENGTH: 0,
@@ -133,13 +139,15 @@ export async function xpTotals(userId: string): Promise<XpTotals> {
     SOCIAL: 0,
   } as Record<MxAttribute, number>;
   let main = 0;
+  let coins = 0;
   for (const row of rows) {
     main += row.mainDelta;
+    coins += row.coinsDelta;
     for (const [attr, delta] of Object.entries(
       (row.attributeDeltas as Record<string, number>) ?? {}
     )) {
       if (attr in attributes) attributes[attr as MxAttribute] += delta;
     }
   }
-  return { main: Math.max(0, main), attributes };
+  return { main: Math.max(0, main), coins: Math.max(0, coins), attributes };
 }

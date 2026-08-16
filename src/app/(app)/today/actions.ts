@@ -72,6 +72,7 @@ export async function completeTask(formData: FormData): Promise<void> {
         ? `Main Quest accomplie : ${task.title}`
         : `Tâche accomplie : ${task.title}`,
     mainDelta: base.main,
+    coinsDelta: base.coins,
     multiplier: hardModeMultiplier(task.postponeCount),
     idempotencyKey: `task:${task.id}:completed`,
     timezone: user.timezone,
@@ -150,6 +151,7 @@ export async function toggleNonNegotiable(formData: FormData): Promise<void> {
       sourceId: nn.id,
       reason: `Non-négociable tenu : ${nn.title}`,
       mainDelta: XP_VALUES.NON_NEGOTIABLE.main,
+      coinsDelta: XP_VALUES.NON_NEGOTIABLE.coins,
       attributeDeltas: { DISCIPLINE: XP_VALUES.NON_NEGOTIABLE.discipline },
       idempotencyKey: keptKey,
       timezone: user.timezone,
@@ -168,6 +170,7 @@ export async function toggleNonNegotiable(formData: FormData): Promise<void> {
         sourceType: "non_negotiable_bonus",
         reason: "Tous les non-négociables du jour tenus",
         mainDelta: XP_VALUES.ALL_NON_NEGOTIABLES_BONUS.main,
+        coinsDelta: XP_VALUES.ALL_NON_NEGOTIABLES_BONUS.coins,
         attributeDeltas: { DISCIPLINE: XP_VALUES.ALL_NON_NEGOTIABLES_BONUS.discipline },
         idempotencyKey: bonusKey,
         timezone: user.timezone,
