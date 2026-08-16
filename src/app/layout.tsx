@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Geist } from "next/font/google";
 import "./globals.css";
+import { NativeBridge } from "./components/NativeBridge";
 
 const geist = Geist({
   variable: "--font-geist",
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" className={`${geist.variable} ${display.variable} h-full antialiased`}>
       <body className="min-h-full bg-mxp-bg text-mxp-ink">
+        <NativeBridge />
         <div className="mxp-shell mx-auto min-h-screen w-full max-w-md border-x border-mxp-line">
           {children}
         </div>
