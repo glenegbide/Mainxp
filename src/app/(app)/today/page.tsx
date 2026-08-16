@@ -146,9 +146,9 @@ export default async function TodayPage() {
         </div>
         <div className="relative z-10 mt-4">
           <div className="flex justify-between text-[11px] font-medium text-white/85">
-            <span className="tracking-wide">MAINXP · {totals.main} XP</span>
+            <span className="tracking-wide">MAINXP</span>
             <span className="tabular-nums">
-              {lp.intoLevel}/{lp.neededForNext} → Niv. {lp.level + 1}
+              {lp.intoLevel}/{lp.neededForNext} → niv. {lp.level + 1}
             </span>
           </div>
           <div className="mxp-xpbar mt-1.5">
@@ -190,40 +190,30 @@ export default async function TodayPage() {
         </Link>
       )}
 
-      {/* ── Quick actions ── */}
+      {/* ── Quick actions: one quiet row, state shown by a check ── */}
       <div className="mt-3 grid grid-cols-4 gap-2">
-        <Link
-          href="/today/morning"
-          className={`rounded-xl border px-3 py-2.5 text-center text-xs font-semibold ${
-            dayPlan?.startedAt
-              ? "border-mxp-line bg-mxp-card text-mxp-muted"
-              : "border-mxp-purple/40 bg-mxp-card text-mxp-purple"
-          }`}
-        >
-          {dayPlan?.startedAt ? "Matin ✓" : "☀️ Matin"}
-        </Link>
-        <Link
-          href="/focus"
-          className="rounded-xl border border-mxp-blue/40 bg-mxp-card px-3 py-2.5 text-center text-xs font-semibold text-mxp-blue"
-        >
-          ⏱ Focus
-        </Link>
-        <Link
-          href="/habits"
-          className="rounded-xl border border-mxp-green/40 bg-mxp-card px-3 py-2.5 text-center text-xs font-semibold text-mxp-green"
-        >
-          ➕ Habitudes
-        </Link>
-        <Link
-          href="/today/night"
-          className={`rounded-xl border px-3 py-2.5 text-center text-xs font-semibold ${
-            dayPlan?.reviewedAt
-              ? "border-mxp-line bg-mxp-card text-mxp-muted"
-              : "border-mxp-teal/40 bg-mxp-card text-mxp-teal"
-          }`}
-        >
-          {dayPlan?.reviewedAt ? "Soir ✓" : "🌙 Soir"}
-        </Link>
+        {(
+          [
+            ["/today/morning", "☀️", "Matin", !!dayPlan?.startedAt],
+            ["/focus", "⏱️", "Focus", false],
+            ["/habits", "✚", "Habitudes", false],
+            ["/today/night", "🌙", "Soir", !!dayPlan?.reviewedAt],
+          ] as const
+        ).map(([href, icon, label, done]) => (
+          <Link
+            key={href}
+            href={href}
+            className={`mxp-card flex flex-col items-center gap-0.5 px-2 py-2.5 text-center text-[11px] font-semibold transition ${
+              done ? "text-mxp-muted" : "text-mxp-ink"
+            }`}
+          >
+            <span aria-hidden className={`text-base leading-none ${done ? "grayscale opacity-60" : ""}`}>
+              {icon}
+            </span>
+            {label}
+            {done ? " ✓" : ""}
+          </Link>
+        ))}
       </div>
 
       <Link
@@ -244,12 +234,17 @@ export default async function TodayPage() {
       )}
 
       <h1 className="mt-6 text-xl font-semibold">Aujourd&apos;hui</h1>
-      <p className="text-sm capitalize text-mxp-muted">{dateLabel}</p>
+      <p className="text-sm text-mxp-muted">
+        {dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)}
+      </p>
 
       {/* ── Comeback Quest ── */}
       {showComeback && (
         <section className="mxp-card mxp-quest mt-4 p-4">
-          <p className="mxp-label text-mxp-purple">Quête de retour · +40 XP</p>
+          <div className="flex items-baseline justify-between">
+            <p className="mxp-label text-mxp-purple">Quête de retour</p>
+            <span className="mxp-chip bg-mxp-purple-soft text-mxp-purple-deep">+40 XP</span>
+          </div>
           <p className="mt-1 text-sm">
             {awayDays} jours sans MAINXP. <strong>Aucune culpabilité</strong> — on
             reconstruit, c&apos;est dans le jeu.
@@ -325,9 +320,10 @@ export default async function TodayPage() {
 
       {/* ── Main Quest ── */}
       <section className="mt-4 mxp-card mxp-quest p-4">
-        <p className="mxp-label text-mxp-purple">
-          Main Quest · +100 XP
-        </p>
+        <div className="flex items-baseline justify-between">
+          <p className="mxp-label text-mxp-purple">⚡ Main Quest</p>
+          <span className="mxp-chip bg-mxp-purple-soft text-mxp-purple-deep">+100 XP</span>
+        </div>
         {mainQuest ? (
           <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
             <p
@@ -389,9 +385,10 @@ export default async function TodayPage() {
 
       {/* ── Daily Missions ── */}
       <section className="mt-4 mxp-card p-4">
-        <p className="mxp-label text-mxp-blue">
-          Missions du jour · 3–5 · +25 XP
-        </p>
+        <div className="flex items-baseline justify-between">
+          <p className="mxp-label text-mxp-blue">Missions du jour · 3–5</p>
+          <span className="mxp-chip bg-mxp-blue/10 text-mxp-blue">+25 XP</span>
+        </div>
         <TaskList tasks={missions} empty="Aucune mission pour l'instant." />
         {missions.filter((t) => t.status === "OPEN").length < 5 && (
           <form action={addTask} className="mt-3 flex gap-2">
@@ -413,9 +410,10 @@ export default async function TodayPage() {
 
       {/* ── Non-Negotiables ── */}
       <section className="mt-4 mxp-card p-4">
-        <p className="mxp-label text-mxp-green">
-          Non-négociables · +20 XP · Discipline
-        </p>
+        <div className="flex items-baseline justify-between">
+          <p className="mxp-label text-mxp-green">Non-négociables</p>
+          <span className="mxp-chip bg-mxp-green/10 text-mxp-green">+20 XP</span>
+        </div>
         {nonNegotiables.length === 0 && (
           <p className="mt-2 text-sm text-mxp-muted">
             3 à 7 engagements quotidiens que tu tiens quoi qu&apos;il arrive.
@@ -460,7 +458,7 @@ export default async function TodayPage() {
       {goodHabits.length > 0 && (
         <section className="mxp-card mt-4 p-4">
           <div className="flex items-baseline justify-between">
-            <p className="mxp-label text-mxp-green">Habitudes · +10 XP</p>
+            <p className="mxp-label text-mxp-green">Habitudes</p>
             <Link href="/habits" className="text-xs font-medium text-mxp-green">
               Gérer →
             </Link>
@@ -496,9 +494,10 @@ export default async function TodayPage() {
 
       {/* ── Side Quests ── */}
       <section className="mt-4 mb-6 mxp-card p-4">
-        <p className="mxp-label text-mxp-muted">
-          Side quests · optionnel · +8 XP
-        </p>
+        <div className="flex items-baseline justify-between">
+          <p className="mxp-label text-mxp-muted">Side quests · optionnel</p>
+          <span className="mxp-chip bg-mxp-bg text-mxp-muted">+8 XP</span>
+        </div>
         <TaskList tasks={sideQuests} empty="Rien ici — c'est très bien ainsi." />
         <form action={addTask} className="mt-3 flex gap-2">
           <input type="hidden" name="tier" value="SIDE_QUEST" />
