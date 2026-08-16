@@ -24,6 +24,18 @@ describe("xpForEvent — centralized XP policy (system of record)", () => {
       .toMatchObject({ mainDelta: 25 });
   });
 
+  it("caps mission farming: over-cap completions fall to side-quest value (P0 audit #1)", () => {
+    // 6th+ daily mission completed the same day: still recorded, but at
+    // side-quest value with side-quest diminishing — no unlimited +25 XP.
+    expect(
+      xpForEvent("task_completed", { taskId: "t6", title: "X", tier: "DAILY_MISSION", capExceeded: true })
+    ).toMatchObject({ mainDelta: 8, coinsDelta: 3, sourceType: "side_quest" });
+    // Under the cap nothing changes.
+    expect(
+      xpForEvent("task_completed", { taskId: "t1", title: "X", tier: "DAILY_MISSION", capExceeded: false })
+    ).toMatchObject({ mainDelta: 25, coinsDelta: 10, sourceType: "task" });
+  });
+
   it("applies hard mode from postpone count", () => {
     expect(xpForEvent("main_quest_completed", { postponeCount: 3 })).toMatchObject({ multiplier: 1.5 });
     expect(xpForEvent("main_quest_completed", { postponeCount: 6 })).toMatchObject({ multiplier: 2 });

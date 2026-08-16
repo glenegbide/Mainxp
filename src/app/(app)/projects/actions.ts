@@ -62,28 +62,33 @@ export async function toggleMilestone(formData: FormData): Promise<void> {
   });
   if (!milestone) return;
   const done = !milestone.done;
-  await prisma.mxMilestone.update({
+  const milestoneUpdate = prisma.mxMilestone.update({
     where: { id: milestone.id },
     data: { done, completedAt: done ? new Date() : null },
   });
-  await refreshProgress(milestone.projectId);
+  const baseKey = `milestone:${milestone.id}:completed`;
 
   if (done) {
+    // Generation-aware (ledger.ts): un-toggle then re-toggle earns the award
+    // back exactly once — net ledger state always equals the checkbox state.
+    const { countAwardGenerations } = await import("@/lib/mainxp/xp/ledger");
+    const generation = (await countAwardGenerations(baseKey)) + 1;
     await emitEvent(
       user,
       "milestone_completed",
       { milestoneId: milestone.id, title: milestone.title, projectId: milestone.projectId },
-      { idempotencyKey: `milestone:${milestone.id}:completed` }
+      {
+        idempotencyKey: baseKey,
+        eventIdempotencyKey: `${baseKey}:g${generation}`,
+        domainOps: [milestoneUpdate],
+      }
     );
   } else {
-    const tx = await prisma.mxXpTransaction.findUnique({
-      where: { idempotencyKey: `milestone:${milestone.id}:completed` },
-    });
-    if (tx) {
-      const { reverseXp } = await import("@/lib/mainxp/xp/ledger");
-      await reverseXp(user.id, tx.id, `Annulation du jalon : ${milestone.title}`);
-    }
+    await milestoneUpdate;
+    const { reverseLatestAward } = await import("@/lib/mainxp/xp/ledger");
+    await reverseLatestAward(user.id, baseKey, `Annulation du jalon : ${milestone.title}`);
   }
+  await refreshProgress(milestone.projectId);
   revalidatePath(`/projects/${milestone.projectId}`);
 }
 
@@ -110,7 +115,7 @@ export async function setProjectStatus(formData: FormData): Promise<void> {
   if (!STATUSES.includes(status)) return;
   const project = await prisma.mxProject.findFirst({ where: { id, userId: user.id } });
   if (!project) return;
-  await prisma.mxProject.update({
+  const statusUpdate = prisma.mxProject.update({
     where: { id: project.id },
     data: { status, completedAt: status === "COMPLETED" ? new Date() : null },
   });
@@ -119,8 +124,10 @@ export async function setProjectStatus(formData: FormData): Promise<void> {
       user,
       "project_completed",
       { projectId: project.id, title: project.title },
-      { idempotencyKey: `project:${project.id}:completed` }
+      { idempotencyKey: `project:${project.id}:completed`, domainOps: [statusUpdate] }
     );
+  } else {
+    await statusUpdate;
   }
   revalidatePath(`/projects/${id}`);
   revalidatePath("/projects");

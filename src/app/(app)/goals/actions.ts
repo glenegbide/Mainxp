@@ -59,15 +59,37 @@ export async function completeGoal(formData: FormData): Promise<void> {
   const id = s(formData.get("id"), 40);
   const goal = await prisma.mxGoal.findFirst({ where: { id, userId: user.id, status: "ACTIVE" } });
   if (!goal) return;
-  await prisma.mxGoal.update({
-    where: { id: goal.id },
-    data: { status: "COMPLETED", completedAt: new Date() },
-  });
+
+  // Honest evidence (addendum #3): a measurable goal whose logged progress
+  // reached its target is SYSTEM_RECORDED; declaring victory below target (or
+  // on an unmeasured goal) stays SELF_REPORTED and says so in the payload.
+  // Rare titles can later require the stronger level. No shame either way.
+  const measurable = goal.targetValue != null && goal.targetValue > 0;
+  const targetMet = measurable && goal.currentValue >= (goal.targetValue as number);
+
   await emitEvent(
     user,
     "goal_reached",
-    { goalId: goal.id, title: goal.title, lifeArea: goal.lifeArea },
-    { idempotencyKey: `goal:${goal.id}:completed` }
+    {
+      goalId: goal.id,
+      title: goal.title,
+      lifeArea: goal.lifeArea,
+      measurable,
+      targetMet: measurable ? targetMet : null,
+      declaredBelowTarget: measurable && !targetMet,
+      currentValue: goal.currentValue,
+      targetValue: goal.targetValue,
+    },
+    {
+      idempotencyKey: `goal:${goal.id}:completed`,
+      evidence: targetMet ? "SYSTEM_RECORDED" : "SELF_REPORTED",
+      domainOps: [
+        prisma.mxGoal.update({
+          where: { id: goal.id },
+          data: { status: "COMPLETED", completedAt: new Date() },
+        }),
+      ],
+    }
   );
   revalidatePath(`/goals/${goal.id}`);
   revalidatePath("/goals");

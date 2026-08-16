@@ -89,6 +89,71 @@ export async function awardXp(input: AwardInput) {
 }
 
 /**
+ * Award generations: a legitimate un-toggle reverses an award; a legitimate
+ * re-toggle must then earn it back — exactly once. A bare idempotency key
+ * cannot express that (the old key blocks the re-award forever), so keys grow
+ * a generation suffix: "nn:<id>:<day>", then "nn:<id>:<day>#2", "#3"…
+ * A new generation opens ONLY when every earlier one has been reversed, so the
+ * net ledger state always agrees with the final toggle state and rapid
+ * toggle-cycling can never net more than one live award.
+ */
+const genKey = (base: string, g: number) => (g === 1 ? base : `${base}#${g}`);
+const MAX_GENERATIONS = 60; // sanity bound; a 60-cycle day is not a use case
+
+async function isReversed(txId: string): Promise<boolean> {
+  const reversal = await prisma.mxXpTransaction.findUnique({ where: { reversesId: txId } });
+  return reversal !== null;
+}
+
+/**
+ * Award with re-award-after-reversal semantics. Same contract as awardXp:
+ * returns the created row, or null when a live (un-reversed) award already
+ * exists for this logical key.
+ */
+export async function awardXpReawardable(input: AwardInput & { idempotencyKey: string }) {
+  for (let g = 1; g <= MAX_GENERATIONS; g++) {
+    const key = genKey(input.idempotencyKey, g);
+    const existing = await prisma.mxXpTransaction.findUnique({ where: { idempotencyKey: key } });
+    if (!existing) return awardXp({ ...input, idempotencyKey: key });
+    if (!(await isReversed(existing.id))) return null; // still live — never double-award
+  }
+  return null;
+}
+
+/**
+ * How many award generations exist for a logical key (reversed or not).
+ * Deterministic input for event-row keys on re-toggles: the Nth keep of the
+ * same commitment is a distinct fact and gets a distinct event, while the
+ * ledger chain above keeps net XP equal to final state.
+ */
+export async function countAwardGenerations(baseKey: string): Promise<number> {
+  for (let g = 1; g <= MAX_GENERATIONS; g++) {
+    const tx = await prisma.mxXpTransaction.findUnique({
+      where: { idempotencyKey: genKey(baseKey, g) },
+    });
+    if (!tx) return g - 1;
+  }
+  return MAX_GENERATIONS;
+}
+
+/**
+ * Reverse the latest live generation of a logical key (used by un-toggles).
+ * No-op when nothing is awarded or the latest generation is already reversed.
+ */
+export async function reverseLatestAward(userId: string, baseKey: string, reason: string) {
+  let latest: { id: string } | null = null;
+  for (let g = 1; g <= MAX_GENERATIONS; g++) {
+    const tx = await prisma.mxXpTransaction.findUnique({
+      where: { idempotencyKey: genKey(baseKey, g) },
+    });
+    if (!tx) break;
+    latest = tx;
+  }
+  if (!latest) return null;
+  return reverseXp(userId, latest.id, reason); // reverseXp itself refuses double-reversal
+}
+
+/**
  * Reverse a transaction (Part 64): appends a compensating row. The unique
  * constraint on reversesId guarantees a transaction is reversed at most once.
  */

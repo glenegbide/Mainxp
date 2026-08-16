@@ -6,10 +6,10 @@
 // Server actions emit facts; they never award XP directly.
 
 import { prisma } from "@/lib/prisma";
-import type { MxUser } from "@/generated/prisma/client";
+import type { MxUser, Prisma } from "@/generated/prisma/client";
 import type { MxEvidence } from "@/generated/prisma/enums";
 import { dayKey } from "@/lib/mainxp/day";
-import { awardXp, type AwardInput } from "@/lib/mainxp/xp/ledger";
+import { awardXp, awardXpReawardable, type AwardInput } from "@/lib/mainxp/xp/ledger";
 import { diminishingFactor, hardModeMultiplier, XP_VALUES } from "@/lib/mainxp/xp/curve";
 import { LIFE_AREA_ATTRIBUTE } from "@/lib/mainxp/attributes";
 
@@ -61,12 +61,18 @@ export function xpForEvent(
         multiplier: hardModeMultiplier(Number(p.postponeCount ?? 0)),
       };
     case "task_completed": {
-      const tier = p.tier === "SIDE_QUEST" ? "SIDE_QUEST" : "DAILY_MISSION";
+      // Anti-farming: a day carries at most 5 mission-value awards. Beyond the
+      // cap (possible via carry-overs) the completion still counts — honestly,
+      // at side-quest value with side-quest diminishing.
+      const overCap = p.capExceeded === true;
+      const tier = p.tier === "SIDE_QUEST" || overCap ? "SIDE_QUEST" : "DAILY_MISSION";
       const base = XP_VALUES[tier];
       return {
         sourceType: tier === "SIDE_QUEST" ? "side_quest" : "task",
         sourceId: String(p.taskId ?? ""),
-        reason: `Tâche accomplie : ${title}`,
+        reason: overCap
+          ? `Tâche accomplie (plafond de missions atteint) : ${title}`
+          : `Tâche accomplie : ${title}`,
         mainDelta: base.main,
         coinsDelta: base.coins,
         multiplier: hardModeMultiplier(Number(p.postponeCount ?? 0)),
@@ -245,6 +251,22 @@ export interface EmitOptions {
    * keep working — and the event row stores it prefixed with "evt:".
    */
   idempotencyKey?: string;
+  /**
+   * Event-row key override for re-earnable actions (toggles): the Nth keep of
+   * a commitment is a new fact deserving its own event row, while the LEDGER
+   * key stays the logical base so generation-aware idempotency governs XP.
+   * Defaults to idempotencyKey.
+   */
+  eventIdempotencyKey?: string;
+  /**
+   * Domain mutations that must land atomically WITH the event (addendum #1:
+   * never DONE-without-event). Passed as un-awaited Prisma promises; they run
+   * in one transaction with the event insert, so either the fact and its state
+   * change both exist or neither does. On an idempotency replay the whole
+   * transaction rolls back — correct, because a replayed event means the
+   * domain change already committed the first time.
+   */
+  domainOps?: Prisma.PrismaPromise<unknown>[];
 }
 
 /**
@@ -259,19 +281,28 @@ export async function emitEvent(
   opts: EmitOptions = {}
 ) {
   const evidence: MxEvidence = opts.evidence ?? "SELF_REPORTED";
-  let event = null;
   let replay = false;
+  const eventCreate = prisma.mxEvent.create({
+    data: {
+      userId: user.id,
+      type,
+      payload,
+      evidence,
+      dayKey: dayKey(new Date(), user.timezone),
+      idempotencyKey:
+        opts.eventIdempotencyKey || opts.idempotencyKey
+          ? `evt:${opts.eventIdempotencyKey ?? opts.idempotencyKey}`
+          : undefined,
+    },
+  });
+  let event: Awaited<typeof eventCreate> | null = null;
   try {
-    event = await prisma.mxEvent.create({
-      data: {
-        userId: user.id,
-        type,
-        payload,
-        evidence,
-        dayKey: dayKey(new Date(), user.timezone),
-        idempotencyKey: opts.idempotencyKey ? `evt:${opts.idempotencyKey}` : undefined,
-      },
-    });
+    if (opts.domainOps?.length) {
+      const results = await prisma.$transaction([...opts.domainOps, eventCreate]);
+      event = results[results.length - 1] as Awaited<typeof eventCreate>;
+    } else {
+      event = await eventCreate;
+    }
   } catch (e: unknown) {
     if (typeof e === "object" && e !== null && "code" in e && e.code === "P2002") replay = true;
     else throw e;
@@ -279,17 +310,22 @@ export async function emitEvent(
 
   // Listener: XP ledger — same base key as before the event engine existed.
   // Runs on replays too: if a past award failed after its event was written,
-  // the retry self-heals; the ledger's own idempotency key makes double-award
-  // impossible either way.
+  // the retry self-heals. Keyed awards go through the generation-aware path so
+  // a legitimate reversal (un-toggle) can be legitimately re-earned — while a
+  // live award still blocks any double.
   const award = xpForEvent(type, payload);
   if (award) {
-    await awardXp({
+    const input = {
       ...award,
       userId: user.id,
       timezone: user.timezone,
       evidence,
-      idempotencyKey: opts.idempotencyKey,
-    });
+    };
+    if (opts.idempotencyKey) {
+      await awardXpReawardable({ ...input, idempotencyKey: opts.idempotencyKey });
+    } else {
+      await awardXp(input);
+    }
   }
   return replay ? null : event;
 }
