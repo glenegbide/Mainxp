@@ -61,7 +61,11 @@ with a `text-mxp-*` accent matching the section's meaning.
 - **Progress**: `.mxp-xpbar` (hero XP, travelling shine) and `.mxp-rail`
   (everything else) — both animate width, fill is an `<i>` element.
 - **Small parts**: `.mxp-check` (tap circle, green when `.on`), `.mxp-chip`
-  (pill badge), `.mxp-dot` (attribute bullet), `.mxp-label` (section header).
+  (pill badge — XP amounts, status like « Équipé »), `.mxp-dot` (attribute
+  bullet), `.mxp-label` (section header).
+- **Can't-afford buys**: the shop convention for an unaffordable purchase is a
+  disabled non-button — `cursor-not-allowed bg-mxp-bg text-mxp-muted` with the
+  gap spelled out (« Encore N ») — see `buyGear`/`redeemReward` call sites.
 - **Hero**: `.mxp-hero` — the purple gradient header with aurora + pixel-grid
   texture. There is exactly one hero, on Today. Don't spawn more.
 - **Shell**: pages live inside the `max-w-md` `.mxp-shell` column — design for
@@ -85,6 +89,12 @@ French first, tutoiement, no-shame: states are honest but never scolding
 ("Ta Main Quest n'a pas bougé" — a fact plus the highest-impact next action,
 not guilt). Empty states say what to do next. XP amounts are shown before the
 action (`+100 XP` chip), not as a surprise after.
+
+Economy rule that constrains design: **coins buy cosmetics and self-defined
+real-life rewards only — never XP, levels, or gameplay power** (the shop
+promises « Cosmétique uniquement »). Purchasables live on `/me` (gear shop)
+or `/me/rewards` (personal rewards); a new purchasable that would bend the
+cosmetics-only promise is a product decision — raise it, don't ship it.
 
 ## Evolving the design (the "feels off" workflow)
 
