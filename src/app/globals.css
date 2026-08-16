@@ -188,6 +188,54 @@ a.mxp-card:hover {
 .mxp-btn:hover { filter: brightness(1.06); }
 .mxp-btn:active { transform: scale(0.97); }
 .mxp-btn:disabled { cursor: not-allowed; filter: saturate(0.2) brightness(1.05); box-shadow: none; }
+.mxp-btn-teal {
+  background: linear-gradient(135deg, #14b8a6, #0f9488);
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.08), 0 8px 20px -10px rgba(20, 184, 166, 0.7);
+}
+.mxp-btn-blue {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.08), 0 8px 20px -10px rgba(59, 130, 246, 0.7);
+}
+.mxp-btn-gold {
+  background: linear-gradient(135deg, #d9a514, #b8860b);
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.08), 0 8px 20px -10px rgba(202, 138, 4, 0.7);
+}
+.mxp-btn-orange {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.08), 0 8px 20px -10px rgba(249, 115, 22, 0.7);
+}
+.mxp-btn-green {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.08), 0 8px 20px -10px rgba(16, 185, 129, 0.7);
+}
+
+/* Quiet inline action — for secondary moves that shouldn't shout (minimum day) */
+.mxp-quiet {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--mxp-muted);
+  padding: 6px 0 2px;
+  transition: color 0.15s;
+}
+.mxp-quiet:hover { color: var(--mxp-teal); }
+
+/* Attribute dot */
+.mxp-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 7px;
+  vertical-align: 1px;
+}
+
 .mxp-btn-ghost {
   border: 1px solid var(--mxp-line);
   cursor: pointer;

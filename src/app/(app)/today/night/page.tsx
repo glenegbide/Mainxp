@@ -105,7 +105,7 @@ export default async function NightPage() {
             className="mt-1 w-full mxp-input px-4 py-3 text-sm"
           />
         </label>
-        <button className="w-full rounded-xl bg-mxp-teal px-4 py-3 text-sm font-semibold text-white hover:opacity-90">
+        <button className="w-full mxp-btn mxp-btn-teal px-4 py-3 text-sm">
           Clore la journée &amp; préparer demain
         </button>
       </form>

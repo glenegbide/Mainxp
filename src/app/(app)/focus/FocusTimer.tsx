@@ -20,7 +20,7 @@ export function FocusTimer({ startedAtIso, plannedMin }: { startedAtIso: string;
   return (
     <div className="text-center">
       <p
-        className="text-5xl font-bold tabular-nums text-mxp-blue"
+        className="font-displaymx text-5xl font-bold tabular-nums text-mxp-blue"
         role="timer"
         aria-live="off"
       >

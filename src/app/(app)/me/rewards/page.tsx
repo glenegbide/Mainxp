@@ -57,7 +57,7 @@ export default async function RewardsPage() {
                       disabled={!affordable}
                       className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${
                         affordable
-                          ? "bg-mxp-gold text-white hover:opacity-90"
+                          ? "mxp-btn mxp-btn-gold"
                           : "cursor-not-allowed bg-mxp-bg text-mxp-muted"
                       }`}
                     >
@@ -102,7 +102,7 @@ export default async function RewardsPage() {
             placeholder="Prix en pièces (ex. 300)"
             className="w-full mxp-input px-4 py-2.5 text-sm"
           />
-          <button className="w-full rounded-xl bg-mxp-gold px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90">
+          <button className="w-full mxp-btn mxp-btn-gold px-4 py-2.5 text-sm">
             Ajouter
           </button>
         </form>

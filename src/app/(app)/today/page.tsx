@@ -228,7 +228,7 @@ export default async function TodayPage() {
 
       <Link
         href="/dump"
-        className="mt-2 block rounded-xl border border-mxp-purple/40 bg-mxp-card px-4 py-2.5 text-center text-xs font-semibold text-mxp-purple transition hover:bg-mxp-bg"
+        className="mt-2 block rounded-xl border border-dashed border-mxp-purple/40 px-4 py-2 text-center text-xs font-semibold text-mxp-purple transition hover:border-solid hover:bg-mxp-card"
       >
         🧠 Vide-tête — dis tout d&apos;un coup, je range
       </Link>
@@ -308,9 +308,9 @@ export default async function TodayPage() {
           </ul>
         </section>
       ) : (
-        <form action={activateMinimumDay} className="mt-3">
-          <button className="w-full rounded-xl border border-mxp-teal/40 bg-mxp-card px-3 py-2 text-xs font-semibold text-mxp-teal transition hover:bg-mxp-bg">
-            😮‍💨 Journée difficile ? Passe en journée minimum
+        <form action={activateMinimumDay} className="mt-2">
+          <button className="mxp-quiet">
+            Journée difficile ? → Passe en journée minimum
           </button>
         </form>
       )}

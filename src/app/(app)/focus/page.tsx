@@ -55,7 +55,7 @@ export default async function FocusPage() {
                 className="mt-1 w-full mxp-input px-3 py-2 text-sm"
               />
             </label>
-            <button className="w-full rounded-xl bg-mxp-blue px-4 py-3 text-sm font-semibold text-white hover:opacity-90">
+            <button className="w-full mxp-btn mxp-btn-blue px-4 py-3 text-sm">
               Terminer la session
             </button>
           </form>
@@ -107,7 +107,7 @@ export default async function FocusPage() {
                 </select>
               </label>
             )}
-            <button className="w-full rounded-xl bg-mxp-blue px-4 py-3 text-sm font-semibold text-white hover:opacity-90">
+            <button className="w-full mxp-btn mxp-btn-blue px-4 py-3 text-sm">
               Lancer le focus
             </button>
           </form>

@@ -88,7 +88,10 @@ export default async function ProgressPage() {
             return (
               <li key={attr.key}>
                 <div className="flex justify-between text-sm">
-                  <span>{attr.label}</span>
+                  <span>
+                    <span className={`mxp-dot ${attr.color}`} aria-hidden />
+                    {attr.label}
+                  </span>
                   <span className="tabular-nums text-mxp-muted">{value} XP</span>
                 </div>
                 <div className="mt-1 mxp-rail">

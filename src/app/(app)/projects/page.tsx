@@ -119,7 +119,7 @@ export default async function ProjectsPage() {
               </select>
             </label>
           )}
-          <button className="w-full rounded-xl bg-mxp-orange px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90">
+          <button className="w-full mxp-btn mxp-btn-orange px-4 py-2.5 text-sm">
             Créer le projet
           </button>
         </form>

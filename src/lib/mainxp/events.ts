@@ -259,7 +259,8 @@ export async function emitEvent(
   opts: EmitOptions = {}
 ) {
   const evidence: MxEvidence = opts.evidence ?? "SELF_REPORTED";
-  let event;
+  let event = null;
+  let replay = false;
   try {
     event = await prisma.mxEvent.create({
       data: {
@@ -272,11 +273,14 @@ export async function emitEvent(
       },
     });
   } catch (e: unknown) {
-    if (typeof e === "object" && e !== null && "code" in e && e.code === "P2002") return null;
-    throw e;
+    if (typeof e === "object" && e !== null && "code" in e && e.code === "P2002") replay = true;
+    else throw e;
   }
 
   // Listener: XP ledger — same base key as before the event engine existed.
+  // Runs on replays too: if a past award failed after its event was written,
+  // the retry self-heals; the ledger's own idempotency key makes double-award
+  // impossible either way.
   const award = xpForEvent(type, payload);
   if (award) {
     await awardXp({
@@ -287,5 +291,5 @@ export async function emitEvent(
       idempotencyKey: opts.idempotencyKey,
     });
   }
-  return event;
+  return replay ? null : event;
 }

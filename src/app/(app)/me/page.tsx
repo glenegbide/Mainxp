@@ -122,7 +122,7 @@ export default async function MePage() {
                       disabled={!affordable}
                       className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${
                         affordable
-                          ? "bg-mxp-gold text-white hover:opacity-90"
+                          ? "mxp-btn mxp-btn-gold"
                           : "cursor-not-allowed bg-mxp-bg text-mxp-muted"
                       }`}
                     >
