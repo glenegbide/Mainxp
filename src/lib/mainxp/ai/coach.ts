@@ -133,7 +133,8 @@ export async function askCoach(user: MxUser, text: string): Promise<CoachReply> 
       data: { updatedAt: new Date() },
     });
     return { ok: true };
-  } catch {
+  } catch (e) {
+    console.error("askCoach provider failure:", e instanceof Error ? e.message : e);
     return { ok: false, error: "provider" };
   }
 }

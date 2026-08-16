@@ -31,11 +31,12 @@ export default async function CoachPage({
         <section className="mt-4 mxp-card p-5">
           <p className="text-sm font-medium">Coach hors ligne.</p>
           <p className="mt-2 text-sm text-mxp-muted">
-            Aucune clé IA n&apos;est configurée (variable d&apos;environnement{" "}
-            <code className="rounded bg-mxp-bg px-1 py-0.5 text-xs">MAINXP_ANTHROPIC_API_KEY</code>,
-            côté serveur uniquement). Rien n&apos;est simulé : ajoute la clé et le coach
-            s&apos;active immédiatement — il connaît ton North Star, ta Main Quest, tes
-            objectifs et leur rythme.
+            Aucune clé IA n&apos;est configurée — ajoute{" "}
+            <code className="rounded bg-mxp-bg px-1 py-0.5 text-xs">MAINXP_GEMINI_API_KEY</code>{" "}
+            ou <code className="rounded bg-mxp-bg px-1 py-0.5 text-xs">MAINXP_ANTHROPIC_API_KEY</code>{" "}
+            (côté serveur uniquement) et le coach s&apos;active immédiatement. Ta mémoire
+            (conversations, souvenirs, contexte) vit dans TA base de données, pas chez le
+            fournisseur d&apos;IA — en changer ne perd rien.
           </p>
         </section>
       ) : (

@@ -18,7 +18,8 @@
    |---|---|
    | `DATABASE_URL` | Neon **pooled** connection string |
    | `DIRECT_DATABASE_URL` | Neon **direct** connection string |
-   | `MAINXP_ANTHROPIC_API_KEY` | *(optional)* your key from [console.anthropic.com](https://console.anthropic.com) — activates the AI coach |
+   | `MAINXP_GEMINI_API_KEY` | *(optional)* Gemini key ([aistudio.google.com](https://aistudio.google.com), free tier) — activates the AI coach |
+   | `MAINXP_ANTHROPIC_API_KEY` | *(optional, alternative)* Anthropic key — takes precedence if both set |
 
 3. Click **Deploy**. The build applies the committed migrations automatically
    (`scripts/ensure-db.mjs` → `prisma migrate deploy`) — no manual step.

@@ -15,9 +15,12 @@ interface AIProvider {
 }
 ```
 
-- Default implementation: Anthropic (`MAINXP_ANTHROPIC_API_KEY` env; never bundled to
-  client). Model choice per workload: cheap/fast model for extraction & classification,
-  strongest model for coaching/reasoning (Part 66).
+- Implementations: Anthropic (`MAINXP_ANTHROPIC_API_KEY`) and Gemini
+  (`MAINXP_GEMINI_API_KEY`, supporting AI Studio `AIza…` and Vertex Express `AQ.…`
+  keys). Anthropic wins when both are set; keys never bundled to client. Model
+  choice per workload: cheap/fast for extraction, strongest for coaching (Part 66).
+- Memory is provider-independent: conversations, MxMemory and all context live in
+  MAINXP's database and are assembled per request — switching providers loses nothing.
 - `getAIProvider()` returns `null` when unconfigured → every AI surface shows an honest
   "Coach offline" state. Nothing is faked.
 
