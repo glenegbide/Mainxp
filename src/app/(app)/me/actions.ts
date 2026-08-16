@@ -7,6 +7,7 @@ import { destroySession, requireMxUser } from "@/lib/mainxp/auth";
 import { xpTotals } from "@/lib/mainxp/xp/ledger";
 import { emitEvent } from "@/lib/mainxp/events";
 import { gearById, slotOf } from "@/lib/mainxp/gear";
+import { providerForKey } from "@/lib/mainxp/ai/provider";
 
 export async function logout(): Promise<void> {
   await destroySession();
@@ -22,6 +23,45 @@ export async function toggleRestMode(): Promise<void> {
   });
   revalidatePath("/me");
   revalidatePath("/today");
+}
+
+/**
+ * Personal AI key, set in-app — no server dashboard needed. The key is tested
+ * with a real provider call BEFORE being saved, so a saved key is a working
+ * key. Stored server-side in the user's own database; never sent to the client
+ * (the UI only ever shows a masked tail).
+ */
+export async function saveAiKey(formData: FormData): Promise<void> {
+  const user = await requireMxUser();
+  const key = String(formData.get("aiKey") ?? "").trim();
+  if (!key || key.length > 300 || /\s/.test(key)) redirect("/me?ai=invalid#coach-ia");
+
+  let works = false;
+  try {
+    const result = await providerForKey(key).chat({
+      system: "Réponds uniquement « OK ».",
+      messages: [{ role: "user", content: "ping" }],
+      maxTokens: 16,
+    });
+    works = result.text.length > 0;
+  } catch {
+    works = false;
+  }
+  if (!works) redirect("/me?ai=invalid#coach-ia");
+
+  await prisma.mxUser.update({ where: { id: user.id }, data: { aiKey: key } });
+  revalidatePath("/me");
+  revalidatePath("/coach");
+  revalidatePath("/dump");
+  redirect("/me?ai=ok#coach-ia");
+}
+
+export async function removeAiKey(): Promise<void> {
+  const user = await requireMxUser();
+  await prisma.mxUser.update({ where: { id: user.id }, data: { aiKey: null } });
+  revalidatePath("/me");
+  revalidatePath("/coach");
+  revalidatePath("/dump");
 }
 
 export async function buyGear(formData: FormData): Promise<void> {

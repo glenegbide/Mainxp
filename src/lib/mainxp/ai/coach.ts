@@ -81,7 +81,7 @@ export interface CoachReply {
 
 /** Persist the user message, call the provider, persist the reply. */
 export async function askCoach(user: MxUser, text: string): Promise<CoachReply> {
-  const provider = getAIProvider();
+  const provider = getAIProvider(user.aiKey);
   if (!provider) return { ok: false, error: "offline" };
 
   let conversation = await prisma.mxConversation.findFirst({

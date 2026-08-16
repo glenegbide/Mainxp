@@ -7,11 +7,17 @@ import { levelProgress } from "@/lib/mainxp/xp/curve";
 import { earnedTitles, ROMAN } from "@/lib/mainxp/titles";
 import { GEAR_CATALOG } from "@/lib/mainxp/gear";
 import { PixelHero } from "../../components/PixelHero";
-import { buyGear, logout, toggleGear, toggleRestMode } from "./actions";
+import { providerNameForKey } from "@/lib/mainxp/ai/provider";
+import { buyGear, logout, removeAiKey, saveAiKey, toggleGear, toggleRestMode } from "./actions";
 
-export default async function MePage() {
+export default async function MePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ai?: string }>;
+}) {
   const user = await getMxUser();
   if (!user) redirect("/login");
+  const { ai } = await searchParams;
   const [totals, titles, gearOwned] = await Promise.all([
     xpTotals(user.id),
     earnedTitles(user.id),
@@ -134,6 +140,55 @@ export default async function MePage() {
             );
           })}
         </ul>
+      </section>
+
+      {/* ── Personal AI key: tested live before saving, stored server-side ── */}
+      <section id="coach-ia" className="mxp-card mt-4 p-4">
+        <p className="mxp-label text-mxp-purple">Coach IA</p>
+        {user.aiKey ? (
+          <>
+            <p className="mt-2 text-sm font-medium">
+              ✅ Coach actif — {providerNameForKey(user.aiKey)}
+            </p>
+            <p className="mt-1 text-xs text-mxp-muted">
+              Clé …{user.aiKey.slice(-4)} vérifiée et stockée côté serveur. Ta mémoire vit
+              dans ta base de données — changer de clé ou de fournisseur ne perd rien.
+            </p>
+            {ai === "ok" && (
+              <p className="mt-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-medium text-mxp-green">
+                Clé testée et enregistrée — le coach est en ligne.
+              </p>
+            )}
+            <form action={removeAiKey} className="mt-3">
+              <button className="mxp-btn-ghost px-3 py-1.5 text-xs">Retirer la clé</button>
+            </form>
+          </>
+        ) : (
+          <>
+            <p className="mt-1 text-xs text-mxp-muted">
+              Colle une clé Gemini (gratuite — aistudio.google.com) ou Claude
+              (console.anthropic.com). Elle est testée en direct avant d&apos;être
+              enregistrée, côté serveur uniquement — jamais visible dans l&apos;app.
+            </p>
+            {ai === "invalid" && (
+              <p className="mt-2 rounded-xl bg-red-50 px-3 py-2 text-xs font-medium text-mxp-red">
+                Cette clé n&apos;a pas fonctionné chez le fournisseur — vérifie-la et
+                réessaie.
+              </p>
+            )}
+            <form action={saveAiKey} className="mt-3 flex gap-2">
+              <input
+                type="password"
+                name="aiKey"
+                required
+                autoComplete="off"
+                placeholder="AIza… / AQ.… / sk-ant-…"
+                className="min-w-0 flex-1 mxp-input px-3 py-2.5 text-sm"
+              />
+              <button className="mxp-btn px-4 py-2.5 text-sm">Tester &amp; activer</button>
+            </form>
+          </>
+        )}
       </section>
 
       {/* ── Recovery mode ── */}

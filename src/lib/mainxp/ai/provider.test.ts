@@ -25,4 +25,14 @@ describe("AI provider selection (memory lives in OUR database either way)", () =
     process.env.MAINXP_ANTHROPIC_API_KEY = "sk-ant-test";
     expect(getAIProvider()?.constructor.name).toBe("AnthropicProvider");
   });
+
+  it("lets the user's in-app key beat env, routed by key shape", () => {
+    reset();
+    process.env.MAINXP_ANTHROPIC_API_KEY = "sk-ant-env";
+    expect(getAIProvider("AIzaUser")?.constructor.name).toBe("GeminiProvider");
+    expect(getAIProvider("AQ.user")?.constructor.name).toBe("GeminiProvider");
+    expect(getAIProvider("sk-ant-user")?.constructor.name).toBe("AnthropicProvider");
+    // no user key → env still applies
+    expect(getAIProvider(null)?.constructor.name).toBe("AnthropicProvider");
+  });
 });

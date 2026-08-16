@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
@@ -13,7 +14,7 @@ export default async function CoachPage({
   const user = await getMxUser();
   if (!user) redirect("/login");
   const { error } = await searchParams;
-  const configured = FLAGS.AI_COACH && getAIProvider() !== null;
+  const configured = FLAGS.AI_COACH && getAIProvider(user.aiKey) !== null;
 
   const conversation = configured
     ? await prisma.mxConversation.findFirst({
@@ -31,13 +32,15 @@ export default async function CoachPage({
         <section className="mt-4 mxp-card p-5">
           <p className="text-sm font-medium">Coach hors ligne.</p>
           <p className="mt-2 text-sm text-mxp-muted">
-            Aucune clé IA n&apos;est configurée — ajoute{" "}
-            <code className="rounded bg-mxp-bg px-1 py-0.5 text-xs">MAINXP_GEMINI_API_KEY</code>{" "}
-            ou <code className="rounded bg-mxp-bg px-1 py-0.5 text-xs">MAINXP_ANTHROPIC_API_KEY</code>{" "}
-            (côté serveur uniquement) et le coach s&apos;active immédiatement. Ta mémoire
-            (conversations, souvenirs, contexte) vit dans TA base de données, pas chez le
-            fournisseur d&apos;IA — en changer ne perd rien.
+            Aucune clé IA n&apos;est configurée. Colle ta clé (gratuite avec Gemini, ou
+            Claude) dans les réglages — elle est testée puis stockée côté serveur, et le
+            coach s&apos;active immédiatement. Ta mémoire (conversations, souvenirs,
+            contexte) vit dans TA base de données, pas chez le fournisseur d&apos;IA — en
+            changer ne perd rien.
           </p>
+          <Link href="/me#coach-ia" className="mxp-btn mt-4 inline-block px-4 py-2.5 text-sm">
+            Configurer ma clé IA
+          </Link>
         </section>
       ) : (
         <>

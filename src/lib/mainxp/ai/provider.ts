@@ -40,11 +40,24 @@ const RETRYABLE = new Set([429, 500, 503, 529]);
 
 async function fetchWithRetry(url: string, init: RequestInit, attempts = 3): Promise<Response> {
   let lastRes: Response | null = null;
+  let waitMs = 0;
   for (let attempt = 0; attempt < attempts; attempt++) {
-    if (attempt > 0) await new Promise((r) => setTimeout(r, 1500 * 2 ** (attempt - 1)));
+    if (attempt > 0) await new Promise((r) => setTimeout(r, waitMs));
     const res = await fetch(url, init);
     if (res.ok || !RETRYABLE.has(res.status)) return res;
     lastRes = res;
+    // Free tiers name their own comeback delay — Gemini in the error body
+    // ("Please retry in 7.9s"), others in a Retry-After header. Honor it up to
+    // 20s so a quota blip one retry away doesn't surface as an error.
+    let hinted = Number(res.headers.get("retry-after"));
+    if (!Number.isFinite(hinted) || hinted <= 0) {
+      const body = await res.clone().text().catch(() => "");
+      hinted = Number(/retry in (\d+(?:\.\d+)?)s/i.exec(body)?.[1]);
+    }
+    waitMs =
+      Number.isFinite(hinted) && hinted > 0
+        ? Math.min(hinted * 1000 + 500, 20000)
+        : 1500 * 2 ** attempt;
   }
   return lastRes!;
 }
@@ -161,11 +174,24 @@ class GeminiProvider implements AIProvider {
   }
 }
 
+/** Anthropic keys are self-identifying ("sk-ant-…"); everything else is Gemini
+ * (AI Studio "AIza…" and Vertex Express "AQ.…" both work on the Gemini host). */
+export function providerForKey(key: string): AIProvider {
+  return key.startsWith("sk-ant-") ? new AnthropicProvider(key) : new GeminiProvider(key);
+}
+
+/** Human name for the provider a key belongs to — for settings UI only. */
+export function providerNameForKey(key: string): string {
+  return key.startsWith("sk-ant-") ? "Claude (Anthropic)" : "Gemini (Google)";
+}
+
 /**
- * Provider selection: Anthropic key wins when both are set, then Gemini.
- * Null when neither is configured — callers must handle it honestly.
+ * Provider selection: the user's own in-app key wins (no server config needed),
+ * then env — Anthropic first, then Gemini.
+ * Null when nothing is configured — callers must handle it honestly.
  */
-export function getAIProvider(): AIProvider | null {
+export function getAIProvider(userKey?: string | null): AIProvider | null {
+  if (userKey) return providerForKey(userKey);
   const anthropicKey = process.env.MAINXP_ANTHROPIC_API_KEY;
   if (anthropicKey) return new AnthropicProvider(anthropicKey);
   const geminiKey = process.env.MAINXP_GEMINI_API_KEY;

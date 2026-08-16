@@ -13,7 +13,7 @@ export default async function DumpPage({
   const user = await getMxUser();
   if (!user) redirect("/login");
   const { p, error } = await searchParams;
-  const configured = getAIProvider() !== null;
+  const configured = getAIProvider(user.aiKey) !== null;
   const proposals = p ? decodeProposals(p) : [];
 
   return (
@@ -29,10 +29,11 @@ export default async function DumpPage({
         <section className="mxp-card mt-4 p-5">
           <p className="text-sm font-medium">Vide-tête hors ligne.</p>
           <p className="mt-2 text-sm text-mxp-muted">
-            Cette fonction utilise l&apos;IA — ajoute{" "}
-            <code className="rounded bg-mxp-bg px-1 py-0.5 text-xs">MAINXP_GEMINI_API_KEY</code>{" "}
-            ou <code className="rounded bg-mxp-bg px-1 py-0.5 text-xs">MAINXP_ANTHROPIC_API_KEY</code>{" "}
-            côté serveur et le tri devient automatique.
+            Cette fonction utilise l&apos;IA. Ajoute ta clé (gratuite avec Gemini) dans{" "}
+            <Link href="/me" className="font-semibold text-mxp-purple underline">
+              Moi → Coach IA
+            </Link>{" "}
+            et le tri devient automatique.
           </p>
         </section>
       ) : proposals.length > 0 ? (

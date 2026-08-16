@@ -18,8 +18,13 @@
    |---|---|
    | `DATABASE_URL` | Neon **pooled** connection string |
    | `DIRECT_DATABASE_URL` | Neon **direct** connection string |
-   | `MAINXP_GEMINI_API_KEY` | *(optional)* Gemini key ([aistudio.google.com](https://aistudio.google.com), free tier) — activates the AI coach |
+   | `MAINXP_GEMINI_API_KEY` | *(optional)* Gemini key ([aistudio.google.com](https://aistudio.google.com), free tier) — server-wide default for the AI coach |
    | `MAINXP_ANTHROPIC_API_KEY` | *(optional, alternative)* Anthropic key — takes precedence if both set |
+
+   **No env keys needed for the coach**: each user can paste their own key
+   in-app (**Moi → Coach IA**) — it's tested live against the provider before
+   being saved (server-side, per user) and overrides any env key. Env keys
+   remain as a server-wide default/fallback.
 
 3. Click **Deploy**. The build applies the committed migrations automatically
    (`scripts/ensure-db.mjs` → `prisma migrate deploy`) — no manual step.

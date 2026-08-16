@@ -15,10 +15,10 @@ import {
 } from "@/lib/mainxp/braindump";
 
 export async function processDump(formData: FormData): Promise<void> {
-  await requireMxUser();
+  const user = await requireMxUser();
   const text = String(formData.get("text") ?? "").trim().slice(0, 3000);
   if (!text) return;
-  const provider = getAIProvider();
+  const provider = getAIProvider(user.aiKey);
   if (!provider) redirect("/dump?error=offline");
 
   let proposals;

@@ -92,6 +92,7 @@ model MxUser {
   quietHoursStart  Int? // hour 0-23, user timezone
   quietHoursEnd    Int?
   restMode         Boolean  @default(false) // "Récupération" — pauses élan decay, never punishes rest
+  aiKey            String? // personal AI provider key (server-side only, set in-app; overrides env)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
