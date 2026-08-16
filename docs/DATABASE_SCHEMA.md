@@ -8,6 +8,7 @@ self-identifying and collision-proof if the schema ever shares a database.
 
 | Model | Table | Purpose |
 |---|---|---|
+| MxEvent | mainxp_events | **System of record**: one canonical event per real-life action (type, payload, evidence, dayKey, idempotency) |
 | MxUser | mainxp_users | Account: email, scrypt hash, name, timezone, locale, onboarding state |
 | MxSession | mainxp_sessions | Hashed session tokens, expiry |
 | MxNorthStar | mainxp_north_stars | Why, values, future self, 1-y vision, 90-d mission, season, priorities, rules |

@@ -4,12 +4,19 @@ An AI life OS wrapped inside a real-life RPG. **Your life is the Main Quest.**
 The full plan lives in `docs/` — read `docs/BUILD_STATUS.md` first, then the
 system doc for whatever you touch (XP_SYSTEM, GOAL_SYSTEM, COACH_SYSTEM, …).
 
+> **MAINXP succeeds when the user closes the app and does something useful in
+> real life.** Never optimize for time-in-app.
+
 ## Non-negotiable product rules
 
 1. **Everyone starts at zero.** Bio informs the AI; it never awards XP.
-2. **XP/Coins only through the ledger** (`src/lib/mainxp/xp/ledger.ts`):
-   append-only `MxXpTransaction` rows, idempotency keys against duplicates,
-   compensating rows for reversals. Never update totals directly.
+2. **SYSTEM OF RECORD**: every meaningful action emits ONE canonical `MxEvent`
+   via `emitEvent()` (`src/lib/mainxp/events.ts`); the XP ledger is a listener
+   (`xpForEvent`). Server actions NEVER call `awardXp` directly, and no fact is
+   updated independently in several places. Ledger stays append-only:
+   idempotency keys against duplicates, compensating rows for reversals.
+   Evidence level (SELF_REPORTED / SYSTEM_RECORDED / VERIFIED) rides on every
+   event — informational, never accusatory.
 3. **No shame.** Coach copy uses evidence and numbers, never judgment.
 4. **Never fake capability.** No AI key → honest offline state. No pretend
    bank sync or phone monitoring. Placeholders are clearly labeled.
@@ -27,9 +34,15 @@ system doc for whatever you touch (XP_SYSTEM, GOAL_SYSTEM, COACH_SYSTEM, …).
 - Stack: Next.js 16 App Router · TS · Tailwind v4 · Prisma 7 (`prisma-client`
   generator → `src/generated/prisma`) · PostgreSQL. Server Actions for
   mutations; pages are dynamic (session cookie); no `use cache` on user data.
-- Prisma models prefixed `Mx`, tables `mainxp_*`. Schema changes: additive via
-  `prisma db push` for now (build runs `scripts/ensure-db.mjs`); switch to
-  `prisma migrate` before real users.
+- Prisma models prefixed `Mx`, tables `mainxp_*`. Schema changes ship ONLY as
+  migrations (`npm run db:migrate`, history in `prisma/migrations/`; deploys
+  run `migrate deploy` via `scripts/ensure-db.mjs`, Neon-safe through
+  `DIRECT_DATABASE_URL`). Never hand-edit production tables.
+- Hard caps (never exceeded by UI or AI): 1 Main Quest · 3–5 Daily Missions ·
+  3–7 Non-Negotiables per day. Overflow goes to Side Quests/Backlog.
+- Feature flags in `src/lib/mainxp/flags.ts` gate unfinished modules.
+- New UI strings go through `src/lib/mainxp/i18n.ts` keys (French first);
+  existing screens migrate opportunistically.
 - Design system: tokens + `mxp-*` classes in `src/app/globals.css` (light
   mode, purple identity, Part 58 color semantics). Display face: Bricolage
   Grotesque; body: Geist. Original pixel hero: `src/app/components/PixelHero.tsx`

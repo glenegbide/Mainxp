@@ -36,3 +36,21 @@ timing. Numbers, never shame: "CHF 300 restaurant budget, CHF 438 spent → CHF 
 WEALTH XP from: staying inside budget for a period, debt reduction events, savings
 contributions, income growth — via ledger with idempotent source events. Never from
 merely entering data.
+
+## Transaction reconciliation (addendum #15, P3)
+
+Receipt CHF 82 and bank transaction CHF 82 are the SAME expense. Match on
+amount + merchant + date + currency; ask the user when uncertain. No
+double-counting, ever.
+
+## Cash-flow forecast (addendum #16, P3)
+
+Today / 7-day / 30-day projected balance from expected income, rent, bills,
+debt, subscriptions and planned spending — with early warnings ("balance could
+fall below your safety buffer around Aug 27").
+
+## Money Defense Mode (addendum #17, P3)
+
+When finances tighten: prioritize essentials, upcoming bills, debt, collecting
+income and revenue-producing actions; stop suggesting monetary rewards
+(the rewards engine already prefers non-monetary suggestions).

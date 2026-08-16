@@ -57,3 +57,21 @@ any record is created. Duplicate suggestion → idempotency check before insert.
 - Eval suite (Part 67) lives in TEST_PLAN.md: no hallucinated memories, no shaming, no
   invented balances, no duplicate tasks, no XP awards outside services, symbolic
   numerology never treated as fact.
+
+## Brain Dump is a primary input surface (addendum #18, P2)
+
+The user should almost never navigate five menus. One utterance ("45 francs de
+parking, appeler Paul demain, idée de club de course, stressé par le loyer,
+BJJ fait") → typed suggestions (expense / reminder / idea / journal context /
+workout) → **CONFIRM ALL**. Each confirmation emits its canonical event.
+
+## Voice mode (addendum #19, P5)
+
+"MAINXP, what's next / log 60 francs / I finished training / brain dump" —
+same tools, transcription in front. Architecture-ready via AIProvider.
+
+## AI mission caps (addendum #20) — enforced invariant
+
+The AI (and the UI) can never exceed: 1 Main Quest · 3–5 Daily Missions ·
+3–7 Non-Negotiables. Everything else goes to Side Quests / Backlog. Enforced
+in server actions; also stated in the coach prompt.

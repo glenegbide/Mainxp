@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireMxUser } from "@/lib/mainxp/auth";
-import { awardXp } from "@/lib/mainxp/xp/ledger";
-import { focusBlocks, XP_VALUES } from "@/lib/mainxp/xp/curve";
+import { emitEvent } from "@/lib/mainxp/events";
+import { focusBlocks } from "@/lib/mainxp/xp/curve";
 
 const ALLOWED = [25, 50, 90];
 
@@ -51,17 +51,13 @@ export async function endFocus(formData: FormData): Promise<void> {
   });
 
   if (blocks > 0) {
-    await awardXp({
-      userId: user.id,
-      sourceType: "focus",
-      sourceId: session.id,
-      reason: `Session focus : ${blocks * 25} min vérifiées`,
-      mainDelta: XP_VALUES.FOCUS_PER_25MIN.main * blocks,
-      coinsDelta: XP_VALUES.FOCUS_PER_25MIN.coins * blocks,
-      attributeDeltas: { FOCUS: XP_VALUES.FOCUS_PER_25MIN.focus * blocks },
-      idempotencyKey: `focus:${session.id}:completed`,
-      timezone: user.timezone,
-    });
+    // Server-timed → SYSTEM_RECORDED evidence (docs/XP_SYSTEM.md).
+    await emitEvent(
+      user,
+      "focus_completed",
+      { sessionId: session.id, blocks, plannedMin: session.plannedMin, interruptions },
+      { idempotencyKey: `focus:${session.id}:completed`, evidence: "SYSTEM_RECORDED" }
+    );
   }
   revalidatePath("/focus");
   revalidatePath("/today");

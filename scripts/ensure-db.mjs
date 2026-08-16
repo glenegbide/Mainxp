@@ -1,13 +1,14 @@
-// Creates/updates the database schema at build time when DATABASE_URL is set.
-// Lets a Vercel deploy work end-to-end with zero manual migration steps.
-// Once real user data exists, switch to `prisma migrate` (docs/DATABASE_SCHEMA.md).
+import "dotenv/config";
+// Applies pending migrations at build time when a database is configured.
+// Uses DIRECT_DATABASE_URL when present (Neon: non-pooled) via prisma.config.ts.
+// Rule (CLAUDE.md): production tables change ONLY through migration history.
 import { spawnSync } from "node:child_process";
 
-if (!process.env.DATABASE_URL) {
-  console.log("ensure-db: DATABASE_URL not set — skipping prisma db push.");
+if (!process.env.DATABASE_URL && !process.env.DIRECT_DATABASE_URL) {
+  console.log("ensure-db: no database configured — skipping prisma migrate deploy.");
   process.exit(0);
 }
-const result = spawnSync("npx", ["prisma", "db", "push", "--skip-generate"], {
+const result = spawnSync("npx", ["prisma", "migrate", "deploy"], {
   stdio: "inherit",
   env: process.env,
 });

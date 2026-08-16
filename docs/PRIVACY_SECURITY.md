@@ -26,3 +26,9 @@ AI memory, spirituality. Treated accordingly from Phase 0.
 - Audit log (`MxAuditLog`) for sensitive operations (Phase 2+).
 - AI provider: data sent only to the configured provider, per its DPA; no training on
   user data without explicit consent.
+
+## Club & social safety (addendum #28, architect now, build P4)
+
+Clubs ship only with: block user, leave club, remove member, report content,
+mute, private/public visibility, invitation controls. The social schema must
+reserve these capabilities from its first migration.

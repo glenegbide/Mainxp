@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireMxUser } from "@/lib/mainxp/auth";
 import { dayKey, weekKey } from "@/lib/mainxp/day";
-import { awardXp } from "@/lib/mainxp/xp/ledger";
+import { emitEvent } from "@/lib/mainxp/events";
 
 const s = (v: FormDataEntryValue | null, max = 1000) => String(v ?? "").trim().slice(0, max);
 
@@ -34,15 +34,11 @@ export async function saveWeeklyReview(formData: FormData): Promise<void> {
     });
   }
 
-  await awardXp({
-    userId: user.id,
-    sourceType: "weekly_review",
-    reason: `Revue hebdomadaire ${week}`,
-    mainDelta: 25,
-    coinsDelta: 12,
-    attributeDeltas: { MIND: 15 },
-    idempotencyKey: `weekly:${user.id}:${week}`,
-    timezone: user.timezone,
-  });
+  await emitEvent(
+    user,
+    "weekly_review_completed",
+    { week },
+    { idempotencyKey: `weekly:${user.id}:${week}` }
+  );
   redirect("/progress");
 }

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
 import { getAIProvider } from "@/lib/mainxp/ai/provider";
+import { FLAGS } from "@/lib/mainxp/flags";
 import { sendToCoach } from "./actions";
 
 export default async function CoachPage({
@@ -12,7 +13,7 @@ export default async function CoachPage({
   const user = await getMxUser();
   if (!user) redirect("/login");
   const { error } = await searchParams;
-  const configured = getAIProvider() !== null;
+  const configured = FLAGS.AI_COACH && getAIProvider() !== null;
 
   const conversation = configured
     ? await prisma.mxConversation.findFirst({

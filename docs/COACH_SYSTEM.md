@@ -39,3 +39,39 @@ settings and injected into the system prompt.
   uncertain ones.
 - **GET TO KNOW ME** (Part 4): progressive onboarding conversation — never 80 questions
   at signup; identity → situation → work → goals → problems → preferences over days.
+
+## Priority Conflict Engine (addendum #5) — prompt-level now, engine in P2
+
+Goals compete for finite time/money/energy/attention. The coach names the
+conflict with numbers ("your goals need ~72 h/week; you realistically have
+~46") and offers exactly four moves: **Reduce / Pause / Delegate / Extend
+deadline**. The dedicated capacity model (tracked available hours, sleep,
+commute, recovery) is Phase 2; until then the rule lives in the system prompt.
+
+## Capacity rule (addendum #6)
+
+Never generate a daily plan exceeding realistic available capacity. Enforced in
+the prompt today; enforced by the planner against the capacity model in P2.
+
+## Intervention discipline (addendum #10) — implemented in prompt
+
+Silence can be intelligent. No intervention just because one is possible; the
+bar is "is this useful enough to interrupt this person?" — applies doubly to
+future push notifications.
+
+## Explainability (addendum #11) — implemented in prompt
+
+Important recommendations carry WHY THIS: 1–3 measured facts (goal pace,
+deadline distance, time available). Trust comes from visible reasoning.
+
+## Confidence (addendum #12) — implemented in prompt
+
+The coach says when it doesn't know ("only 4 observations — not confident
+enough to add this to your Playbook"). Hypotheses are never presented as facts.
+
+## Corrections & memory scopes (addendum #13–14) — implemented
+
+User corrections are stored via `[RETENIR:scope]` tags parsed out of replies
+(`src/lib/mainxp/memory.ts`) into `MxMemory` with scope
+permanent / long_term / temporary (7 d) / immediate (24 h); expired memories
+drop out of context automatically.

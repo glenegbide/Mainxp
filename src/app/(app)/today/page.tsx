@@ -17,6 +17,7 @@ import {
   setMainQuest,
   toggleNonNegotiable,
 } from "./actions";
+import { addTaskNote } from "./actions";
 import { tapHabit } from "../habits/actions";
 
 export default async function TodayPage() {
@@ -234,9 +235,9 @@ export default async function TodayPage() {
           Main Quest · +100 XP
         </p>
         {mainQuest ? (
-          <div className="mt-2 flex items-start justify-between gap-3">
+          <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
             <p
-              className={`flex-1 text-sm font-medium ${
+              className={`min-w-0 flex-1 text-sm font-medium ${
                 mainQuest.status === "DONE" ? "text-mxp-muted line-through" : ""
               }`}
             >
@@ -254,6 +255,26 @@ export default async function TodayPage() {
                 ✅
               </span>
             )}
+            {mainQuest.status === "DONE" &&
+              (mainQuest.notes ? (
+                <p className="w-full rounded-lg bg-mxp-bg px-3 py-1.5 text-xs italic text-mxp-muted">
+                  📝 {mainQuest.notes}
+                </p>
+              ) : (
+                <form action={addTaskNote} className="flex w-full gap-1.5">
+                  <input type="hidden" name="id" value={mainQuest.id} />
+                  <input
+                    type="text"
+                    name="note"
+                    maxLength={500}
+                    placeholder="Une note ? (ce qui a marché, ce que tu retiens…)"
+                    className="min-w-0 flex-1 mxp-input px-3 py-1.5 text-xs"
+                  />
+                  <button className="mxp-btn-ghost px-2.5 py-1.5 text-xs" title="Enregistrer la note">
+                    📝
+                  </button>
+                </form>
+              ))}
           </div>
         ) : (
           <form action={setMainQuest} className="mt-2 flex gap-2">
@@ -408,14 +429,14 @@ function TaskList({
   tasks,
   empty,
 }: {
-  tasks: Array<{ id: string; title: string; status: string; postponeCount: number }>;
+  tasks: Array<{ id: string; title: string; status: string; postponeCount: number; notes: string }>;
   empty: string;
 }) {
   if (tasks.length === 0) return <p className="mt-2 text-sm text-mxp-muted">{empty}</p>;
   return (
     <ul className="mt-2 space-y-2">
       {tasks.map((t) => (
-        <li key={t.id} className="flex items-center justify-between gap-2">
+        <li key={t.id} className="flex flex-wrap items-center justify-between gap-2">
           <span
             className={`min-w-0 flex-1 text-sm ${
               t.status === "DONE" ? "text-mxp-muted line-through" : ""
@@ -461,6 +482,26 @@ function TaskList({
           ) : (
             <span aria-label="accomplie">✅</span>
           )}
+          {t.status === "DONE" &&
+            (t.notes ? (
+              <p className="w-full rounded-lg bg-mxp-bg px-3 py-1.5 text-xs italic text-mxp-muted no-underline">
+                📝 {t.notes}
+              </p>
+            ) : (
+              <form action={addTaskNote} className="flex w-full gap-1.5">
+                <input type="hidden" name="id" value={t.id} />
+                <input
+                  type="text"
+                  name="note"
+                  maxLength={500}
+                  placeholder="Une note ? (ce qui a marché, ce que tu retiens…)"
+                  className="min-w-0 flex-1 mxp-input px-3 py-1.5 text-xs"
+                />
+                <button className="mxp-btn-ghost px-2.5 py-1.5 text-xs" title="Enregistrer la note">
+                  📝
+                </button>
+              </form>
+            ))}
         </li>
       ))}
     </ul>

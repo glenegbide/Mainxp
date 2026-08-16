@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireMxUser } from "@/lib/mainxp/auth";
-import { awardXp, xpTotals } from "@/lib/mainxp/xp/ledger";
+import { xpTotals } from "@/lib/mainxp/xp/ledger";
+import { emitEvent } from "@/lib/mainxp/events";
 
 const s = (v: FormDataEntryValue | null, max = 300) => String(v ?? "").trim().slice(0, max);
 
@@ -26,18 +27,14 @@ export async function redeemReward(formData: FormData): Promise<void> {
   const totals = await xpTotals(user.id);
   if (totals.coins < reward.costCoins) return; // UI disables, server enforces
 
-  // Spending goes through the same auditable ledger — negative coins, zero XP.
-  const tx = await awardXp({
-    userId: user.id,
-    sourceType: "reward_redeem",
-    sourceId: reward.id,
-    reason: `Récompense réelle débloquée : ${reward.title}`,
-    mainDelta: 0,
-    coinsDelta: -reward.costCoins,
-    idempotencyKey: `reward:${reward.id}:${reward.redeemedCount + 1}`,
-    timezone: user.timezone,
-  });
-  if (tx) {
+  // Spending goes through the same event → ledger path — negative coins, zero XP.
+  const event = await emitEvent(
+    user,
+    "reward_redeemed",
+    { rewardId: reward.id, title: reward.title, cost: reward.costCoins },
+    { idempotencyKey: `reward:${reward.id}:${reward.redeemedCount + 1}` }
+  );
+  if (event) {
     await prisma.mxReward.update({
       where: { id: reward.id },
       data: { redeemedCount: { increment: 1 } },

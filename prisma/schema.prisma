@@ -6,6 +6,7 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
 // MAINXP — an AI life OS wrapped inside a real-life RPG.
 // Totals (XP, streaks) are always derived from ledger/log rows, never stored
 // as standalone truth. See docs/DATABASE_SCHEMA.md and docs/XP_SYSTEM.md.
@@ -69,6 +70,14 @@ enum MxCadence {
   WEEKLY
 }
 
+// Evidence level of a recorded action (anti-farming / future leaderboards).
+// Never used to accuse — only to weight rare achievements and rankings.
+enum MxEvidence {
+  SELF_REPORTED // user says it happened (manual completions)
+  SYSTEM_RECORDED // MAINXP measured it (server-timed focus sessions)
+  VERIFIED // confirmed by an integrated external source (Phase 3+)
+}
+
 model MxUser {
   id               String   @id @default(cuid())
   email            String   @unique
@@ -104,8 +113,27 @@ model MxUser {
   conversations     MxConversation[]
   rewards           MxReward[]
   gearOwned         MxGearOwned[]
+  events            MxEvent[]
 
   @@map("mainxp_users")
+}
+
+// SYSTEM OF RECORD (docs/ARCHITECTURE.md): every meaningful real-life action
+// creates exactly one event; XP, streaks, titles, stats derive from it.
+model MxEvent {
+  id             String     @id @default(cuid())
+  userId         String
+  user           MxUser     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type           String // task_completed | main_quest_completed | habit_completed | commitment_kept | focus_completed | goal_reached | …
+  payload        Json       @default("{}")
+  evidence       MxEvidence @default(SELF_REPORTED)
+  dayKey         String // user-timezone day the action belongs to
+  idempotencyKey String?    @unique
+  createdAt      DateTime   @default(now())
+
+  @@index([userId, type])
+  @@index([userId, dayKey])
+  @@map("mainxp_events")
 }
 
 model MxSession {
@@ -357,19 +385,20 @@ model MxFocusSession {
 // Append-only XP ledger — the single source of truth for all progression.
 // Rows are never updated or deleted; corrections are compensating rows.
 model MxXpTransaction {
-  id             String   @id @default(cuid())
-  userId         String
-  user           MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sourceType     String // task | non_negotiable | habit | focus | goal | milestone | journal | gratitude | review | reversal | …
-  sourceId       String?
-  reason         String
-  multiplier     Float    @default(1)
-  mainDelta      Int // MAINXP change (may be negative on reversal)
-  coinsDelta     Int      @default(0) // spendable Coins (rewards economy) — same ledger, same auditability
-  attributeDeltas Json    @default("{}") // { "FOCUS": 15, … }
-  idempotencyKey String?  @unique // "<sourceType>:<sourceId>:<event>" — blocks duplicates
-  reversesId     String?  @unique // id of the transaction this row compensates
-  createdAt      DateTime @default(now())
+  id              String     @id @default(cuid())
+  userId          String
+  user            MxUser     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceType      String // task | non_negotiable | habit | focus | goal | milestone | journal | gratitude | review | reversal | …
+  sourceId        String?
+  reason          String
+  evidence        MxEvidence @default(SELF_REPORTED)
+  multiplier      Float      @default(1)
+  mainDelta       Int // MAINXP change (may be negative on reversal)
+  coinsDelta      Int        @default(0) // spendable Coins (rewards economy) — same ledger, same auditability
+  attributeDeltas Json       @default("{}") // { "FOCUS": 15, … }
+  idempotencyKey  String?    @unique // "<sourceType>:<sourceId>:<event>" — blocks duplicates
+  reversesId      String?    @unique // id of the transaction this row compensates
+  createdAt       DateTime   @default(now())
 
   @@index([userId, createdAt])
   @@index([userId, sourceType])
@@ -377,11 +406,11 @@ model MxXpTransaction {
 }
 
 model MxGearOwned {
-  id       String   @id @default(cuid())
-  userId   String
-  user     MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  gearId   String // catalog id from src/lib/mainxp/gear.ts
-  equipped Boolean  @default(true)
+  id        String   @id @default(cuid())
+  userId    String
+  user      MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gearId    String // catalog id from src/lib/mainxp/gear.ts
+  equipped  Boolean  @default(true)
   createdAt DateTime @default(now())
 
   @@unique([userId, gearId])
@@ -430,20 +459,22 @@ model MxGratitudeEntry {
 }
 
 model MxMemory {
-  id                String    @id @default(cuid())
-  userId            String
-  user              MxUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type              String // identity|preference|goal|commitment|person|project|decision|lesson|event|pattern|financial_context|health_context|journal_insight
-  content           String
-  importance        Int       @default(3) // 1-5
-  confidence        Float     @default(0.8)
-  source            String    @default("user_stated") // user_stated | ai_inferred | onboarding
-  sensitivity       String    @default("normal") // normal | private
-  doNotUseInCoaching Boolean  @default(false)
-  embeddingRef      String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  lastAccessedAt    DateTime?
+  id                 String    @id @default(cuid())
+  userId             String
+  user               MxUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type               String // identity|preference|goal|commitment|person|project|decision|lesson|event|pattern|financial_context|health_context|journal_insight
+  content            String
+  importance         Int       @default(3) // 1-5
+  confidence         Float     @default(0.8)
+  source             String    @default("user_stated") // user_stated | ai_inferred | onboarding
+  sensitivity        String    @default("normal") // normal | private
+  scope              String    @default("long_term") // permanent | long_term | temporary | immediate
+  expiresAt          DateTime? // temporary/immediate memories expire out of coach context
+  doNotUseInCoaching Boolean   @default(false)
+  embeddingRef       String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  lastAccessedAt     DateTime?
 
   @@index([userId, type])
   @@map("mainxp_memories")

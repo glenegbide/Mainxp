@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { destroySession, requireMxUser } from "@/lib/mainxp/auth";
-import { awardXp, xpTotals } from "@/lib/mainxp/xp/ledger";
+import { xpTotals } from "@/lib/mainxp/xp/ledger";
+import { emitEvent } from "@/lib/mainxp/events";
 import { gearById, slotOf } from "@/lib/mainxp/gear";
 
 export async function logout(): Promise<void> {
@@ -35,17 +36,13 @@ export async function buyGear(formData: FormData): Promise<void> {
   const totals = await xpTotals(user.id);
   if (totals.coins < gear.costCoins) return; // UI disables, server enforces
 
-  const tx = await awardXp({
-    userId: user.id,
-    sourceType: "gear_purchase",
-    sourceId: gearId,
-    reason: `Équipement acquis : ${gear.name}`,
-    mainDelta: 0,
-    coinsDelta: -gear.costCoins,
-    idempotencyKey: `gear:${user.id}:${gearId}`,
-    timezone: user.timezone,
-  });
-  if (!tx) return;
+  const event = await emitEvent(
+    user,
+    "gear_purchased",
+    { gearId, title: gear.name, cost: gear.costCoins },
+    { idempotencyKey: `gear:${user.id}:${gearId}` }
+  );
+  if (!event) return;
 
   // Equip immediately; unequip anything else in the same slot.
   const equipped = await prisma.mxGearOwned.findMany({

@@ -7,8 +7,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireMxUser } from "@/lib/mainxp/auth";
 import { addDays, dayKey } from "@/lib/mainxp/day";
-import { awardXp } from "@/lib/mainxp/xp/ledger";
-import { XP_VALUES } from "@/lib/mainxp/xp/curve";
+import { emitEvent } from "@/lib/mainxp/events";
 
 const s = (v: FormDataEntryValue | null, max = 1000) => String(v ?? "").trim().slice(0, max);
 const scale10 = (v: FormDataEntryValue | null) => {
@@ -53,16 +52,12 @@ export async function saveMorning(formData: FormData): Promise<void> {
     }
   }
 
-  await awardXp({
-    userId: user.id,
-    sourceType: "morning",
-    reason: "Journée lancée (Morning Start)",
-    mainDelta: XP_VALUES.MORNING_START.main,
-    coinsDelta: XP_VALUES.MORNING_START.coins,
-    attributeDeltas: { MIND: XP_VALUES.MORNING_START.mind },
-    idempotencyKey: `morning:${user.id}:${today}`,
-    timezone: user.timezone,
-  });
+  await emitEvent(
+    user,
+    "morning_started",
+    { day: today },
+    { idempotencyKey: `morning:${user.id}:${today}` }
+  );
 
   redirect("/today");
 }
@@ -101,16 +96,12 @@ export async function saveNight(formData: FormData): Promise<void> {
     await prisma.mxGratitudeEntry.create({
       data: { userId: user.id, dayKey: today, content: gratitude },
     });
-    await awardXp({
-      userId: user.id,
-      sourceType: "gratitude",
-      reason: "Gratitude du soir",
-      mainDelta: XP_VALUES.GRATITUDE.main,
-      coinsDelta: XP_VALUES.GRATITUDE.coins,
-      attributeDeltas: { MIND: XP_VALUES.GRATITUDE.mind },
-      idempotencyKey: `gratitude:${user.id}:${today}`,
-      timezone: user.timezone,
-    });
+    await emitEvent(
+      user,
+      "gratitude_logged",
+      { day: today },
+      { idempotencyKey: `gratitude:${user.id}:${today}` }
+    );
   }
 
   // ── Tomorrow preparation (Part 32): carry-overs + Main Quest candidate ──
@@ -134,16 +125,12 @@ export async function saveNight(formData: FormData): Promise<void> {
     }
   }
 
-  await awardXp({
-    userId: user.id,
-    sourceType: "night_review",
-    reason: "Revue du soir + préparation de demain",
-    mainDelta: XP_VALUES.NIGHT_REVIEW.main,
-    coinsDelta: XP_VALUES.NIGHT_REVIEW.coins,
-    attributeDeltas: { MIND: XP_VALUES.NIGHT_REVIEW.mind },
-    idempotencyKey: `night:${user.id}:${today}`,
-    timezone: user.timezone,
-  });
+  await emitEvent(
+    user,
+    "night_review_completed",
+    { day: today, oneBigThing: oneBigThing || null },
+    { idempotencyKey: `night:${user.id}:${today}` }
+  );
 
   revalidatePath("/today");
   redirect("/today");

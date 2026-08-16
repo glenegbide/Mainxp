@@ -4,9 +4,9 @@
 
 1. Go to [neon.tech](https://neon.tech) → sign up → **Create project** (name: `mainxp`,
    region: Europe/Frankfurt).
-2. Copy the **pooled connection string** (it looks like
-   `postgresql://…-pooler.…neon.tech/neondb?sslmode=require`). The pooled URL matters —
-   serverless functions open many short connections.
+2. Copy **two** connection strings from the Connect panel:
+   - the **pooled** one (host contains `-pooler`) → `DATABASE_URL` (runtime)
+   - the **direct** one (no `-pooler`) → `DIRECT_DATABASE_URL` (migrations)
 
 ## 2. Hosting (Vercel, free)
 
@@ -16,11 +16,12 @@
 
    | Name | Value |
    |---|---|
-   | `DATABASE_URL` | the Neon pooled connection string |
+   | `DATABASE_URL` | Neon **pooled** connection string |
+   | `DIRECT_DATABASE_URL` | Neon **direct** connection string |
    | `MAINXP_ANTHROPIC_API_KEY` | *(optional)* your key from [console.anthropic.com](https://console.anthropic.com) — activates the AI coach |
 
-3. Click **Deploy**. The build runs `prisma db push` automatically (see
-   `scripts/ensure-db.mjs`), so the tables are created on first deploy — no manual step.
+3. Click **Deploy**. The build applies the committed migrations automatically
+   (`scripts/ensure-db.mjs` → `prisma migrate deploy`) — no manual step.
 
 ## 3. On your phone
 
@@ -32,5 +33,6 @@ Screen**. MAINXP now launches full-screen like an app.
 - Every push to `main` on GitHub redeploys automatically.
 - No key set → the coach shows an honest offline state; everything else works.
 - Custom domain: Vercel → Settings → Domains.
-- Before real users: switch schema changes from `db push` to `prisma migrate`
-  (docs/DATABASE_SCHEMA.md).
+- Schema changes are already migration-based (`prisma/migrations/`).
+- Staging: every non-main push gets a Vercel preview URL — point previews at a
+  separate Neon branch DB, never production (docs/ARCHITECTURE.md).

@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireMxUser } from "@/lib/mainxp/auth";
 import { addDays, dayKey } from "@/lib/mainxp/day";
-import { awardXp, reverseXp } from "@/lib/mainxp/xp/ledger";
-import { hardModeMultiplier, XP_VALUES } from "@/lib/mainxp/xp/curve";
+import { reverseXp } from "@/lib/mainxp/xp/ledger";
+import { emitEvent } from "@/lib/mainxp/events";
 import type { MxTaskTier } from "@/generated/prisma/enums";
 
 const refresh = () => revalidatePath("/today");
@@ -62,21 +62,13 @@ export async function completeTask(formData: FormData): Promise<void> {
     data: { status: "DONE", completedAt: new Date() },
   });
 
-  const base = XP_VALUES[task.tier];
-  await awardXp({
-    userId: user.id,
-    sourceType: task.tier === "SIDE_QUEST" ? "side_quest" : "task",
-    sourceId: task.id,
-    reason:
-      task.tier === "MAIN_QUEST"
-        ? `Main Quest accomplie : ${task.title}`
-        : `Tâche accomplie : ${task.title}`,
-    mainDelta: base.main,
-    coinsDelta: base.coins,
-    multiplier: hardModeMultiplier(task.postponeCount),
-    idempotencyKey: `task:${task.id}:completed`,
-    timezone: user.timezone,
-  });
+  // System of record: one canonical event; the XP ledger listens (events.ts).
+  await emitEvent(
+    user,
+    task.tier === "MAIN_QUEST" ? "main_quest_completed" : "task_completed",
+    { taskId: task.id, title: task.title, tier: task.tier, postponeCount: task.postponeCount },
+    { idempotencyKey: `task:${task.id}:completed` }
+  );
   refresh();
 }
 
@@ -145,17 +137,12 @@ export async function toggleNonNegotiable(formData: FormData): Promise<void> {
 
   if (nowCompleted) {
     // Idempotency: un-toggling then re-toggling the same day never awards twice.
-    await awardXp({
-      userId: user.id,
-      sourceType: "non_negotiable",
-      sourceId: nn.id,
-      reason: `Non-négociable tenu : ${nn.title}`,
-      mainDelta: XP_VALUES.NON_NEGOTIABLE.main,
-      coinsDelta: XP_VALUES.NON_NEGOTIABLE.coins,
-      attributeDeltas: { DISCIPLINE: XP_VALUES.NON_NEGOTIABLE.discipline },
-      idempotencyKey: keptKey,
-      timezone: user.timezone,
-    });
+    await emitEvent(
+      user,
+      "commitment_kept",
+      { nnId: nn.id, title: nn.title, day: today },
+      { idempotencyKey: keptKey }
+    );
 
     // All daily non-negotiables kept today → one-time bonus.
     const [actives, doneToday] = await Promise.all([
@@ -165,16 +152,12 @@ export async function toggleNonNegotiable(formData: FormData): Promise<void> {
       }),
     ]);
     if (actives > 0 && doneToday >= actives) {
-      await awardXp({
-        userId: user.id,
-        sourceType: "non_negotiable_bonus",
-        reason: "Tous les non-négociables du jour tenus",
-        mainDelta: XP_VALUES.ALL_NON_NEGOTIABLES_BONUS.main,
-        coinsDelta: XP_VALUES.ALL_NON_NEGOTIABLES_BONUS.coins,
-        attributeDeltas: { DISCIPLINE: XP_VALUES.ALL_NON_NEGOTIABLES_BONUS.discipline },
-        idempotencyKey: bonusKey,
-        timezone: user.timezone,
-      });
+      await emitEvent(
+        user,
+        "all_commitments_kept",
+        { day: today, count: actives },
+        { idempotencyKey: bonusKey }
+      );
     }
   } else {
     // Un-toggle: reverse through the ledger (Part 64) — never decrement fields.
@@ -183,5 +166,18 @@ export async function toggleNonNegotiable(formData: FormData): Promise<void> {
       if (tx) await reverseXp(user.id, tx.id, `Annulation : ${nn.title}`);
     }
   }
+  refresh();
+}
+
+// ── Task notes (what the user learned / what happened — memory, not merit) ──
+
+export async function addTaskNote(formData: FormData): Promise<void> {
+  const user = await requireMxUser();
+  const id = String(formData.get("id") ?? "");
+  const note = String(formData.get("note") ?? "").trim().slice(0, 500);
+  const task = await prisma.mxTask.findFirst({ where: { id, userId: user.id, status: "DONE" } });
+  if (!task || !note) return;
+  await prisma.mxTask.update({ where: { id: task.id }, data: { notes: note } });
+  await emitEvent(user, "task_note_added", { taskId: task.id, title: task.title, note });
   refresh();
 }

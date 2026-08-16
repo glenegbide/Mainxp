@@ -4,8 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireMxUser } from "@/lib/mainxp/auth";
 import { dayKey } from "@/lib/mainxp/day";
-import { awardXp } from "@/lib/mainxp/xp/ledger";
-import { diminishingFactor, XP_VALUES } from "@/lib/mainxp/xp/curve";
+import { emitEvent } from "@/lib/mainxp/events";
 import type { MxAttribute } from "@/generated/prisma/enums";
 
 const s = (v: FormDataEntryValue | null, max = 300) => String(v ?? "").trim().slice(0, max);
@@ -66,20 +65,23 @@ export async function tapHabit(formData: FormData): Promise<void> {
   });
 
   if (habit.kind === "good") {
-    const priorTaps = log.value - 1; // taps before this one, today
-    await awardXp({
-      userId: user.id,
-      sourceType: "habit",
-      sourceId: habit.id,
-      reason: `Habitude tenue : ${habit.title}`,
-      mainDelta: XP_VALUES.HABIT_LOG.main,
-      coinsDelta: XP_VALUES.HABIT_LOG.coins,
-      attributeDeltas: habit.attribute
-        ? { [habit.attribute]: XP_VALUES.HABIT_LOG.attribute }
-        : undefined,
-      multiplier: diminishingFactor(priorTaps),
-      idempotencyKey: `habit:${habit.id}:${today}:${log.value}`,
-      timezone: user.timezone,
+    await emitEvent(
+      user,
+      "habit_completed",
+      {
+        habitId: habit.id,
+        title: habit.title,
+        attribute: habit.attribute,
+        priorTaps: log.value - 1,
+        tapIndex: log.value,
+      },
+      { idempotencyKey: `habit:${habit.id}:${today}:${log.value}` }
+    );
+  } else {
+    await emitEvent(user, "habit_slipped", {
+      habitId: habit.id,
+      title: habit.title,
+      tapIndex: log.value,
     });
   }
   refresh();

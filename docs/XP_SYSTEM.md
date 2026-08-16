@@ -71,3 +71,11 @@ trivial repetition decays 100% → 60% → 30% → 0%.
 ## No pay-to-win
 
 XP, ranks, titles and archetypes can never be purchased (Part 68).
+
+## Evidence levels (implemented)
+
+Every event/transaction is SELF_REPORTED, SYSTEM_RECORDED or VERIFIED
+(enum `MxEvidence`). Focus sessions are SYSTEM_RECORDED (server-timed). Users
+are never accused — evidence only weights rare achievements and future
+competitive surfaces. Personal difficulty tiers (Easy→Legendary, addendum #21)
+plug into the existing multiplier at P2.

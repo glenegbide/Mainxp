@@ -3,7 +3,7 @@
 // idempotency keys, totals are always derived from the rows.
 
 import { prisma } from "@/lib/prisma";
-import type { MxAttribute } from "@/generated/prisma/enums";
+import type { MxAttribute, MxEvidence } from "@/generated/prisma/enums";
 import { dayStartUtc } from "@/lib/mainxp/day";
 import { DIMINISHING_SOURCE_TYPES, diminishingFactor } from "./curve";
 
@@ -21,6 +21,8 @@ export interface AwardInput {
   multiplier?: number;
   /** Unique per source event, e.g. "task:<id>:completed". Replays become no-ops. */
   idempotencyKey?: string;
+  /** How the underlying action was recorded (docs/XP_SYSTEM.md). */
+  evidence?: MxEvidence;
   /** User timezone, needed for same-day anti-farming decay. */
   timezone?: string;
 }
@@ -75,6 +77,7 @@ export async function awardXp(input: AwardInput) {
         mainDelta,
         coinsDelta,
         attributeDeltas,
+        evidence: input.evidence ?? "SELF_REPORTED",
         idempotencyKey: input.idempotencyKey,
       },
     });

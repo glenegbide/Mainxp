@@ -19,7 +19,8 @@ in-app notification inbox · WHAT NOW via AI.
 Done: Habits ± (Habitica-inspired, original) · Élan momentum gauge · recovery mode ·
 cosmetic gear shop · titles foundation (5 archetypes, tiers I–III) · weekly review.
 Remaining: routines · monthly review · books · playbook · learning engine ·
-challenges · character tiers 50/75/100.
+challenges · character tiers 50/75/100 · Minimum Day · Comeback Quest ·
+personal difficulty · Brain Dump · capacity model · seasons with endings.
 
 ## Phase 3 — Money + Body
 Receipt scanning · expenses/budgets · finance coach · Safe to Spend · workouts ·

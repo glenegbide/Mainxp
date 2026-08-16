@@ -4,8 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireMxUser } from "@/lib/mainxp/auth";
-import { awardXp } from "@/lib/mainxp/xp/ledger";
-import { XP_VALUES } from "@/lib/mainxp/xp/curve";
+import { emitEvent } from "@/lib/mainxp/events";
 import type { MxProjectStatus } from "@/generated/prisma/enums";
 
 const s = (v: FormDataEntryValue | null, max = 500) => String(v ?? "").trim().slice(0, max);
@@ -70,17 +69,12 @@ export async function toggleMilestone(formData: FormData): Promise<void> {
   await refreshProgress(milestone.projectId);
 
   if (done) {
-    await awardXp({
-      userId: user.id,
-      sourceType: "milestone",
-      sourceId: milestone.id,
-      reason: `Jalon franchi : ${milestone.title}`,
-      mainDelta: XP_VALUES.MILESTONE.main,
-      coinsDelta: XP_VALUES.MILESTONE.coins,
-      attributeDeltas: { STRATEGY: XP_VALUES.MILESTONE.strategy },
-      idempotencyKey: `milestone:${milestone.id}:completed`,
-      timezone: user.timezone,
-    });
+    await emitEvent(
+      user,
+      "milestone_completed",
+      { milestoneId: milestone.id, title: milestone.title, projectId: milestone.projectId },
+      { idempotencyKey: `milestone:${milestone.id}:completed` }
+    );
   } else {
     const tx = await prisma.mxXpTransaction.findUnique({
       where: { idempotencyKey: `milestone:${milestone.id}:completed` },
@@ -121,17 +115,12 @@ export async function setProjectStatus(formData: FormData): Promise<void> {
     data: { status, completedAt: status === "COMPLETED" ? new Date() : null },
   });
   if (status === "COMPLETED") {
-    await awardXp({
-      userId: user.id,
-      sourceType: "project",
-      sourceId: project.id,
-      reason: `Projet terminé : ${project.title}`,
-      mainDelta: 120,
-      coinsDelta: 60,
-      attributeDeltas: { STRATEGY: 80 },
-      idempotencyKey: `project:${project.id}:completed`,
-      timezone: user.timezone,
-    });
+    await emitEvent(
+      user,
+      "project_completed",
+      { projectId: project.id, title: project.title },
+      { idempotencyKey: `project:${project.id}:completed` }
+    );
   }
   revalidatePath(`/projects/${id}`);
   revalidatePath("/projects");

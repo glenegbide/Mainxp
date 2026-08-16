@@ -2,6 +2,24 @@
 
 _Last updated: 2026-08-16 (standalone repository `mainxp`, branch `main`)_
 
+## Hardening wave (35-point addendum): DONE
+
+| Item | Status |
+|---|---|
+| Event engine / system of record: `MxEvent` + `emitEvent()`; XP is a listener (`xpForEvent`); all actions refactored | ✅ regression-verified, identical totals |
+| Evidence levels on events + transactions (focus = SYSTEM_RECORDED) | ✅ |
+| Real migrations: baseline committed, `migrate deploy` at build, `DIRECT_DATABASE_URL` for Neon | ✅ |
+| Feature flags (`flags.ts`): AI_COACH on; FINANCE/CLUBS/SCREEN_TIME/SPIRITUALITY dark | ✅ |
+| Coach: explainability, confidence, intelligent silence, capacity/conflict rules; corrections stored via [RETENIR] with scopes + expiry; scoped memories in context | ✅ |
+| Task completion notes (📝 on done tasks, `task_note_added` event) | ✅ |
+| Guiding principle atop PRODUCT_REQUIREMENTS + CLAUDE.md; caps as invariants | ✅ |
+| i18n scaffold (`i18n.ts`) — new strings by key, French first | ✅ |
+| All 35 addendum points implemented or specced with phase tags across docs/ | ✅ |
+
+Verified: 39 unit tests, lint, tsc, build, migrate-deploy on fresh DB, both
+Playwright end-to-end suites (identical XP/coin totals pre/post refactor),
+live event-stream inspection, task-note flow.
+
 ## Phase 2 (first wave, Habitica-inspired — original implementation): DONE
 
 | Item | Status |

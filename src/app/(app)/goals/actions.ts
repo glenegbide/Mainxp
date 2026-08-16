@@ -4,9 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireMxUser } from "@/lib/mainxp/auth";
-import { awardXp } from "@/lib/mainxp/xp/ledger";
-import { XP_VALUES } from "@/lib/mainxp/xp/curve";
-import { LIFE_AREA_ATTRIBUTE } from "@/lib/mainxp/attributes";
+import { emitEvent } from "@/lib/mainxp/events";
 import type { MxGoalHorizon } from "@/generated/prisma/enums";
 
 const s = (v: FormDataEntryValue | null, max = 500) => String(v ?? "").trim().slice(0, max);
@@ -65,18 +63,12 @@ export async function completeGoal(formData: FormData): Promise<void> {
     where: { id: goal.id },
     data: { status: "COMPLETED", completedAt: new Date() },
   });
-  const attr = LIFE_AREA_ATTRIBUTE[goal.lifeArea];
-  await awardXp({
-    userId: user.id,
-    sourceType: "goal",
-    sourceId: goal.id,
-    reason: `Objectif atteint : ${goal.title}`,
-    mainDelta: XP_VALUES.GOAL_COMPLETED.main,
-    coinsDelta: XP_VALUES.GOAL_COMPLETED.coins,
-    attributeDeltas: attr ? { [attr]: 100 } : undefined,
-    idempotencyKey: `goal:${goal.id}:completed`,
-    timezone: user.timezone,
-  });
+  await emitEvent(
+    user,
+    "goal_reached",
+    { goalId: goal.id, title: goal.title, lifeArea: goal.lifeArea },
+    { idempotencyKey: `goal:${goal.id}:completed` }
+  );
   revalidatePath(`/goals/${goal.id}`);
   revalidatePath("/goals");
 }
