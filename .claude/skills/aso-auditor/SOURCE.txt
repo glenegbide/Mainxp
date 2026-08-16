@@ -1,0 +1,2 @@
+Vendored from https://github.com/vagabond911/aso-auditor (MIT), reviewed 2026-08-16.
+Use when auditing MAINXP's future App Store / Play Store listing (Phase 5).
