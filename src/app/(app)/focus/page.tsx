@@ -35,7 +35,7 @@ export default async function FocusPage() {
       </p>
 
       {running ? (
-        <section className="mt-5 rounded-2xl border-2 border-mxp-blue/50 bg-mxp-card p-6">
+        <section className="mt-5 mxp-card mxp-bluec p-6">
           {running.taskId && (
             <p className="mb-3 text-center text-sm text-mxp-muted">
               {todayTasks.find((t) => t.id === running.taskId)?.title ?? "Session en cours"}
@@ -52,7 +52,7 @@ export default async function FocusPage() {
                 min={0}
                 max={99}
                 defaultValue={0}
-                className="mt-1 w-full rounded-lg border border-mxp-line px-3 py-2 text-sm outline-none"
+                className="mt-1 w-full mxp-input px-3 py-2 text-sm"
               />
             </label>
             <button className="w-full rounded-xl bg-mxp-blue px-4 py-3 text-sm font-semibold text-white hover:opacity-90">
@@ -61,8 +61,8 @@ export default async function FocusPage() {
           </form>
         </section>
       ) : (
-        <section className="mt-5 rounded-2xl border border-mxp-line bg-mxp-card p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-mxp-blue">
+        <section className="mt-5 mxp-card p-4">
+          <p className="mxp-label text-mxp-blue">
             Nouvelle session
           </p>
           <form action={startFocus} className="mt-3 space-y-3">
@@ -88,14 +88,14 @@ export default async function FocusPage() {
               min={10}
               max={240}
               placeholder="Ou durée personnalisée (10–240 min)"
-              className="w-full rounded-xl border border-mxp-line px-4 py-2.5 text-sm outline-none focus:border-mxp-blue"
+              className="w-full mxp-input px-4 py-2.5 text-sm"
             />
             {todayTasks.length > 0 && (
               <label className="block text-xs text-mxp-muted">
                 Sur quelle action ?
                 <select
                   name="taskId"
-                  className="mt-1 w-full rounded-xl border border-mxp-line bg-mxp-card px-3 py-2.5 text-sm outline-none"
+                  className="mt-1 w-full mxp-input px-3 py-2.5 text-sm"
                 >
                   <option value="">— libre —</option>
                   {todayTasks.map((t) => (
@@ -115,8 +115,8 @@ export default async function FocusPage() {
       )}
 
       {recentSessions.length > 0 && (
-        <section className="mt-4 rounded-2xl border border-mxp-line bg-mxp-card p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-mxp-muted">
+        <section className="mt-4 mxp-card p-4">
+          <p className="mxp-label text-mxp-muted">
             Dernières sessions
           </p>
           <ul className="mt-2 space-y-1.5 text-sm">

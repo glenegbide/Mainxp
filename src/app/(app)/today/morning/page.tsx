@@ -47,8 +47,8 @@ export default async function MorningPage() {
       <p className="text-sm text-mxp-muted">2 minutes pour lancer la journée. +10 XP · Esprit.</p>
 
       <form action={saveMorning} className="mt-5 space-y-5">
-        <section className="rounded-2xl border border-mxp-line bg-mxp-card p-4 space-y-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-mxp-teal">1 · Ton état</p>
+        <section className="mxp-card p-4 space-y-4">
+          <p className="mxp-label text-mxp-teal">1 · Ton état</p>
           <Scale name="mood" label="Humeur" />
           <Scale name="energy" label="Énergie" />
           <Scale name="stress" label="Stress" />
@@ -56,8 +56,8 @@ export default async function MorningPage() {
         </section>
 
         {(northStar?.why || northStar?.season) && (
-          <section className="rounded-2xl border border-mxp-line bg-mxp-card p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-mxp-purple">
+          <section className="mxp-card p-4">
+            <p className="mxp-label text-mxp-purple">
               2 · Rappelle-toi pourquoi
             </p>
             {northStar.why && <p className="mt-2 text-sm">{northStar.why}</p>}
@@ -68,8 +68,8 @@ export default async function MorningPage() {
         )}
 
         {goals.length > 0 && (
-          <section className="rounded-2xl border border-mxp-line bg-mxp-card p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-mxp-blue">
+          <section className="mxp-card p-4">
+            <p className="mxp-label text-mxp-blue">
               3 · Où tu en es
             </p>
             <ul className="mt-2 space-y-1.5 text-sm">
@@ -87,8 +87,8 @@ export default async function MorningPage() {
           </section>
         )}
 
-        <section className="rounded-2xl border-2 border-mxp-purple/50 bg-mxp-card p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-mxp-purple">
+        <section className="mxp-card mxp-quest p-4">
+          <p className="mxp-label text-mxp-purple">
             4 · Ta Main Quest du jour
           </p>
           {mainQuest ? (
@@ -101,7 +101,7 @@ export default async function MorningPage() {
                 maxLength={300}
                 defaultValue={proposal}
                 placeholder="Le résultat le plus important du jour…"
-                className="mt-2 w-full rounded-lg border border-mxp-line px-3 py-2.5 text-sm outline-none focus:border-mxp-purple"
+                className="mt-2 w-full mxp-input px-3 py-2.5 text-sm"
               />
               {yesterdayPlan?.tomorrowBigThing && (
                 <p className="mt-1.5 text-xs text-mxp-muted">
@@ -112,7 +112,7 @@ export default async function MorningPage() {
           )}
         </section>
 
-        <button className="w-full rounded-xl bg-mxp-purple px-4 py-3 text-sm font-semibold text-white hover:bg-mxp-purple-deep">
+        <button className="w-full mxp-btn px-4 py-3 text-sm">
           DÉMARRER LA JOURNÉE
         </button>
       </form>

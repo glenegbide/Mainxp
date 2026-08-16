@@ -13,7 +13,18 @@ export default async function LoginPage({
   const { error } = await searchParams;
   return (
     <main className="flex min-h-screen flex-col justify-center px-6 py-12">
-      <p className="text-center text-3xl font-semibold tracking-tight text-mxp-purple">MAINXP</p>
+      <div className="flex flex-col items-center">
+        <div
+          aria-hidden
+          className="flex h-14 w-14 items-center justify-center rounded-2xl text-2xl text-white shadow-lg"
+          style={{ background: "linear-gradient(135deg,#7c3aed,#5b21b6)", boxShadow: "0 14px 30px -12px rgba(109,40,217,.7)" }}
+        >
+          ⚡
+        </div>
+        <p className="mt-3 font-displaymx text-3xl font-bold tracking-tight">
+          MAIN<span className="text-mxp-purple">XP</span>
+        </p>
+      </div>
       <p className="mt-2 text-center text-sm text-mxp-muted">
         Ta vie est la quête principale.
       </p>
@@ -31,7 +42,7 @@ export default async function LoginPage({
             name="email"
             required
             autoComplete="email"
-            className="mt-1 w-full rounded-xl border border-mxp-line bg-mxp-card px-4 py-3 text-sm outline-none focus:border-mxp-purple"
+            className="mt-1 w-full mxp-input px-4 py-3 text-sm"
           />
         </label>
         <label className="block">
@@ -41,12 +52,12 @@ export default async function LoginPage({
             name="password"
             required
             autoComplete="current-password"
-            className="mt-1 w-full rounded-xl border border-mxp-line bg-mxp-card px-4 py-3 text-sm outline-none focus:border-mxp-purple"
+            className="mt-1 w-full mxp-input px-4 py-3 text-sm"
           />
         </label>
         <button
           type="submit"
-          className="w-full rounded-xl bg-mxp-purple px-4 py-3 text-sm font-semibold text-white transition hover:bg-mxp-purple-deep"
+          className="w-full mxp-btn px-4 py-3 text-sm"
         >
           Se connecter
         </button>

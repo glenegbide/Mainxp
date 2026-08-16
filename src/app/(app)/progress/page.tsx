@@ -39,21 +39,21 @@ export default async function ProgressPage() {
       <div className="mt-4 grid grid-cols-2 gap-2">
         <Link
           href="/goals"
-          className="rounded-2xl border border-mxp-line bg-mxp-card p-4 text-sm font-semibold transition hover:border-mxp-purple/50"
+          className="mxp-card p-4 text-sm font-semibold transition hover:border-mxp-purple/50"
         >
           🎯 Objectifs
           <span className="mt-0.5 block text-xs font-normal text-mxp-muted">rythme &amp; échéances</span>
         </Link>
         <Link
           href="/projects"
-          className="rounded-2xl border border-mxp-line bg-mxp-card p-4 text-sm font-semibold transition hover:border-mxp-orange/50"
+          className="mxp-card p-4 text-sm font-semibold transition hover:border-mxp-orange/50"
         >
           🛠 Projets
           <span className="mt-0.5 block text-xs font-normal text-mxp-muted">jalons &amp; moteurs</span>
         </Link>
       </div>
 
-      <section className="mt-4 rounded-2xl border border-mxp-line bg-mxp-card p-4">
+      <section className="mt-4 mxp-card p-4">
         <p className="text-sm text-mxp-muted">MAINXP total</p>
         <p className="mt-1 text-3xl font-bold text-mxp-purple tabular-nums">
           {totals.main}
@@ -62,7 +62,7 @@ export default async function ProgressPage() {
         <p className="mt-1 text-sm text-mxp-muted">
           Niveau {lp.level} · {lp.intoLevel}/{lp.neededForNext} vers le niveau {lp.level + 1}
         </p>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-mxp-purple-soft">
+        <div className="mt-2 mxp-rail">
           <div
             className="h-full rounded-full bg-mxp-purple"
             style={{ width: `${Math.round(lp.ratio * 100)}%` }}
@@ -70,8 +70,8 @@ export default async function ProgressPage() {
         </div>
       </section>
 
-      <section className="mt-4 rounded-2xl border border-mxp-line bg-mxp-card p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-mxp-muted">Attributs</p>
+      <section className="mt-4 mxp-card p-4">
+        <p className="mxp-label text-mxp-muted">Attributs</p>
         <ul className="mt-3 space-y-3">
           {ATTRIBUTES.map((attr) => {
             const value = totals.attributes[attr.key as keyof typeof totals.attributes] ?? 0;
@@ -81,7 +81,7 @@ export default async function ProgressPage() {
                   <span>{attr.label}</span>
                   <span className="tabular-nums text-mxp-muted">{value} XP</span>
                 </div>
-                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-mxp-bg">
+                <div className="mt-1 mxp-rail">
                   <div
                     className={`h-full rounded-full ${attr.color}`}
                     style={{ width: `${Math.round((value / maxAttr) * 100)}%` }}
@@ -93,8 +93,8 @@ export default async function ProgressPage() {
         </ul>
       </section>
 
-      <section className="mt-4 mb-6 rounded-2xl border border-mxp-line bg-mxp-card p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-mxp-muted">
+      <section className="mt-4 mb-6 mxp-card p-4">
+        <p className="mxp-label text-mxp-muted">
           Registre XP (auditable)
         </p>
         {recent.length === 0 ? (

@@ -44,9 +44,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </p>
       )}
 
-      <section className="mt-4 rounded-2xl border border-mxp-line bg-mxp-card p-4">
+      <section className="mt-4 mxp-card p-4">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wide text-mxp-orange">
+          <p className="mxp-label text-mxp-orange">
             Avancement · {project.progress}%
           </p>
           <form action={setProjectStatus} className="flex items-center gap-1.5">
@@ -54,7 +54,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <select
               name="status"
               defaultValue={project.status}
-              className="rounded-lg border border-mxp-line bg-mxp-card px-2 py-1 text-xs outline-none"
+              className="mxp-input px-2 py-1 text-xs"
             >
               {Object.entries(STATUS_LABEL).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -62,18 +62,18 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 </option>
               ))}
             </select>
-            <button className="rounded-lg border border-mxp-line px-2 py-1 text-xs font-semibold hover:bg-mxp-bg">
+            <button className="mxp-btn-ghost px-2 py-1 text-xs">
               OK
             </button>
           </form>
         </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-mxp-bg">
+        <div className="mt-2 mxp-rail">
           <div className="h-full rounded-full bg-mxp-orange" style={{ width: `${project.progress}%` }} />
         </div>
       </section>
 
       <section className="mt-4 rounded-2xl border-2 border-mxp-purple/40 bg-mxp-card p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-mxp-purple">
+        <p className="mxp-label text-mxp-purple">
           Prochaine action
         </p>
         <form action={updateNextAction} className="mt-2 flex gap-2">
@@ -84,9 +84,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             defaultValue={project.nextAction}
             maxLength={300}
             placeholder="La toute prochaine action concrète…"
-            className="min-w-0 flex-1 rounded-lg border border-mxp-line px-3 py-2 text-sm outline-none focus:border-mxp-purple"
+            className="min-w-0 flex-1 mxp-input px-3 py-2 text-sm"
           />
-          <button className="rounded-lg border border-mxp-line px-3 py-2 text-xs font-semibold hover:bg-mxp-bg">
+          <button className="mxp-btn-ghost px-3 py-2 text-xs">
             OK
           </button>
         </form>
@@ -95,8 +95,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </p>
       </section>
 
-      <section className="mt-4 rounded-2xl border border-mxp-line bg-mxp-card p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-mxp-blue">
+      <section className="mt-4 mxp-card p-4">
+        <p className="mxp-label text-mxp-blue">
           Jalons · +40 XP · Stratégie
         </p>
         {project.milestones.length === 0 && (
@@ -113,14 +113,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               </span>
               <form action={toggleMilestone}>
                 <input type="hidden" name="id" value={m.id} />
-                <button
-                  aria-pressed={m.done}
-                  className={`h-7 w-7 rounded-full border text-sm leading-none ${
-                    m.done
-                      ? "border-mxp-blue bg-mxp-blue text-white"
-                      : "border-mxp-line bg-mxp-card text-transparent hover:border-mxp-blue"
-                  }`}
-                >
+                <button aria-pressed={m.done} className={`mxp-check ${m.done ? "on" : ""}`}>
                   ✓
                 </button>
               </form>
@@ -136,9 +129,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               required
               maxLength={300}
               placeholder="Ajouter un jalon…"
-              className="min-w-0 flex-1 rounded-lg border border-mxp-line px-3 py-2 text-sm outline-none focus:border-mxp-blue"
+              className="min-w-0 flex-1 mxp-input px-3 py-2 text-sm"
             />
-            <button className="rounded-lg border border-mxp-line px-3 py-2 text-xs font-semibold hover:bg-mxp-bg">
+            <button className="mxp-btn-ghost px-3 py-2 text-xs">
               +
             </button>
           </form>

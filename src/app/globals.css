@@ -5,8 +5,8 @@
   --mxp-bg: #faf9f7; /* warm near-white */
   --mxp-card: #ffffff;
   --mxp-ink: #1c1917;
-  --mxp-muted: #78716c;
-  --mxp-line: #e7e5e4;
+  --mxp-muted: #79716b;
+  --mxp-line: #eae7e2;
   --mxp-purple: #7c3aed; /* MAINXP identity / progression */
   --mxp-purple-deep: #5b21b6;
   --mxp-purple-soft: #ede9fe;
@@ -17,6 +17,9 @@
   --mxp-teal: #14b8a6; /* mind / journal / reflection */
   --mxp-orange: #f97316; /* challenge / momentum */
   --mxp-red: #ef4444; /* urgent warnings / Beast Mode only */
+
+  --mxp-shadow: 0 1px 2px rgba(28, 25, 23, 0.03), 0 12px 32px -20px rgba(91, 33, 182, 0.25);
+  --mxp-shadow-lift: 0 2px 4px rgba(28, 25, 23, 0.04), 0 18px 44px -20px rgba(91, 33, 182, 0.32);
 }
 
 @theme inline {
@@ -42,13 +45,29 @@ body {
   font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  background: var(--mxp-bg);
+}
+
+/* The app column: warm white with a faint aurora of brand purple at the top. */
+.mxp-shell {
+  background:
+    radial-gradient(720px 340px at 50% -120px, rgba(124, 58, 237, 0.09), transparent 70%),
+    var(--mxp-bg);
+}
+
+h1 {
+  font-family: var(--font-display), var(--font-geist), sans-serif;
+  letter-spacing: -0.02em;
+}
+.font-displaymx {
+  font-family: var(--font-display), var(--font-geist), sans-serif;
+  letter-spacing: -0.02em;
 }
 
 ::selection {
   background: var(--mxp-purple);
   color: #fff;
 }
-
 :focus-visible {
   outline: 2px solid var(--mxp-purple);
   outline-offset: 2px;
@@ -57,6 +76,186 @@ body {
 .tabular-nums,
 dd {
   font-variant-numeric: tabular-nums;
+}
+
+/* ── Card system ── */
+.mxp-card {
+  background: var(--mxp-card);
+  border: 1px solid var(--mxp-line);
+  border-radius: 20px;
+  box-shadow: var(--mxp-shadow);
+}
+a.mxp-card {
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+a.mxp-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--mxp-shadow-lift);
+}
+.mxp-quest {
+  border: 1.5px solid rgba(124, 58, 237, 0.45);
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.03), 0 14px 36px -18px rgba(124, 58, 237, 0.45);
+}
+.mxp-alert {
+  border-color: rgba(249, 115, 22, 0.5);
+}
+.mxp-goldc {
+  border-color: rgba(202, 138, 4, 0.45);
+}
+.mxp-bluec {
+  border: 1.5px solid rgba(59, 130, 246, 0.5);
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.03), 0 14px 36px -18px rgba(59, 130, 246, 0.45);
+}
+
+/* ── Hero (level header) ── */
+.mxp-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  background:
+    radial-gradient(340px 160px at 82% -30px, rgba(255, 255, 255, 0.28), transparent 70%),
+    radial-gradient(280px 200px at -10% 110%, rgba(45, 12, 110, 0.55), transparent 70%),
+    linear-gradient(135deg, #6d28d9 0%, #7c3aed 55%, #8b5cf6 100%);
+  box-shadow: 0 2px 4px rgba(28, 25, 23, 0.06), 0 20px 48px -20px rgba(109, 40, 217, 0.65);
+}
+.mxp-hero::after {
+  /* faint pixel-grid texture, the 10% manga energy */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(420px 240px at 80% 0%, black, transparent 75%);
+  pointer-events: none;
+}
+
+/* ── XP bar with a slow travelling shine ── */
+.mxp-xpbar {
+  height: 9px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+}
+.mxp-xpbar > i {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #fde68a, #ffffff);
+  position: relative;
+  transition: width 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.mxp-xpbar > i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.85) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: mxp-shine 3.2s ease-in-out infinite;
+}
+@keyframes mxp-shine {
+  0%, 55% { transform: translateX(-100%); }
+  85%, 100% { transform: translateX(100%); }
+}
+
+/* ── Progress rails ── */
+.mxp-rail {
+  height: 7px;
+  border-radius: 99px;
+  background: #f1eee9;
+  overflow: hidden;
+}
+.mxp-rail > i {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ── Buttons ── */
+.mxp-btn {
+  border: 0;
+  cursor: pointer;
+  border-radius: 13px;
+  font-family: inherit;
+  font-weight: 650;
+  color: #fff;
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.08), 0 8px 20px -10px rgba(109, 40, 217, 0.7);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+}
+.mxp-btn:hover { filter: brightness(1.06); }
+.mxp-btn:active { transform: scale(0.97); }
+.mxp-btn:disabled { cursor: not-allowed; filter: saturate(0.2) brightness(1.05); box-shadow: none; }
+.mxp-btn-ghost {
+  border: 1px solid var(--mxp-line);
+  cursor: pointer;
+  border-radius: 13px;
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--mxp-ink);
+  background: var(--mxp-card);
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+}
+.mxp-btn-ghost:hover { background: var(--mxp-bg); border-color: #ddd8d0; }
+.mxp-btn-ghost:active { transform: scale(0.97); }
+
+/* ── Inputs ── */
+.mxp-input {
+  border: 1px solid var(--mxp-line);
+  border-radius: 13px;
+  background: var(--mxp-card);
+  color: var(--mxp-ink);
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.mxp-input::placeholder { color: #a8a29b; }
+.mxp-input:focus {
+  outline: none;
+  border-color: var(--mxp-purple);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.14);
+}
+
+/* ── Check circle (non-negotiables, milestones) ── */
+.mxp-check {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 50%;
+  border: 1.5px solid #ddd8d0;
+  background: var(--mxp-card);
+  color: transparent;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.mxp-check:active { transform: scale(0.88); }
+.mxp-check.on {
+  background: var(--mxp-green);
+  border-color: var(--mxp-green);
+  color: #fff;
+  box-shadow: 0 6px 14px -6px rgba(16, 185, 129, 0.7);
+}
+
+/* ── Section label ── */
+.mxp-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+/* ── Chips ── */
+.mxp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 99px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 650;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -27,7 +27,7 @@ export default async function CoachPage({
       <h1 className="text-xl font-semibold">Coach</h1>
 
       {!configured ? (
-        <section className="mt-4 rounded-2xl border border-mxp-line bg-mxp-card p-5">
+        <section className="mt-4 mxp-card p-5">
           <p className="text-sm font-medium">Coach hors ligne.</p>
           <p className="mt-2 text-sm text-mxp-muted">
             Aucune clé IA n&apos;est configurée (variable d&apos;environnement{" "}
@@ -41,7 +41,7 @@ export default async function CoachPage({
         <>
           <div className="mt-4 flex-1 space-y-3 overflow-y-auto pb-4">
             {!conversation?.messages.length && (
-              <section className="rounded-2xl border border-mxp-line bg-mxp-card p-4 text-sm text-mxp-muted">
+              <section className="mxp-card p-4 text-sm text-mxp-muted">
                 Ton coach connaît ton North Star, ta journée et le rythme de tes objectifs.
                 Essaie : « Que devrais-je faire maintenant ? » ou « Aide-moi à planifier ma
                 semaine. » Il utilise des faits, jamais la honte — et il n&apos;attribue
@@ -75,9 +75,9 @@ export default async function CoachPage({
               maxLength={4000}
               placeholder="Parle à ton coach…"
               autoComplete="off"
-              className="min-w-0 flex-1 rounded-xl border border-mxp-line bg-mxp-card px-4 py-3 text-sm outline-none focus:border-mxp-purple"
+              className="min-w-0 flex-1 mxp-input px-4 py-3 text-sm"
             />
-            <button className="rounded-xl bg-mxp-purple px-4 py-3 text-sm font-semibold text-white hover:bg-mxp-purple-deep">
+            <button className="mxp-btn px-4 py-3 text-sm">
               →
             </button>
           </form>

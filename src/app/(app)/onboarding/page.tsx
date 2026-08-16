@@ -20,7 +20,7 @@ export default async function OnboardingPage() {
 
   return (
     <main className="px-4 pt-6 pb-8">
-      <p className="text-xs font-semibold uppercase tracking-wide text-mxp-purple">
+      <p className="mxp-label text-mxp-purple">
         Apprends à me connaître
       </p>
       <h1 className="mt-1 text-xl font-semibold">Quelques repères, {user.name}.</h1>
@@ -38,7 +38,7 @@ export default async function OnboardingPage() {
             defaultValue={user.occupation}
             maxLength={200}
             placeholder="Ex. agent immobilier indépendant à Genève"
-            className="mt-1 w-full rounded-xl border border-mxp-line bg-mxp-card px-4 py-3 text-sm outline-none focus:border-mxp-purple"
+            className="mt-1 w-full mxp-input px-4 py-3 text-sm"
           />
         </label>
 
@@ -50,7 +50,7 @@ export default async function OnboardingPage() {
             defaultValue={northStar?.why ?? ""}
             maxLength={1000}
             placeholder="Ex. la liberté financière pour ma famille, et devenir quelqu'un que je respecte."
-            className="mt-1 w-full rounded-xl border border-mxp-line bg-mxp-card px-4 py-3 text-sm outline-none focus:border-mxp-purple"
+            className="mt-1 w-full mxp-input px-4 py-3 text-sm"
           />
         </label>
 
@@ -83,7 +83,7 @@ export default async function OnboardingPage() {
             defaultValue={northStar?.mission90Days ?? ""}
             maxLength={500}
             placeholder="Ex. signer 6 mandats exclusifs"
-            className="mt-1 w-full rounded-xl border border-mxp-line bg-mxp-card px-4 py-3 text-sm outline-none focus:border-mxp-purple"
+            className="mt-1 w-full mxp-input px-4 py-3 text-sm"
           />
         </label>
 
@@ -111,7 +111,7 @@ export default async function OnboardingPage() {
           </div>
         </div>
 
-        <button className="w-full rounded-xl bg-mxp-purple px-4 py-3 text-sm font-semibold text-white hover:bg-mxp-purple-deep">
+        <button className="w-full mxp-btn px-4 py-3 text-sm">
           C&apos;est parti — vers ma journée
         </button>
         <p className="text-center text-xs text-mxp-muted">

@@ -6,6 +6,7 @@ import { addDays, dayKey, daysBetween } from "@/lib/mainxp/day";
 import { goalPace, isGoalAtRisk } from "@/lib/mainxp/goals";
 import { xpTotals } from "@/lib/mainxp/xp/ledger";
 import { levelProgress } from "@/lib/mainxp/xp/curve";
+import { PixelHero } from "../../components/PixelHero";
 import {
   addNonNegotiable,
   addTask,
@@ -91,45 +92,37 @@ export default async function TodayPage() {
 
   return (
     <main className="px-4 pt-5">
-      {/* ── Level header (purple hero, design ref 01_HOME_WHITE) ── */}
-      <section className="rounded-2xl bg-mxp-purple p-5 text-white">
-        <div className="flex items-center gap-4">
-          <div
-            aria-hidden
-            className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/15 text-2xl font-bold"
-          >
-            {user.name.slice(0, 1).toUpperCase()}
+      {/* ── Level header (purple hero, design ref 01_HOME_WHITE + game refs) ── */}
+      <section className="mxp-hero p-5 text-white">
+        <div className="relative z-10 flex items-center gap-4">
+          <div className="flex h-[68px] w-16 flex-none items-end justify-center rounded-2xl bg-white/12 pb-1 ring-1 ring-white/25">
+            <PixelHero level={lp.level} size={46} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-lg font-semibold">{user.name}</p>
-            <p className="text-sm text-white/80">
-              Niveau {lp.level} · {lp.level === 1 && totals.main === 0 ? "Novice · 0 XP" : `${totals.main} XP`}
-              <span className="ml-2 text-white/70">🪙 {totals.coins}</span>
-            </p>
+            <p className="truncate font-displaymx text-xl font-bold">{user.name}</p>
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+              <span className="mxp-chip bg-white/16">
+                Niv. {lp.level}
+                {totals.main === 0 ? " · Novice" : ""}
+              </span>
+              <span className="mxp-chip bg-white/16 tabular-nums">🪙 {totals.coins}</span>
+              <span className="mxp-chip bg-white/16 tabular-nums">
+                🔥 {streak} jour{streak === 1 ? "" : "s"}
+              </span>
+            </div>
           </div>
         </div>
-        <div className="mt-4">
-          <div className="flex justify-between text-xs text-white/80">
-            <span>MAINXP</span>
+        <div className="relative z-10 mt-4">
+          <div className="flex justify-between text-[11px] font-medium text-white/85">
+            <span className="tracking-wide">MAINXP · {totals.main} XP</span>
             <span className="tabular-nums">
               {lp.intoLevel}/{lp.neededForNext} → Niv. {lp.level + 1}
             </span>
           </div>
-          <div className="mt-1 h-2 overflow-hidden rounded-full bg-white/20">
-            <div
-              className="h-full rounded-full bg-white"
-              style={{ width: `${Math.round(lp.ratio * 100)}%` }}
-            />
+          <div className="mxp-xpbar mt-1.5">
+            <i style={{ width: `${Math.max(2, Math.round(lp.ratio * 100))}%` }} />
           </div>
         </div>
-      </section>
-
-      {/* ── Streak ── */}
-      <section className="mt-3 flex items-center justify-between rounded-2xl border border-mxp-line bg-mxp-card px-5 py-3">
-        <span className="text-sm text-mxp-muted">Série actuelle</span>
-        <span className="text-sm font-semibold">
-          {streak} jour{streak === 1 ? "" : "s"} 🔥
-        </span>
       </section>
 
       {user.onboardingStage === "new" && (
@@ -174,7 +167,7 @@ export default async function TodayPage() {
       {goalAtRisk && (
         <Link
           href={`/goals/${goalAtRisk.id}`}
-          className="mt-3 block rounded-2xl border border-mxp-orange/50 bg-mxp-card px-5 py-3 text-sm"
+          className="mt-3 block mxp-card mxp-alert px-5 py-3 text-sm"
         >
           <span className="font-semibold text-mxp-orange">Objectif à risque : </span>
           {goalAtRisk.title} →
@@ -185,16 +178,16 @@ export default async function TodayPage() {
       <p className="text-sm capitalize text-mxp-muted">{dateLabel}</p>
 
       {/* ── WHAT NOW? ── */}
-      <section className="mt-4 rounded-2xl border border-mxp-orange/40 bg-mxp-card p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-mxp-orange">
+      <section className="mt-4 mxp-card mxp-alert p-4">
+        <p className="mxp-label text-mxp-orange">
           Et maintenant ?
         </p>
         <p className="mt-1 text-sm">{whatNow}</p>
       </section>
 
       {/* ── Main Quest ── */}
-      <section className="mt-4 rounded-2xl border-2 border-mxp-purple/50 bg-mxp-card p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-mxp-purple">
+      <section className="mt-4 mxp-card mxp-quest p-4">
+        <p className="mxp-label text-mxp-purple">
           Main Quest · +100 XP
         </p>
         {mainQuest ? (
@@ -209,7 +202,7 @@ export default async function TodayPage() {
             {mainQuest.status === "OPEN" ? (
               <form action={completeTask}>
                 <input type="hidden" name="id" value={mainQuest.id} />
-                <button className="rounded-lg bg-mxp-purple px-3 py-1.5 text-xs font-semibold text-white hover:bg-mxp-purple-deep">
+                <button className="mxp-btn px-3 py-1.5 text-xs">
                   Accompli
                 </button>
               </form>
@@ -227,9 +220,9 @@ export default async function TodayPage() {
               required
               maxLength={300}
               placeholder="Le résultat le plus important du jour…"
-              className="min-w-0 flex-1 rounded-lg border border-mxp-line px-3 py-2 text-sm outline-none focus:border-mxp-purple"
+              className="min-w-0 flex-1 mxp-input px-3 py-2 text-sm"
             />
-            <button className="rounded-lg bg-mxp-purple px-3 py-2 text-xs font-semibold text-white hover:bg-mxp-purple-deep">
+            <button className="mxp-btn px-3 py-2 text-xs">
               Définir
             </button>
           </form>
@@ -237,8 +230,8 @@ export default async function TodayPage() {
       </section>
 
       {/* ── Daily Missions ── */}
-      <section className="mt-4 rounded-2xl border border-mxp-line bg-mxp-card p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-mxp-blue">
+      <section className="mt-4 mxp-card p-4">
+        <p className="mxp-label text-mxp-blue">
           Missions du jour · 3–5 · +25 XP
         </p>
         <TaskList tasks={missions} empty="Aucune mission pour l'instant." />
@@ -251,9 +244,9 @@ export default async function TodayPage() {
               required
               maxLength={300}
               placeholder="Ajouter une mission utile…"
-              className="min-w-0 flex-1 rounded-lg border border-mxp-line px-3 py-2 text-sm outline-none focus:border-mxp-blue"
+              className="min-w-0 flex-1 mxp-input px-3 py-2 text-sm"
             />
-            <button className="rounded-lg border border-mxp-line px-3 py-2 text-xs font-semibold hover:bg-mxp-bg">
+            <button className="mxp-btn-ghost px-3 py-2 text-xs">
               +
             </button>
           </form>
@@ -261,8 +254,8 @@ export default async function TodayPage() {
       </section>
 
       {/* ── Non-Negotiables ── */}
-      <section className="mt-4 rounded-2xl border border-mxp-line bg-mxp-card p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-mxp-green">
+      <section className="mt-4 mxp-card p-4">
+        <p className="mxp-label text-mxp-green">
           Non-négociables · +20 XP · Discipline
         </p>
         {nonNegotiables.length === 0 && (
@@ -280,14 +273,7 @@ export default async function TodayPage() {
                 </span>
                 <form action={toggleNonNegotiable}>
                   <input type="hidden" name="id" value={nn.id} />
-                  <button
-                    aria-pressed={done}
-                    className={`h-7 w-7 rounded-full border text-sm leading-none ${
-                      done
-                        ? "border-mxp-green bg-mxp-green text-white"
-                        : "border-mxp-line bg-mxp-card text-transparent hover:border-mxp-green"
-                    }`}
-                  >
+                  <button aria-pressed={done} className={`mxp-check ${done ? "on" : ""}`}>
                     ✓
                   </button>
                 </form>
@@ -303,9 +289,9 @@ export default async function TodayPage() {
               required
               maxLength={200}
               placeholder="Ex. 10 appels de prospection…"
-              className="min-w-0 flex-1 rounded-lg border border-mxp-line px-3 py-2 text-sm outline-none focus:border-mxp-green"
+              className="min-w-0 flex-1 mxp-input px-3 py-2 text-sm"
             />
-            <button className="rounded-lg border border-mxp-line px-3 py-2 text-xs font-semibold hover:bg-mxp-bg">
+            <button className="mxp-btn-ghost px-3 py-2 text-xs">
               +
             </button>
           </form>
@@ -313,8 +299,8 @@ export default async function TodayPage() {
       </section>
 
       {/* ── Side Quests ── */}
-      <section className="mt-4 mb-6 rounded-2xl border border-mxp-line bg-mxp-card p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-mxp-muted">
+      <section className="mt-4 mb-6 mxp-card p-4">
+        <p className="mxp-label text-mxp-muted">
           Side quests · optionnel · +8 XP
         </p>
         <TaskList tasks={sideQuests} empty="Rien ici — c'est très bien ainsi." />
@@ -326,9 +312,9 @@ export default async function TodayPage() {
             required
             maxLength={300}
             placeholder="Petite action optionnelle…"
-            className="min-w-0 flex-1 rounded-lg border border-mxp-line px-3 py-2 text-sm outline-none focus:border-mxp-purple"
+            className="min-w-0 flex-1 mxp-input px-3 py-2 text-sm"
           />
-          <button className="rounded-lg border border-mxp-line px-3 py-2 text-xs font-semibold hover:bg-mxp-bg">
+          <button className="mxp-btn-ghost px-3 py-2 text-xs">
             +
           </button>
         </form>
@@ -367,7 +353,7 @@ function TaskList({
                 <input type="hidden" name="id" value={t.id} />
                 <button
                   title="Accomplir"
-                  className="rounded-lg border border-mxp-line px-2 py-1 text-xs hover:border-mxp-green hover:text-mxp-green"
+                  className="mxp-btn-ghost px-2 py-1 text-xs hover:text-mxp-green"
                 >
                   ✓
                 </button>
@@ -376,7 +362,7 @@ function TaskList({
                 <input type="hidden" name="id" value={t.id} />
                 <button
                   title="Reporter à demain"
-                  className="rounded-lg border border-mxp-line px-2 py-1 text-xs text-mxp-muted hover:text-mxp-ink"
+                  className="mxp-input px-2 py-1 text-xs text-mxp-muted hover:text-mxp-ink"
                 >
                   →
                 </button>
@@ -385,7 +371,7 @@ function TaskList({
                 <input type="hidden" name="id" value={t.id} />
                 <button
                   title="Supprimer"
-                  className="rounded-lg border border-mxp-line px-2 py-1 text-xs text-mxp-muted hover:text-mxp-red"
+                  className="mxp-input px-2 py-1 text-xs text-mxp-muted hover:text-mxp-red"
                 >
                   ×
                 </button>

@@ -31,8 +31,8 @@ export default async function NightPage() {
         2–4 minutes. +15 XP · Esprit — et demain se prépare tout seul.
       </p>
 
-      <section className="mt-4 rounded-2xl border border-mxp-line bg-mxp-card p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-mxp-blue">Le jour en chiffres</p>
+      <section className="mt-4 mxp-card p-4">
+        <p className="mxp-label text-mxp-blue">Le jour en chiffres</p>
         <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
           <dt className="text-mxp-muted">Main Quest</dt>
           <dd className="text-right">
@@ -59,7 +59,7 @@ export default async function NightPage() {
             name="wentWell"
             rows={2}
             defaultValue={plan?.reviewWentWell ?? ""}
-            className="mt-1 w-full rounded-xl border border-mxp-line bg-mxp-card px-4 py-3 text-sm outline-none focus:border-mxp-teal"
+            className="mt-1 w-full mxp-input px-4 py-3 text-sm"
           />
         </label>
         <label className="block">
@@ -71,7 +71,7 @@ export default async function NightPage() {
             name="missedWhy"
             rows={2}
             defaultValue={plan?.reviewMissedWhy ?? ""}
-            className="mt-1 w-full rounded-xl border border-mxp-line bg-mxp-card px-4 py-3 text-sm outline-none focus:border-mxp-teal"
+            className="mt-1 w-full mxp-input px-4 py-3 text-sm"
           />
         </label>
         <label className="block">
@@ -80,7 +80,7 @@ export default async function NightPage() {
             name="lesson"
             rows={2}
             defaultValue={plan?.reviewLesson ?? ""}
-            className="mt-1 w-full rounded-xl border border-mxp-line bg-mxp-card px-4 py-3 text-sm outline-none focus:border-mxp-teal"
+            className="mt-1 w-full mxp-input px-4 py-3 text-sm"
           />
         </label>
         <label className="block">
@@ -89,7 +89,7 @@ export default async function NightPage() {
             name="gratitude"
             rows={2}
             placeholder="Optionnel · +10 XP Esprit"
-            className="mt-1 w-full rounded-xl border border-mxp-line bg-mxp-card px-4 py-3 text-sm outline-none focus:border-mxp-teal"
+            className="mt-1 w-full mxp-input px-4 py-3 text-sm"
           />
         </label>
         <label className="block">
@@ -102,7 +102,7 @@ export default async function NightPage() {
             name="tomorrowBigThing"
             maxLength={300}
             defaultValue={plan?.tomorrowBigThing ?? ""}
-            className="mt-1 w-full rounded-xl border border-mxp-line bg-mxp-card px-4 py-3 text-sm outline-none focus:border-mxp-purple"
+            className="mt-1 w-full mxp-input px-4 py-3 text-sm"
           />
         </label>
         <button className="w-full rounded-xl bg-mxp-teal px-4 py-3 text-sm font-semibold text-white hover:opacity-90">

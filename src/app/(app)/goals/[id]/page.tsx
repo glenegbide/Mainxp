@@ -46,7 +46,7 @@ export default async function GoalDetailPage({ params }: { params: Promise<{ id:
       )}
 
       {atRisk && (
-        <section className="mt-4 rounded-2xl border border-mxp-orange/50 bg-mxp-card p-4 text-sm">
+        <section className="mt-4 mxp-card mxp-alert p-4 text-sm">
           <p className="font-semibold text-mxp-orange">Objectif à risque</p>
           <p className="mt-1 text-mxp-muted">
             En retard sur le rythme, avec {daysLeft} jour{daysLeft === 1 ? "" : "s"} restants.
@@ -56,8 +56,8 @@ export default async function GoalDetailPage({ params }: { params: Promise<{ id:
       )}
 
       {pace && goal.status === "ACTIVE" && (
-        <section className="mt-4 rounded-2xl border border-mxp-line bg-mxp-card p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-mxp-purple">Rythme</p>
+        <section className="mt-4 mxp-card p-4">
+          <p className="mxp-label text-mxp-purple">Rythme</p>
           <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
             <dt className="text-mxp-muted">Progression</dt>
             <dd className="text-right tabular-nums">
@@ -88,17 +88,17 @@ export default async function GoalDetailPage({ params }: { params: Promise<{ id:
               step="any"
               required
               placeholder={`+ progression (${goal.unit ?? "unités"})`}
-              className="min-w-0 flex-1 rounded-lg border border-mxp-line px-3 py-2 text-sm outline-none focus:border-mxp-purple"
+              className="min-w-0 flex-1 mxp-input px-3 py-2 text-sm"
             />
-            <button className="rounded-lg bg-mxp-purple px-3 py-2 text-xs font-semibold text-white hover:bg-mxp-purple-deep">
+            <button className="mxp-btn px-3 py-2 text-xs">
               Ajouter
             </button>
           </form>
         </section>
       )}
 
-      <section className="mt-4 rounded-2xl border border-mxp-line bg-mxp-card p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-mxp-orange">Projets moteurs</p>
+      <section className="mt-4 mxp-card p-4">
+        <p className="mxp-label text-mxp-orange">Projets moteurs</p>
         {goal.projects.length === 0 ? (
           <p className="mt-2 text-sm text-mxp-muted">
             Aucun projet ne pousse cet objectif. Un objectif sans moteur reste un vœu —
@@ -117,8 +117,8 @@ export default async function GoalDetailPage({ params }: { params: Promise<{ id:
         )}
       </section>
 
-      <section className="mt-4 rounded-2xl border border-mxp-line bg-mxp-card p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-mxp-blue">
+      <section className="mt-4 mxp-card p-4">
+        <p className="mxp-label text-mxp-blue">
           Actions liées (10 dernières)
         </p>
         {goal.tasks.length === 0 ? (
@@ -141,9 +141,9 @@ export default async function GoalDetailPage({ params }: { params: Promise<{ id:
               required
               maxLength={300}
               placeholder="Mission d'aujourd'hui pour cet objectif…"
-              className="min-w-0 flex-1 rounded-lg border border-mxp-line px-3 py-2 text-sm outline-none focus:border-mxp-blue"
+              className="min-w-0 flex-1 mxp-input px-3 py-2 text-sm"
             />
-            <button className="rounded-lg border border-mxp-line px-3 py-2 text-xs font-semibold hover:bg-mxp-bg">
+            <button className="mxp-btn-ghost px-3 py-2 text-xs">
               +
             </button>
           </form>
@@ -151,8 +151,8 @@ export default async function GoalDetailPage({ params }: { params: Promise<{ id:
       </section>
 
       {goal.reward && (
-        <section className="mt-4 rounded-2xl border border-mxp-gold/40 bg-mxp-card p-4 text-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-mxp-gold">Récompense réelle</p>
+        <section className="mt-4 mxp-card mxp-goldc p-4 text-sm">
+          <p className="mxp-label text-mxp-gold">Récompense réelle</p>
           <p className="mt-1">{goal.reward}</p>
         </section>
       )}

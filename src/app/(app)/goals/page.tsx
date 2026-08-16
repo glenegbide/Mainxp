@@ -30,7 +30,7 @@ export default async function GoalsPage() {
       </p>
 
       {active.length === 0 && (
-        <section className="mt-4 rounded-2xl border border-mxp-line bg-mxp-card p-4 text-sm text-mxp-muted">
+        <section className="mt-4 mxp-card p-4 text-sm text-mxp-muted">
           Aucun objectif actif. Définis le premier ci-dessous — par exemple la mission 90 jours
           de ton North Star, rendue mesurable.
         </section>
@@ -52,7 +52,7 @@ export default async function GoalsPage() {
             <li key={g.id}>
               <Link
                 href={`/goals/${g.id}`}
-                className="block rounded-2xl border border-mxp-line bg-mxp-card p-4 transition hover:border-mxp-purple/50"
+                className="block mxp-card p-4 transition hover:border-mxp-purple/50"
               >
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-sm font-medium">{g.title}</p>
@@ -74,7 +74,7 @@ export default async function GoalsPage() {
                         </span>
                       )}
                     </div>
-                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-mxp-bg">
+                    <div className="mt-1 mxp-rail">
                       <div
                         className="h-full rounded-full bg-mxp-purple"
                         style={{ width: `${Math.round(ratio * 100)}%` }}
@@ -90,10 +90,10 @@ export default async function GoalsPage() {
 
       {done.length > 0 && (
         <section className="mt-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-mxp-muted">Atteints</p>
+          <p className="mxp-label text-mxp-muted">Atteints</p>
           <ul className="mt-2 space-y-2">
             {done.map((g) => (
-              <li key={g.id} className="rounded-xl border border-mxp-line bg-mxp-card px-4 py-2.5 text-sm text-mxp-muted">
+              <li key={g.id} className="mxp-card px-4 py-2.5 text-sm text-mxp-muted">
                 ✅ {g.title}
               </li>
             ))}
@@ -101,8 +101,8 @@ export default async function GoalsPage() {
         </section>
       )}
 
-      <section className="mt-6 rounded-2xl border border-mxp-line bg-mxp-card p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-mxp-purple">Nouvel objectif</p>
+      <section className="mt-6 mxp-card p-4">
+        <p className="mxp-label text-mxp-purple">Nouvel objectif</p>
         <form action={createGoal} className="mt-3 space-y-3">
           <input
             type="text"
@@ -110,14 +110,14 @@ export default async function GoalsPage() {
             required
             maxLength={300}
             placeholder="Ex. Gagner CHF 20K/mois"
-            className="w-full rounded-xl border border-mxp-line px-4 py-2.5 text-sm outline-none focus:border-mxp-purple"
+            className="w-full mxp-input px-4 py-2.5 text-sm"
           />
           <input
             type="text"
             name="why"
             maxLength={1000}
             placeholder="Pourquoi ça compte ?"
-            className="w-full rounded-xl border border-mxp-line px-4 py-2.5 text-sm outline-none focus:border-mxp-purple"
+            className="w-full mxp-input px-4 py-2.5 text-sm"
           />
           <div className="grid grid-cols-2 gap-2">
             <input
@@ -126,14 +126,14 @@ export default async function GoalsPage() {
               step="any"
               min="0"
               placeholder="Cible (ex. 20000)"
-              className="rounded-xl border border-mxp-line px-4 py-2.5 text-sm outline-none focus:border-mxp-purple"
+              className="mxp-input px-4 py-2.5 text-sm"
             />
             <input
               type="text"
               name="unit"
               maxLength={40}
               placeholder="Unité (CHF, km…)"
-              className="rounded-xl border border-mxp-line px-4 py-2.5 text-sm outline-none focus:border-mxp-purple"
+              className="mxp-input px-4 py-2.5 text-sm"
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -142,14 +142,14 @@ export default async function GoalsPage() {
               <input
                 type="date"
                 name="deadline"
-                className="mt-1 w-full rounded-xl border border-mxp-line px-3 py-2.5 text-sm outline-none focus:border-mxp-purple"
+                className="mt-1 w-full mxp-input px-3 py-2.5 text-sm"
               />
             </label>
             <label className="text-xs text-mxp-muted">
               Domaine
               <select
                 name="lifeArea"
-                className="mt-1 w-full rounded-xl border border-mxp-line bg-mxp-card px-3 py-2.5 text-sm outline-none focus:border-mxp-purple"
+                className="mt-1 w-full mxp-input px-3 py-2.5 text-sm"
               >
                 {LIFE_AREAS.map((a) => (
                   <option key={a.value} value={a.value}>
@@ -164,9 +164,9 @@ export default async function GoalsPage() {
             name="reward"
             maxLength={300}
             placeholder="Récompense réelle si atteint (optionnel)"
-            className="w-full rounded-xl border border-mxp-line px-4 py-2.5 text-sm outline-none focus:border-mxp-purple"
+            className="w-full mxp-input px-4 py-2.5 text-sm"
           />
-          <button className="w-full rounded-xl bg-mxp-purple px-4 py-2.5 text-sm font-semibold text-white hover:bg-mxp-purple-deep">
+          <button className="w-full mxp-btn px-4 py-2.5 text-sm">
             Créer l&apos;objectif
           </button>
         </form>

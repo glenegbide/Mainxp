@@ -24,7 +24,7 @@ function Field({
         name={name}
         rows={rows}
         defaultValue={defaultValue}
-        className="mt-1 w-full rounded-xl border border-mxp-line bg-mxp-card px-4 py-3 text-sm outline-none focus:border-mxp-purple"
+        className="mt-1 w-full mxp-input px-4 py-3 text-sm"
       />
     </label>
   );
@@ -38,7 +38,7 @@ export default async function NorthStarPage() {
 
   return (
     <main className="px-4 pt-5 pb-8">
-      <p className="text-xs font-semibold uppercase tracking-wide text-mxp-purple">Mon North Star</p>
+      <p className="mxp-label text-mxp-purple">Mon North Star</p>
       <h1 className="mt-1 text-xl font-semibold">Ce que je construis, et pourquoi.</h1>
       <p className="mt-1 text-sm text-mxp-muted">
         Le coach s&apos;appuie sur cette page pour prioriser. Une ligne par élément dans les listes.
@@ -62,7 +62,7 @@ export default async function NorthStarPage() {
             name="mission90Days"
             defaultValue={ns?.mission90Days ?? ""}
             maxLength={500}
-            className="mt-1 w-full rounded-xl border border-mxp-line bg-mxp-card px-4 py-3 text-sm outline-none focus:border-mxp-purple"
+            className="mt-1 w-full mxp-input px-4 py-3 text-sm"
           />
         </label>
         <label className="block">
@@ -73,7 +73,7 @@ export default async function NorthStarPage() {
             defaultValue={ns?.season ?? ""}
             maxLength={120}
             placeholder="Ex. Saison Revenus"
-            className="mt-1 w-full rounded-xl border border-mxp-line bg-mxp-card px-4 py-3 text-sm outline-none focus:border-mxp-purple"
+            className="mt-1 w-full mxp-input px-4 py-3 text-sm"
           />
         </label>
         <Field
@@ -95,7 +95,7 @@ export default async function NorthStarPage() {
           label="Ce que je refuse de devenir"
           defaultValue={ns?.refusals ?? ""}
         />
-        <button className="w-full rounded-xl bg-mxp-purple px-4 py-3 text-sm font-semibold text-white hover:bg-mxp-purple-deep">
+        <button className="w-full mxp-btn px-4 py-3 text-sm">
           Enregistrer
         </button>
       </form>
