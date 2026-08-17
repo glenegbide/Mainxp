@@ -40,6 +40,8 @@ export interface ToolCall {
   id: string; // provider call id (Gemini has none — name is used)
   name: string;
   input: unknown;
+  /** Gemini thought signature — must be echoed back with the call (400 otherwise). */
+  signature?: string;
 }
 
 export type AgentMessage =
@@ -95,7 +97,10 @@ export function toGeminiWire(messages: AgentMessage[]): unknown[] {
         role: "model",
         parts: [
           ...(m.content ? [{ text: m.content }] : []),
-          ...m.toolCalls.map((c) => ({ functionCall: { name: c.name, args: c.input ?? {} } })),
+          ...m.toolCalls.map((c) => ({
+            functionCall: { name: c.name, args: c.input ?? {} },
+            ...(c.signature ? { thoughtSignature: c.signature } : {}),
+          })),
         ],
       };
     }
@@ -293,14 +298,25 @@ class GeminiProvider implements AIProvider {
     if (!res.ok) throw new Error(`AI provider error ${res.status}: ${await res.text()}`);
     const data = (await res.json()) as {
       candidates?: Array<{
-        content?: { parts?: Array<{ text?: string; functionCall?: { name: string; args?: unknown } }> };
+        content?: {
+          parts?: Array<{
+            text?: string;
+            thoughtSignature?: string;
+            functionCall?: { name: string; args?: unknown };
+          }>;
+        };
       }>;
     };
     const parts = data.candidates?.[0]?.content?.parts ?? [];
     const text = parts.map((p) => p.text ?? "").join("");
     const toolCalls = parts
       .filter((p) => p.functionCall)
-      .map((p) => ({ id: p.functionCall!.name, name: p.functionCall!.name, input: p.functionCall!.args ?? {} }));
+      .map((p) => ({
+        id: p.functionCall!.name,
+        name: p.functionCall!.name,
+        input: p.functionCall!.args ?? {},
+        signature: p.thoughtSignature,
+      }));
     if (!text && toolCalls.length === 0) throw new Error("AI provider error: empty Gemini response");
     return { text, toolCalls, model: this.model };
   }

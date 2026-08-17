@@ -51,6 +51,26 @@ describe("provider wire formats", () => {
     ]);
   });
 
+  it("echoes Gemini thought signatures back on functionCall parts (400 without)", () => {
+    const withSig: AgentMessage[] = [
+      {
+        role: "assistant",
+        content: "",
+        toolCalls: [{ id: "get_goals", name: "get_goals", input: {}, signature: "sig123" }],
+      },
+    ];
+    expect(toGeminiWire(withSig)).toEqual([
+      {
+        role: "model",
+        parts: [{ functionCall: { name: "get_goals", args: {} }, thoughtSignature: "sig123" }],
+      },
+    ]);
+    // Anthropic ignores the signature — its wire stays clean
+    expect(toAnthropicWire(withSig)).toEqual([
+      { role: "assistant", content: [{ type: "tool_use", id: "get_goals", name: "get_goals", input: {} }] },
+    ]);
+  });
+
   it("keeps plain turns plain", () => {
     const plain: AgentMessage[] = [
       { role: "user", content: "salut" },
