@@ -481,7 +481,8 @@ model MxJournalEntry {
   id        String   @id @default(cuid())
   userId    String
   user      MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  kind      String   @default("free") // free|morning|night|decision|business|relationship|victory|lesson
+  kind      String   @default("free") // free|morning|night|decision|business|relationship|victory|lesson|comeback
+  mood      String   @default("") // how it feels right now: bien|moyen|dur|a_fond|epuise
   content   String
   dayKey    String
   createdAt DateTime @default(now())

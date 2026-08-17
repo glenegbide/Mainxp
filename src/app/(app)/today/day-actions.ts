@@ -130,8 +130,76 @@ export async function saveNight(formData: FormData): Promise<void> {
     { idempotencyKey: `night:${user.id}:${today}` }
   );
 
+  // ── Feedback du soir : le coach lit la journée racontée et répond (le cœur
+  // de « je veux lui dire comment ma journée s'est passée ») ──
+  const gotFeedback = await nightFeedback(user, {
+    wentWell: s(formData.get("wentWell")),
+    missedWhy: s(formData.get("missedWhy")),
+    lesson: s(formData.get("lesson")),
+    tomorrowBigThing: oneBigThing,
+  });
+
   revalidatePath("/today");
-  redirect("/today");
+  redirect(gotFeedback ? "/coach" : "/today");
+}
+
+/**
+ * Evening feedback: one bounded AI call that reads the user's own account of
+ * the day plus the real numbers, and answers like a coach — in the chat, so
+ * the conversation can continue naturally. Fails silent (returns false):
+ * the review itself must never depend on the AI being up.
+ */
+async function nightFeedback(
+  user: Awaited<ReturnType<typeof requireMxUser>>,
+  review: { wentWell: string; missedWhy: string; lesson: string; tomorrowBigThing: string }
+): Promise<boolean> {
+  if (!review.wentWell && !review.missedWhy && !review.lesson) return false;
+  try {
+    const { getAIProvider } = await import("@/lib/mainxp/ai/provider");
+    const provider = getAIProvider(user.aiKey);
+    if (!provider) return false;
+    const [{ buildCoachSystemPrompt }, { birdsEyeView }] = await Promise.all([
+      import("@/lib/mainxp/ai/coach"),
+      import("@/lib/mainxp/insight"),
+    ]);
+    const [system, view] = await Promise.all([buildCoachSystemPrompt(user), birdsEyeView(user)]);
+    const result = await provider.chat({
+      system,
+      maxTokens: 800,
+      messages: [
+        {
+          role: "user",
+          content:
+            `[REVUE DU SOIR — l'utilisateur vient de raconter sa journée dans le formulaire. Réponds-lui en coach, dans le chat.]\n` +
+            `Ce qui a bien marché : ${review.wentWell || "—"}\n` +
+            `Ce qui a été manqué et pourquoi : ${review.missedWhy || "—"}\n` +
+            `Leçon du jour : ${review.lesson || "—"}\n` +
+            `Priorité de demain : ${review.tomorrowBigThing || "—"}\n` +
+            `Chiffres réels du jour et de la semaine : ${JSON.stringify(view)}\n\n` +
+            `Donne ton feedback du soir en 4–7 phrases : reconnais le réel (chiffres à l'appui), ` +
+            `réagis à SES mots (pas de généralités), creuse UNE chose — la leçon ou le blocage — ` +
+            `et valide ou challenge la priorité de demain. Termine par une question courte s'il y a ` +
+            `quelque chose à creuser. Commence exactement par « 🌙 Feedback du soir — ».`,
+        },
+      ],
+    });
+    const conversation =
+      (await prisma.mxConversation.findFirst({
+        where: { userId: user.id },
+        orderBy: { updatedAt: "desc" },
+      })) ?? (await prisma.mxConversation.create({ data: { userId: user.id, title: "Coach" } }));
+    await prisma.mxMessage.create({
+      data: { conversationId: conversation.id, role: "assistant", content: result.text },
+    });
+    await prisma.mxConversation.update({
+      where: { id: conversation.id },
+      data: { updatedAt: new Date() },
+    });
+    return true;
+  } catch (e) {
+    console.error("nightFeedback failed:", e instanceof Error ? e.message : e);
+    return false;
+  }
 }
 
 // ── Morning routine (audit P9, first slice) ─────────────────────────────────
@@ -146,14 +214,16 @@ export async function addRoutineItem(formData: FormData): Promise<void> {
   const title = s(formData.get("title"), 200);
   if (!title) return;
   const note = s(formData.get("note"), 500); // l'écriture libre : pourquoi / comment
+  const timeOfDay = s(formData.get("timeOfDay"), 20) === "evening" ? "evening" : "morning";
   const count = await prisma.mxRoutineItem.count({
-    where: { userId: user.id, active: true, timeOfDay: "morning" },
+    where: { userId: user.id, active: true, timeOfDay },
   });
   if (count >= ROUTINE_CAP) return;
   await prisma.mxRoutineItem.create({
-    data: { userId: user.id, title, note, timeOfDay: "morning", position: count },
+    data: { userId: user.id, title, note, timeOfDay, position: count },
   });
   revalidatePath("/today/morning");
+  revalidatePath("/today/night");
 }
 
 export async function toggleRoutineItem(formData: FormData): Promise<void> {
@@ -173,6 +243,7 @@ export async function toggleRoutineItem(formData: FormData): Promise<void> {
     update: { done: !(log?.done ?? false) },
   });
   revalidatePath("/today/morning");
+  revalidatePath("/today/night");
   revalidatePath("/today");
 }
 
@@ -183,6 +254,7 @@ export async function archiveRoutineItem(formData: FormData): Promise<void> {
     data: { active: false },
   });
   revalidatePath("/today/morning");
+  revalidatePath("/today/night");
 }
 
 // ── Minimum Day (addendum #7): on a bad day, protect the essentials ──

@@ -35,7 +35,8 @@ export type MxEventType =
   | "minimum_action_completed"
   | "minimum_day_completed"
   | "comeback_completed"
-  | "brain_dump_processed";
+  | "brain_dump_processed"
+  | "journal_written";
 
 export interface EventPayload {
   [key: string]: string | number | boolean | null | undefined;
@@ -240,6 +241,17 @@ export function xpForEvent(
       };
     case "brain_dump_processed":
       return null; // organizing thoughts is input, not achievement
+    case "journal_written":
+      // Reflection is rewarded — with same-day diminishing (ledger-side, the
+      // "journal" source type) so volume never beats sincerity.
+      return {
+        sourceType: "journal",
+        sourceId: String(p.entryId ?? ""),
+        reason: "Journal — poser ce qu'on vit compte",
+        mainDelta: XP_VALUES.JOURNAL.main,
+        coinsDelta: XP_VALUES.JOURNAL.coins,
+        attributeDeltas: { MIND: XP_VALUES.JOURNAL.mind },
+      };
   }
 }
 

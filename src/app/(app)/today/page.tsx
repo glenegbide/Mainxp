@@ -217,12 +217,20 @@ export default async function TodayPage() {
         ))}
       </div>
 
-      <Link
-        href="/dump"
-        className="mt-2 block rounded-xl border border-dashed border-mxp-purple/40 px-4 py-2 text-center text-xs font-semibold text-mxp-purple transition hover:border-solid hover:bg-mxp-card"
-      >
-        🧠 Vide-tête — dis tout d&apos;un coup, je range
-      </Link>
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        <Link
+          href="/dump"
+          className="block rounded-xl border border-dashed border-mxp-purple/40 px-3 py-2 text-center text-xs font-semibold text-mxp-purple transition hover:border-solid hover:bg-mxp-card"
+        >
+          🧠 Vide-tête — je range
+        </Link>
+        <Link
+          href="/journal"
+          className="block rounded-xl border border-dashed border-mxp-teal/50 px-3 py-2 text-center text-xs font-semibold text-mxp-teal transition hover:border-solid hover:bg-mxp-card"
+        >
+          📓 Journal — là, maintenant
+        </Link>
+      </div>
 
       {goalAtRisk && (
         <Link

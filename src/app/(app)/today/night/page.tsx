@@ -3,21 +3,27 @@ import { redirect } from "next/navigation";
 import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
 import { dayKey } from "@/lib/mainxp/day";
-import { saveNight } from "../day-actions";
+import { addRoutineItem, archiveRoutineItem, saveNight, toggleRoutineItem } from "../day-actions";
 
 export default async function NightPage() {
   const user = await getMxUser();
   if (!user) redirect("/login");
   const today = dayKey(new Date(), user.timezone);
 
-  const [tasks, nns, nnLogs, plan] = await Promise.all([
+  const [tasks, nns, nnLogs, plan, routineItems, routineLogs] = await Promise.all([
     prisma.mxTask.findMany({ where: { userId: user.id, dayKey: today } }),
     prisma.mxNonNegotiable.findMany({ where: { userId: user.id, active: true, cadence: "DAILY" } }),
     prisma.mxNonNegotiableLog.findMany({
       where: { userId: user.id, periodKey: today, completed: true },
     }),
     prisma.mxDayPlan.findUnique({ where: { userId_dayKey: { userId: user.id, dayKey: today } } }),
+    prisma.mxRoutineItem.findMany({
+      where: { userId: user.id, active: true, timeOfDay: "evening" },
+      orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+    }),
+    prisma.mxRoutineLog.findMany({ where: { userId: user.id, dayKey: today } }),
   ]);
+  const routineDone = new Map(routineLogs.map((l) => [l.routineItemId, l.done]));
 
   const done = tasks.filter((t) => t.status === "DONE");
   const open = tasks.filter((t) => t.status === "OPEN");
@@ -49,6 +55,73 @@ export default async function NightPage() {
           <p className="mt-2 text-xs text-mxp-muted">
             Les actions ouvertes passeront automatiquement à demain.
           </p>
+        )}
+      </section>
+
+      {/* ── Routine du soir — même moteur que le matin, cochée hors formulaire.
+          Structure, pas mérite : 0 XP. ── */}
+      <section className="mt-4 mxp-card p-4">
+        <div className="flex items-baseline justify-between">
+          <p className="mxp-label text-mxp-teal">Routine du soir</p>
+          <span className="text-xs tabular-nums text-mxp-muted">
+            {routineItems.filter((r) => routineDone.get(r.id)).length}/{routineItems.length}
+          </span>
+        </div>
+        {routineItems.length === 0 && (
+          <p className="mt-2 text-sm text-mxp-muted">
+            Ton rituel de clôture : téléphone en charge hors chambre, préparer demain,
+            lecture… Les étapes qui terminent bien une journée.
+          </p>
+        )}
+        <ul className="mt-2 space-y-2.5">
+          {routineItems.map((item) => {
+            const itemDone = routineDone.get(item.id) ?? false;
+            return (
+              <li key={item.id} className="flex items-start gap-3">
+                <form action={toggleRoutineItem}>
+                  <input type="hidden" name="id" value={item.id} />
+                  <button aria-pressed={itemDone} className={`mxp-check ${itemDone ? "on" : ""}`}>
+                    ✓
+                  </button>
+                </form>
+                <div className="min-w-0 flex-1 pt-1">
+                  <p className={`text-sm ${itemDone ? "text-mxp-muted line-through" : "font-medium"}`}>
+                    {item.title}
+                  </p>
+                  {item.note && <p className="mt-0.5 text-xs text-mxp-muted">{item.note}</p>}
+                </div>
+                <form action={archiveRoutineItem} className="pt-1">
+                  <input type="hidden" name="id" value={item.id} />
+                  <button aria-label={`Retirer ${item.title}`} className="text-xs text-mxp-muted hover:text-mxp-red">
+                    ✕
+                  </button>
+                </form>
+              </li>
+            );
+          })}
+        </ul>
+        {routineItems.length < 10 && (
+          <form action={addRoutineItem} className="mt-3 space-y-2">
+            <input type="hidden" name="timeOfDay" value="evening" />
+            <input
+              type="text"
+              name="title"
+              required
+              maxLength={200}
+              placeholder="Ajouter une étape du soir…"
+              className="w-full mxp-input px-3 py-2 text-sm"
+            />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                name="note"
+                maxLength={500}
+                placeholder="Une note ? (pourquoi, comment…)"
+                className="min-w-0 flex-1 mxp-input px-3 py-2 text-xs"
+              />
+              <button className="mxp-btn-ghost px-3 py-2 text-xs">+</button>
+            </div>
+          </form>
         )}
       </section>
 

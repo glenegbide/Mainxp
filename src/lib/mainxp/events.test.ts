@@ -47,6 +47,11 @@ describe("xpForEvent — centralized XP policy (system of record)", () => {
     expect(xpForEvent("habit_completed", { priorTaps: 4 })).toMatchObject({ multiplier: 0 });
   });
 
+  it("rewards journal writing at JOURNAL value (diminishing lives ledger-side)", () => {
+    expect(xpForEvent("journal_written", { entryId: "j1", kind: "free", mood: "dur" }))
+      .toMatchObject({ mainDelta: 10, coinsDelta: 4, sourceType: "journal", attributeDeltas: { MIND: 8 } });
+  });
+
   it("never awards XP for slips, notes, or unverified focus", () => {
     expect(xpForEvent("habit_slipped", { habitId: "h1" })).toBeNull();
     expect(xpForEvent("task_note_added", { taskId: "t1" })).toBeNull();

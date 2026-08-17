@@ -64,13 +64,18 @@ const TOOLS: ToolDef[] = [
     },
     run: async (user) => {
       const today = dayKey(new Date(), user.timezone);
-      const [tasks, nns, logs, plan, totals, elan] = await Promise.all([
+      const [tasks, nns, logs, plan, totals, elan, journal] = await Promise.all([
         prisma.mxTask.findMany({ where: { userId: user.id, dayKey: today }, orderBy: { createdAt: "asc" } }),
         prisma.mxNonNegotiable.findMany({ where: { userId: user.id, active: true, cadence: "DAILY" } }),
         prisma.mxNonNegotiableLog.findMany({ where: { userId: user.id, periodKey: today } }),
         prisma.mxDayPlan.findUnique({ where: { userId_dayKey: { userId: user.id, dayKey: today } } }),
         xpTotals(user.id),
         elanReport(user.id, user.timezone, user.restMode),
+        prisma.mxJournalEntry.findMany({
+          where: { userId: user.id, dayKey: today },
+          orderBy: { createdAt: "asc" },
+          take: 10,
+        }),
       ]);
       const done = new Map(logs.map((l) => [l.nonNegotiableId, l.completed]));
       const lp = levelProgress(totals.main);
@@ -96,6 +101,12 @@ const TOOLS: ToolDef[] = [
         level: lp.level,
         xp: totals.main,
         coins: totals.coins,
+        // Ce que l'utilisateur a ÉCRIT aujourd'hui — ses mots comptent autant
+        // que ses cases cochées.
+        journalToday: journal.map((j) => ({
+          mood: j.mood || null,
+          content: j.content.slice(0, 300),
+        })),
       });
     },
   },
@@ -425,10 +436,8 @@ const TOOLS: ToolDef[] = [
     run: async (user, input) => {
       const content = str(input.content, 4000);
       if (!content) return err("contenu manquant");
-      const today = dayKey(new Date(), user.timezone);
-      await prisma.mxJournalEntry.create({
-        data: { userId: user.id, kind: "journal", content, dayKey: today },
-      });
+      const { writeJournal } = await import("@/lib/mainxp/journal");
+      await writeJournal(user, content, { kind: "free" }); // same path + XP as the UI
       return ok({ saved: true });
     },
   },
