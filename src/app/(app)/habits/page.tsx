@@ -66,6 +66,11 @@ export default async function HabitsPage() {
                       ×{taps} aujourd&apos;hui
                     </span>
                   )}
+                  {h.description && (
+                    <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
+                      {h.description}
+                    </span>
+                  )}
                 </span>
                 <form action={archiveHabit}>
                   <input type="hidden" name="id" value={h.id} />
@@ -103,6 +108,11 @@ export default async function HabitsPage() {
                   {taps > 0 && (
                     <span className="ml-2 rounded-full bg-mxp-orange/12 px-2 py-0.5 text-[10px] font-bold text-mxp-orange tabular-nums">
                       ×{taps} aujourd&apos;hui
+                    </span>
+                  )}
+                  {h.description && (
+                    <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
+                      {h.description}
                     </span>
                   )}
                 </span>
@@ -146,6 +156,13 @@ export default async function HabitsPage() {
               <option key={value} value={value}>{label}</option>
             ))}
           </select>
+          <textarea
+            name="description"
+            rows={2}
+            maxLength={500}
+            placeholder="Écris ce que tu veux : pourquoi cette habitude, comment tu t'y prends, ton déclencheur…"
+            className="w-full mxp-input px-3 py-2.5 text-sm"
+          />
           <button className="w-full mxp-btn px-4 py-2.5 text-sm">Créer l&apos;habitude</button>
         </form>
       </section>

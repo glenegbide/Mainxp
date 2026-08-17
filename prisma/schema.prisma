@@ -115,8 +115,45 @@ model MxUser {
   rewards           MxReward[]
   gearOwned         MxGearOwned[]
   events            MxEvent[]
+  routineItems      MxRoutineItem[]
+  routineLogs       MxRoutineLog[]
 
   @@map("mainxp_users")
+}
+
+// ── Routines (audit P9, first slice): the morning ritual — structure you walk
+// through, distinct from habits. Ticking a routine item is structure, not
+// merit: it never awards XP (the Morning Start event carries the day's XP,
+// once). The `note` is the user's own writing: why it matters, how it's done.
+model MxRoutineItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  note      String   @default("") // free writing — le pourquoi / le comment
+  timeOfDay String   @default("morning") // morning | evening (later)
+  position  Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  logs MxRoutineLog[]
+
+  @@index([userId, active])
+  @@map("mainxp_routine_items")
+}
+
+model MxRoutineLog {
+  id            String        @id @default(cuid())
+  userId        String
+  user          MxUser        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routineItemId String
+  item          MxRoutineItem @relation(fields: [routineItemId], references: [id], onDelete: Cascade)
+  dayKey        String // "YYYY-MM-DD" user timezone
+  done          Boolean       @default(true)
+
+  @@unique([routineItemId, dayKey])
+  @@index([userId, dayKey])
+  @@map("mainxp_routine_logs")
 }
 
 // SYSTEM OF RECORD (docs/ARCHITECTURE.md): every meaningful real-life action
@@ -303,8 +340,9 @@ model MxHabit {
   user      MxUser       @relation(fields: [userId], references: [id], onDelete: Cascade)
   goalId    String?
   goal      MxGoal?      @relation(fields: [goalId], references: [id], onDelete: SetNull)
-  title     String
-  kind      String       @default("good") // good (tap = XP) | bad (tap = élan hit, zero XP)
+  title       String
+  description String       @default("") // the user's own words: pourquoi / comment
+  kind        String       @default("good") // good (tap = XP) | bad (tap = élan hit, zero XP)
   category  String       @default("") // body|money|mind|people|business|learning
   attribute MxAttribute? // which attribute logging feeds
   cadence   MxCadence    @default(DAILY)
@@ -347,6 +385,7 @@ model MxDayPlan {
   energy    Int?
   stress    Int?
   focus     Int?
+  morningIntention String @default("") // free morning writing — intention, pensées
   startedAt DateTime? // morning flow completed
 
   // Minimum Day (addendum #7): protect the essentials on a bad day

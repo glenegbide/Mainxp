@@ -19,24 +19,22 @@ export async function saveMorning(formData: FormData): Promise<void> {
   const user = await requireMxUser();
   const today = dayKey(new Date(), user.timezone);
 
+  // Free morning writing — intention, pensées. L'écriture est structure, pas
+  // mérite : 0 XP, mais elle nourrit le contexte du coach.
+  const morningIntention = s(formData.get("intention"), 2000);
+
+  const fields = {
+    mood: scale10(formData.get("mood")),
+    energy: scale10(formData.get("energy")),
+    stress: scale10(formData.get("stress")),
+    focus: scale10(formData.get("focus")),
+    morningIntention,
+    startedAt: new Date(),
+  };
   await prisma.mxDayPlan.upsert({
     where: { userId_dayKey: { userId: user.id, dayKey: today } },
-    create: {
-      userId: user.id,
-      dayKey: today,
-      mood: scale10(formData.get("mood")),
-      energy: scale10(formData.get("energy")),
-      stress: scale10(formData.get("stress")),
-      focus: scale10(formData.get("focus")),
-      startedAt: new Date(),
-    },
-    update: {
-      mood: scale10(formData.get("mood")),
-      energy: scale10(formData.get("energy")),
-      stress: scale10(formData.get("stress")),
-      focus: scale10(formData.get("focus")),
-      startedAt: new Date(),
-    },
+    create: { userId: user.id, dayKey: today, ...fields },
+    update: fields,
   });
 
   // Optional Main Quest set during the flow (one per day rule still holds).
@@ -134,6 +132,57 @@ export async function saveNight(formData: FormData): Promise<void> {
 
   revalidatePath("/today");
   redirect("/today");
+}
+
+// ── Morning routine (audit P9, first slice) ─────────────────────────────────
+// Structure the user walks through each morning, distinct from habits.
+// Ticking an item never awards XP (structure, not merit) — the Morning Start
+// event already carries the morning's XP, once per day.
+
+const ROUTINE_CAP = 10;
+
+export async function addRoutineItem(formData: FormData): Promise<void> {
+  const user = await requireMxUser();
+  const title = s(formData.get("title"), 200);
+  if (!title) return;
+  const note = s(formData.get("note"), 500); // l'écriture libre : pourquoi / comment
+  const count = await prisma.mxRoutineItem.count({
+    where: { userId: user.id, active: true, timeOfDay: "morning" },
+  });
+  if (count >= ROUTINE_CAP) return;
+  await prisma.mxRoutineItem.create({
+    data: { userId: user.id, title, note, timeOfDay: "morning", position: count },
+  });
+  revalidatePath("/today/morning");
+}
+
+export async function toggleRoutineItem(formData: FormData): Promise<void> {
+  const user = await requireMxUser();
+  const id = s(formData.get("id"), 40);
+  const item = await prisma.mxRoutineItem.findFirst({
+    where: { id, userId: user.id, active: true },
+  });
+  if (!item) return;
+  const today = dayKey(new Date(), user.timezone);
+  const log = await prisma.mxRoutineLog.findUnique({
+    where: { routineItemId_dayKey: { routineItemId: item.id, dayKey: today } },
+  });
+  await prisma.mxRoutineLog.upsert({
+    where: { routineItemId_dayKey: { routineItemId: item.id, dayKey: today } },
+    create: { userId: user.id, routineItemId: item.id, dayKey: today, done: true },
+    update: { done: !(log?.done ?? false) },
+  });
+  revalidatePath("/today/morning");
+  revalidatePath("/today");
+}
+
+export async function archiveRoutineItem(formData: FormData): Promise<void> {
+  const user = await requireMxUser();
+  await prisma.mxRoutineItem.updateMany({
+    where: { id: s(formData.get("id"), 40), userId: user.id },
+    data: { active: false },
+  });
+  revalidatePath("/today/morning");
 }
 
 // ── Minimum Day (addendum #7): on a bad day, protect the essentials ──

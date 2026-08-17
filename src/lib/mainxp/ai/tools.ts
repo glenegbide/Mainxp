@@ -81,7 +81,15 @@ const TOOLS: ToolDef[] = [
         })),
         nonNegotiables: nns.map((n) => ({ id: n.id, title: n.title, keptToday: done.get(n.id) ?? false })),
         morning: plan
-          ? { mood: plan.mood, energy: plan.energy, stress: plan.stress, focus: plan.focus, minimumDay: plan.minimumDay, nightReviewDone: plan.reviewedAt != null }
+          ? {
+              mood: plan.mood,
+              energy: plan.energy,
+              stress: plan.stress,
+              focus: plan.focus,
+              intention: plan.morningIntention || null,
+              minimumDay: plan.minimumDay,
+              nightReviewDone: plan.reviewedAt != null,
+            }
           : null,
         elan: elan.value,
         restMode: user.restMode,
@@ -335,13 +343,15 @@ const TOOLS: ToolDef[] = [
   {
     spec: {
       name: "create_habit",
-      description: "Créer une habitude. kind: good|bad. attribute (good uniquement) : STRENGTH|ENDURANCE|FOCUS|DISCIPLINE|KNOWLEDGE|STRATEGY|WEALTH|MIND|SOCIAL. Plafond 15.",
+      description:
+        "Créer une habitude. kind: good|bad. attribute (good uniquement) : STRENGTH|ENDURANCE|FOCUS|DISCIPLINE|KNOWLEDGE|STRATEGY|WEALTH|MIND|SOCIAL. description = les mots de l'utilisateur (pourquoi/comment/déclencheur). Plafond 15.",
       input_schema: {
         type: "object",
         properties: {
           title: { type: "string" },
           kind: { type: "string", enum: ["good", "bad"] },
           attribute: { type: "string" },
+          description: { type: "string" },
         },
         required: ["title"],
       },
@@ -353,7 +363,9 @@ const TOOLS: ToolDef[] = [
       const count = await prisma.mxHabit.count({ where: { userId: user.id, active: true } });
       if (count >= 15) return err("plafond atteint (15 habitudes)");
       const attribute = kind === "good" ? oneOf(input.attribute, ATTRS) : null;
-      const habit = await prisma.mxHabit.create({ data: { userId: user.id, title, kind, attribute } });
+      const habit = await prisma.mxHabit.create({
+        data: { userId: user.id, title, kind, attribute, description: str(input.description, 500) ?? "" },
+      });
       return ok({ id: habit.id, title: habit.title, kind });
     },
   },

@@ -29,6 +29,7 @@ export async function createHabit(formData: FormData): Promise<void> {
     data: {
       userId: user.id,
       title,
+      description: s(formData.get("description"), 500), // ses propres mots : pourquoi / comment
       kind,
       attribute: kind === "good" && ATTRS.includes(attrRaw) ? attrRaw : null,
     },
