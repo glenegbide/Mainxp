@@ -5,6 +5,9 @@ import { NextRequest, NextResponse } from "next/server";
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup");
+  // Cron endpoints authenticate themselves (CRON_SECRET / vercel-cron UA) —
+  // they have no session cookie by nature.
+  if (pathname.startsWith("/api/cron/")) return NextResponse.next();
   const hasSession = !!req.cookies.get("mxp_session")?.value;
 
   if (!isAuthPage && !hasSession) {

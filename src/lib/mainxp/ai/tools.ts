@@ -200,6 +200,18 @@ const TOOLS: ToolDef[] = [
   },
   {
     spec: {
+      name: "get_birds_eye_view",
+      description:
+        "Vue d'ensemble de la vie de l'utilisateur : 7 derniers jours (XP, missions, Main Quest, non-négociables, focus), tendance semaine vs semaine, taux de tenue, reports chroniques, objectifs en retard, engagements pris. LA source pour un bilan, un suivi de responsabilité ou toute question « comment je progresse ? ».",
+      input_schema: { type: "object", properties: {} },
+    },
+    run: async (user) => {
+      const { birdsEyeView } = await import("@/lib/mainxp/insight");
+      return ok(await birdsEyeView(user));
+    },
+  },
+  {
+    spec: {
       name: "search_memory",
       description: "Recherche dans la mémoire du coach (souvenirs actifs, non expirés) par mots-clés.",
       input_schema: {
