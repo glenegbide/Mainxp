@@ -34,7 +34,7 @@ export default async function NightPage() {
       <Link href="/today" className="text-xs text-mxp-muted">← Aujourd&apos;hui</Link>
       <h1 className="mt-2 text-xl font-semibold">Revue du soir</h1>
       <p className="text-sm text-mxp-muted">
-        2–4 minutes. +15 XP · Esprit — et demain se prépare tout seul.
+        Comment s’est passée ta journée ? Raconte — et demain se prépare tout seul.
       </p>
 
       <section className="mt-4 mxp-card p-4">
@@ -148,6 +148,18 @@ export default async function NightPage() {
           />
         </label>
         <label className="block">
+          <span className="text-sm font-medium">Qu&apos;as-tu ressenti aujourd&apos;hui ?</span>
+          <span className="block text-xs text-mxp-muted">
+            L&apos;émotion dominante — fierté, frustration, calme, tension… et d&apos;où elle venait.
+          </span>
+          <textarea
+            name="feelings"
+            rows={2}
+            defaultValue={plan?.reviewFeelings ?? ""}
+            className="mt-1 w-full mxp-input px-4 py-3 text-sm"
+          />
+        </label>
+        <label className="block">
           <span className="text-sm font-medium">Qu&apos;as-tu appris ?</span>
           <textarea
             name="lesson"
@@ -157,11 +169,25 @@ export default async function NightPage() {
           />
         </label>
         <label className="block">
+          <span className="text-sm font-medium">
+            Cette journée t&apos;a-t-elle rapproché de ta mission ?
+          </span>
+          <span className="block text-xs text-mxp-muted">
+            La question qui aligne : oui/non, et qu&apos;est-ce qui l&apos;aurait rendue plus alignée ?
+          </span>
+          <textarea
+            name="alignment"
+            rows={2}
+            defaultValue={plan?.reviewAlignment ?? ""}
+            className="mt-1 w-full mxp-input px-4 py-3 text-sm"
+          />
+        </label>
+        <label className="block">
           <span className="text-sm font-medium">Gratitude — qu&apos;est-ce qui a compté aujourd&apos;hui ?</span>
           <textarea
             name="gratitude"
             rows={2}
-            placeholder="Optionnel · +10 XP Esprit"
+            placeholder="Optionnel — ce qui a compté, vraiment"
             className="mt-1 w-full mxp-input px-4 py-3 text-sm"
           />
         </label>

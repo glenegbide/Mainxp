@@ -42,7 +42,7 @@ export default async function ProgressPage() {
       >
         📅 Revue hebdomadaire
         <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
-          la semaine en chiffres, 3 questions, +25 XP
+          la semaine en chiffres, 3 questions
         </span>
       </Link>
 

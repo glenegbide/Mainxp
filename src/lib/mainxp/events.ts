@@ -36,7 +36,10 @@ export type MxEventType =
   | "minimum_day_completed"
   | "comeback_completed"
   | "brain_dump_processed"
-  | "journal_written";
+  | "journal_written"
+  | "challenge_accepted"
+  | "challenge_tick"
+  | "challenge_completed";
 
 export interface EventPayload {
   [key: string]: string | number | boolean | null | undefined;
@@ -252,6 +255,23 @@ export function xpForEvent(
         coinsDelta: XP_VALUES.JOURNAL.coins,
         attributeDeltas: { MIND: XP_VALUES.JOURNAL.mind },
       };
+    case "challenge_accepted":
+      return null; // saying yes is the start, not the achievement
+    case "challenge_tick":
+      return null; // daily structure — the completion is the reward
+    case "challenge_completed": {
+      // The SURPRISE: never advertised upfront, scaled by the dare's length,
+      // reason carries the why. 7 days → 61 XP, 30 days → 130 XP (capped).
+      const days = Math.min(30, Math.max(1, Number(p.durationDays ?? 1)));
+      return {
+        sourceType: "challenge",
+        sourceId: String(p.challengeId ?? ""),
+        reason: `Défi relevé : ${title} — ${days} jours tenus jusqu'au bout`,
+        mainDelta: 40 + days * 3,
+        coinsDelta: 20 + days,
+        attributeDeltas: { DISCIPLINE: 20 + days },
+      };
+    }
   }
 }
 

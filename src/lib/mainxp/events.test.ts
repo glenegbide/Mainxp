@@ -47,6 +47,20 @@ describe("xpForEvent — centralized XP policy (system of record)", () => {
     expect(xpForEvent("habit_completed", { priorTaps: 4 })).toMatchObject({ multiplier: 0 });
   });
 
+  it("challenges: accepting and ticking are free, COMPLETING is the surprise scaled by duration", () => {
+    expect(xpForEvent("challenge_accepted", { challengeId: "c1" })).toBeNull();
+    expect(xpForEvent("challenge_tick", { challengeId: "c1" })).toBeNull();
+    // 7 jours (1 livre cette semaine) → 61 XP / 27 pièces
+    expect(xpForEvent("challenge_completed", { challengeId: "c1", title: "1 livre", durationDays: 7 }))
+      .toMatchObject({ mainDelta: 61, coinsDelta: 27, sourceType: "challenge" });
+    // 30 jours méditation → 130 XP, discipline lourde
+    expect(xpForEvent("challenge_completed", { challengeId: "c2", title: "Méditation", durationDays: 30 }))
+      .toMatchObject({ mainDelta: 130, coinsDelta: 50, attributeDeltas: { DISCIPLINE: 50 } });
+    // au-delà de 30 jours : plafonné (pas d'inflation)
+    expect(xpForEvent("challenge_completed", { challengeId: "c3", title: "X", durationDays: 90 }))
+      .toMatchObject({ mainDelta: 130 });
+  });
+
   it("rewards journal writing at JOURNAL value (diminishing lives ledger-side)", () => {
     expect(xpForEvent("journal_written", { entryId: "j1", kind: "free", mood: "dur" }))
       .toMatchObject({ mainDelta: 10, coinsDelta: 4, sourceType: "journal", attributeDeltas: { MIND: 8 } });

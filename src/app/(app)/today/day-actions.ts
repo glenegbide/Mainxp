@@ -66,26 +66,20 @@ export async function saveNight(formData: FormData): Promise<void> {
   const tomorrow = addDays(today, 1);
   const oneBigThing = s(formData.get("tomorrowBigThing"), 300);
 
+  const reviewFields = {
+    reviewedAt: new Date(),
+    reviewWentWell: s(formData.get("wentWell")),
+    reviewMissedWhy: s(formData.get("missedWhy")),
+    reviewLesson: s(formData.get("lesson")),
+    reviewFeelings: s(formData.get("feelings")),
+    reviewAlignment: s(formData.get("alignment")),
+    tomorrowBigThing: oneBigThing,
+    preparedAt: new Date(),
+  };
   await prisma.mxDayPlan.upsert({
     where: { userId_dayKey: { userId: user.id, dayKey: today } },
-    create: {
-      userId: user.id,
-      dayKey: today,
-      reviewedAt: new Date(),
-      reviewWentWell: s(formData.get("wentWell")),
-      reviewMissedWhy: s(formData.get("missedWhy")),
-      reviewLesson: s(formData.get("lesson")),
-      tomorrowBigThing: oneBigThing,
-      preparedAt: new Date(),
-    },
-    update: {
-      reviewedAt: new Date(),
-      reviewWentWell: s(formData.get("wentWell")),
-      reviewMissedWhy: s(formData.get("missedWhy")),
-      reviewLesson: s(formData.get("lesson")),
-      tomorrowBigThing: oneBigThing,
-      preparedAt: new Date(),
-    },
+    create: { userId: user.id, dayKey: today, ...reviewFields },
+    update: reviewFields,
   });
 
   // Gratitude (Part 30) — optional, its own record + XP.
@@ -136,6 +130,8 @@ export async function saveNight(formData: FormData): Promise<void> {
     wentWell: s(formData.get("wentWell")),
     missedWhy: s(formData.get("missedWhy")),
     lesson: s(formData.get("lesson")),
+    feelings: s(formData.get("feelings")),
+    alignment: s(formData.get("alignment")),
     tomorrowBigThing: oneBigThing,
   });
 
@@ -151,9 +147,16 @@ export async function saveNight(formData: FormData): Promise<void> {
  */
 async function nightFeedback(
   user: Awaited<ReturnType<typeof requireMxUser>>,
-  review: { wentWell: string; missedWhy: string; lesson: string; tomorrowBigThing: string }
+  review: {
+    wentWell: string;
+    missedWhy: string;
+    lesson: string;
+    feelings: string;
+    alignment: string;
+    tomorrowBigThing: string;
+  }
 ): Promise<boolean> {
-  if (!review.wentWell && !review.missedWhy && !review.lesson) return false;
+  if (!review.wentWell && !review.missedWhy && !review.lesson && !review.feelings) return false;
   try {
     const { getAIProvider } = await import("@/lib/mainxp/ai/provider");
     const provider = getAIProvider(user.aiKey);
@@ -173,13 +176,16 @@ async function nightFeedback(
             `[REVUE DU SOIR — l'utilisateur vient de raconter sa journée dans le formulaire. Réponds-lui en coach, dans le chat.]\n` +
             `Ce qui a bien marché : ${review.wentWell || "—"}\n` +
             `Ce qui a été manqué et pourquoi : ${review.missedWhy || "—"}\n` +
+            `Ce qu'il a RESSENTI : ${review.feelings || "—"}\n` +
             `Leçon du jour : ${review.lesson || "—"}\n` +
+            `Alignement avec sa mission : ${review.alignment || "—"}\n` +
             `Priorité de demain : ${review.tomorrowBigThing || "—"}\n` +
             `Chiffres réels du jour et de la semaine : ${JSON.stringify(view)}\n\n` +
             `Donne ton feedback du soir en 4–7 phrases : reconnais le réel (chiffres à l'appui), ` +
-            `réagis à SES mots (pas de généralités), creuse UNE chose — la leçon ou le blocage — ` +
-            `et valide ou challenge la priorité de demain. Termine par une question courte s'il y a ` +
-            `quelque chose à creuser. Commence exactement par « 🌙 Feedback du soir — ».`,
+            `réagis à SES mots — y compris ce qu'il a RESSENTI (accueille l'émotion avant de coacher, ` +
+            `surtout s'il est fatigué) — creuse UNE chose (la leçon, le blocage ou l'alignement avec sa ` +
+            `mission), et valide ou challenge la priorité de demain. Termine par une question courte qui ` +
+            `l'aligne pour demain. Commence exactement par « 🌙 Feedback du soir — ».`,
         },
       ],
     });

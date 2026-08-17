@@ -36,7 +36,6 @@ export default async function JournalPage() {
       <Link href="/today" className="text-xs text-mxp-muted">← Aujourd&apos;hui</Link>
       <div className="mt-2 flex items-baseline justify-between">
         <h1 className="text-xl font-semibold">Journal</h1>
-        <span className="mxp-chip bg-mxp-teal/10 text-mxp-teal">+10 XP · Esprit</span>
       </div>
       <p className="text-sm text-mxp-muted">
         Pose ce que tu vis, là, maintenant. Ton coach le lit — personne d&apos;autre.
@@ -71,8 +70,7 @@ export default async function JournalPage() {
           <button className="w-full mxp-btn mxp-btn-teal px-4 py-2.5 text-sm">Écrire</button>
         </form>
         <p className="mt-2 text-xs text-mxp-muted">
-          L&apos;XP du journal diminue au fil des entrées du jour — la sincérité compte, pas le
-          volume.
+          Ce qui compte ici, c&apos;est la sincérité — pas le volume.
         </p>
       </section>
 

@@ -223,6 +223,65 @@ const TOOLS: ToolDef[] = [
   },
   {
     spec: {
+      name: "get_challenges",
+      description: "Les défis de l'utilisateur : proposés (en attente de réponse), actifs (avec progression) et terminés récemment.",
+      input_schema: { type: "object", properties: {} },
+    },
+    run: async (user) => {
+      const challenges = await prisma.mxChallenge.findMany({
+        where: { userId: user.id },
+        include: { logs: true },
+        orderBy: { createdAt: "desc" },
+        take: 12,
+      });
+      return ok(
+        challenges.map((c) => ({
+          id: c.id,
+          title: c.title,
+          status: c.status,
+          progress: `${c.logs.length}/${c.targetCount} ${c.unitLabel}`,
+          durationDays: c.durationDays,
+        }))
+      );
+    },
+  },
+  {
+    spec: {
+      name: "propose_challenge",
+      description:
+        "Proposer un défi personnel sur mesure (« Glen, tu acceptes ? ») lié à ce sur quoi il travaille — ex. 30 jours de méditation 5 min, 1 livre cette semaine, 5 appels/jour pendant 10 jours. L'utilisateur devra ACCEPTER sur son écran Aujourd'hui avant que ça compte. Maximum 3 défis vivants — vérifier get_challenges d'abord. Ne JAMAIS révéler de montants d'XP : la récompense est une surprise.",
+      input_schema: {
+        type: "object",
+        properties: {
+          title: { type: "string", description: "court et concret" },
+          description: { type: "string", description: "le pourquoi, en une phrase" },
+          durationDays: { type: "number", description: "fenêtre en jours (1-90)" },
+          targetCount: { type: "number", description: "nombre de coches à atteindre (≤ durationDays)" },
+          unitLabel: { type: "string", description: "jours | livre | séances…" },
+        },
+        required: ["title", "durationDays", "targetCount"],
+      },
+    },
+    run: async (user, input) => {
+      const title = str(input.title, 200);
+      const durationDays = numOrNull(input.durationDays);
+      const targetCount = numOrNull(input.targetCount);
+      if (!title || !durationDays || !targetCount) return err("title/durationDays/targetCount requis");
+      const { proposeChallenge } = await import("@/lib/mainxp/challenges");
+      const created = await proposeChallenge(user, {
+        title,
+        description: str(input.description, 500) ?? "",
+        durationDays,
+        targetCount,
+        unitLabel: str(input.unitLabel, 30) ?? "jours",
+        source: "coach",
+      });
+      if (!created) return err("déjà 3 défis vivants — en terminer ou en retirer un d'abord");
+      return ok({ id: created.id, title: created.title, note: "Proposé — l'utilisateur doit accepter sur son écran Aujourd'hui." });
+    },
+  },
+  {
+    spec: {
       name: "search_memory",
       description: "Recherche dans la mémoire du coach (souvenirs actifs, non expirés) par mots-clés.",
       input_schema: {

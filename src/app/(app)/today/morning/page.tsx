@@ -52,7 +52,7 @@ export default async function MorningPage() {
     <main className="px-4 pt-5 pb-8">
       <Link href="/today" className="text-xs text-mxp-muted">← Aujourd&apos;hui</Link>
       <h1 className="mt-2 text-xl font-semibold">Morning Start</h1>
-      <p className="text-sm text-mxp-muted">2 minutes pour lancer la journée. +10 XP · Esprit.</p>
+      <p className="text-sm text-mxp-muted">2 minutes pour lancer la journée en pleine possession.</p>
 
       {/* ── Routine du matin — hors du formulaire principal : chaque coche est
           sauvegardée immédiatement. Structure, pas mérite : 0 XP. ── */}

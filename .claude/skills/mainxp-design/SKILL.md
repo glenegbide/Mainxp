@@ -87,8 +87,10 @@ the user should close the app fast (the product's own success metric).
 
 French first, tutoiement, no-shame: states are honest but never scolding
 ("Ta Main Quest n'a pas bougé" — a fact plus the highest-impact next action,
-not guilt). Empty states say what to do next. XP amounts are shown before the
-action (`+100 XP` chip), not as a surprise after.
+not guilt). Empty states say what to do next. Rewards are a SURPRISE: never
+advertise XP amounts before an action (no `+100 XP` chips as bait) — XP is
+discovered after the real action, with its reason, in the ledger/progress.
+Coin COSTS (shop, rewards) stay visible — spending is a decision, not bait.
 
 Economy rule that constrains design: **coins buy cosmetics and self-defined
 real-life rewards only — never XP, levels, or gameplay power** (the shop

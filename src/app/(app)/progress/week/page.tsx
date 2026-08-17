@@ -54,7 +54,7 @@ export default async function WeeklyReviewPage() {
     <main className="px-4 pt-5 pb-8">
       <Link href="/progress" className="text-xs text-mxp-muted">← Progression</Link>
       <h1 className="mt-2 text-xl font-semibold">Revue hebdomadaire</h1>
-      <p className="text-sm text-mxp-muted">Semaine {week} · +25 XP · Esprit</p>
+      <p className="text-sm text-mxp-muted">Semaine {week} — prendre de la hauteur</p>
 
       <section className="mxp-card mt-4 p-4">
         <p className="mxp-label text-mxp-blue">La semaine en chiffres</p>
@@ -101,7 +101,7 @@ export default async function WeeklyReviewPage() {
             />
           </label>
           <button className="w-full mxp-btn px-4 py-3 text-sm">
-            Clore la semaine · +25 XP
+            Clore la semaine
           </button>
         </form>
       )}

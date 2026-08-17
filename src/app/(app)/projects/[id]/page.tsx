@@ -97,7 +97,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
       <section className="mt-4 mxp-card p-4">
         <p className="mxp-label text-mxp-blue">
-          Jalons · +40 XP · Stratégie
+          Jalons — les vraies étapes du projet
         </p>
         {project.milestones.length === 0 && (
           <p className="mt-2 text-sm text-mxp-muted">

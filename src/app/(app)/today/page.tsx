@@ -22,6 +22,13 @@ import {
 import { addTaskNote } from "./actions";
 import { tapHabit } from "../habits/actions";
 import { activateMinimumDay, submitComeback, toggleMinimumSlot } from "./day-actions";
+import {
+  acceptProposedChallenge,
+  acceptStarterChallenge,
+  declineChallenge,
+  tickChallengeToday,
+} from "./challenge-actions";
+import { STARTER_CHALLENGES } from "@/lib/mainxp/challenges";
 
 export default async function TodayPage() {
   const user = await getMxUser();
@@ -48,6 +55,15 @@ export default async function TodayPage() {
     prisma.mxGoal.findMany({ where: { userId: user.id, status: "ACTIVE" } }),
     prisma.mxDayPlan.findUnique({ where: { userId_dayKey: { userId: user.id, dayKey: today } } }),
   ]);
+  const [challenges, challengeLogs] = await Promise.all([
+    prisma.mxChallenge.findMany({
+      where: { userId: user.id, status: { in: ["proposed", "active"] } },
+      include: { logs: true },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.mxChallengeLog.findMany({ where: { userId: user.id, dayKey: today } }),
+  ]);
+  const tickedToday = new Set(challengeLogs.map((l) => l.challengeId));
   const [elan, gearEquipped, goodHabits, lastEvent, comebackDoneToday] = await Promise.all([
     elanReport(user.id, user.timezone, user.restMode),
     prisma.mxGearOwned.findMany({ where: { userId: user.id, equipped: true } }),
@@ -252,7 +268,6 @@ export default async function TodayPage() {
         <section className="mxp-card mxp-quest mt-4 p-4">
           <div className="flex items-baseline justify-between">
             <p className="mxp-label text-mxp-purple">Quête de retour</p>
-            <span className="mxp-chip bg-mxp-purple-soft text-mxp-purple-deep">+40 XP</span>
           </div>
           <p className="mt-1 text-sm">
             {awayDays} jours sans MAINXP. <strong>Aucune culpabilité</strong> — on
@@ -286,7 +301,7 @@ export default async function TodayPage() {
           <p className="mxp-label text-mxp-teal">Journée minimum</p>
           <p className="mt-1 text-sm text-mxp-muted">
             Aujourd&apos;hui n&apos;a pas besoin d&apos;être parfait. Protège ces trois
-            choses et appelle ça une journée de récupération réussie. +8 XP chacune,
+            choses et appelle ça une journée de récupération réussie —
             +15 si les trois.
           </p>
           <ul className="mt-3 space-y-2.5">
@@ -334,11 +349,117 @@ export default async function TodayPage() {
         </ul>
       </section>
 
+      {/* ── Evening nudge: the app comes to you — « comment s'est passée ta
+          journée ? » once the evening is here and the review isn't done ── */}
+      {!dayPlan?.reviewedAt &&
+        Number(
+          new Intl.DateTimeFormat("en-GB", {
+            hour: "numeric",
+            hour12: false,
+            timeZone: user.timezone,
+          }).format(new Date())
+        ) >= 20 && (
+          <Link href="/today/night" className="mt-4 block mxp-card mxp-bluec p-4">
+            <p className="mxp-label text-mxp-blue">🌙 C&apos;est l&apos;heure</p>
+            <p className="mt-1 text-sm font-medium">
+              Comment s&apos;est passée ta journée, {user.name} ?
+            </p>
+            <p className="mt-0.5 text-xs text-mxp-muted">
+              Raconte-la — ton coach te répond, et demain se prépare tout seul.
+            </p>
+          </Link>
+        )}
+
+      {/* ── Défis — « tu acceptes ? » : proposed dares + active progress ── */}
+      {challenges.length > 0 && (
+        <section className="mt-4 mxp-card mxp-goldc p-4">
+          <p className="mxp-label text-mxp-gold">Défis</p>
+          <ul className="mt-2 space-y-3">
+            {challenges.map((c) => {
+              const ticks = c.logs.length;
+              const ratio = Math.min(100, Math.round((ticks / c.targetCount) * 100));
+              return (
+                <li key={c.id}>
+                  {c.status === "proposed" ? (
+                    <div>
+                      <p className="text-sm font-medium">
+                        {user.name}, tu acceptes ? — {c.title}
+                      </p>
+                      {c.description && (
+                        <p className="mt-0.5 text-xs text-mxp-muted">{c.description}</p>
+                      )}
+                      <div className="mt-2 flex gap-2">
+                        <form action={acceptProposedChallenge} className="flex-1">
+                          <input type="hidden" name="id" value={c.id} />
+                          <button className="w-full mxp-btn mxp-btn-gold px-3 py-2 text-xs">
+                            J&apos;accepte le défi
+                          </button>
+                        </form>
+                        <form action={declineChallenge}>
+                          <input type="hidden" name="id" value={c.id} />
+                          <button className="mxp-btn-ghost px-3 py-2 text-xs">Pas maintenant</button>
+                        </form>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <form action={tickChallengeToday}>
+                        <input type="hidden" name="id" value={c.id} />
+                        <button
+                          aria-pressed={tickedToday.has(c.id)}
+                          disabled={tickedToday.has(c.id)}
+                          className={`mxp-check ${tickedToday.has(c.id) ? "on" : ""}`}
+                        >
+                          ✓
+                        </button>
+                      </form>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium">{c.title}</p>
+                        <div className="mxp-rail mt-1.5">
+                          <div
+                            className="h-full rounded-full bg-mxp-gold"
+                            style={{ width: `${ratio}%` }}
+                          />
+                        </div>
+                        <p className="mt-1 text-xs tabular-nums text-mxp-muted">
+                          {ticks}/{c.targetCount} {c.unitLabel}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+      {challenges.length === 0 && (
+        <section className="mt-4 mxp-card p-4">
+          <p className="mxp-label text-mxp-gold">Un défi, {user.name} ?</p>
+          <ul className="mt-2 space-y-2">
+            {STARTER_CHALLENGES.map((sc) => (
+              <li key={sc.key} className="flex items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">{sc.title}</p>
+                  <p className="text-xs text-mxp-muted">{sc.description}</p>
+                </div>
+                <form action={acceptStarterChallenge}>
+                  <input type="hidden" name="key" value={sc.key} />
+                  <button className="mxp-btn-ghost px-3 py-1.5 text-xs">J&apos;accepte</button>
+                </form>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-mxp-muted">
+            Ton coach peut aussi t&apos;en proposer sur mesure — demande-lui.
+          </p>
+        </section>
+      )}
+
       {/* ── Main Quest ── */}
       <section className="mt-4 mxp-card mxp-quest p-4">
         <div className="flex items-baseline justify-between">
           <p className="mxp-label text-mxp-purple">⚡ Main Quest</p>
-          <span className="mxp-chip bg-mxp-purple-soft text-mxp-purple-deep">+100 XP</span>
         </div>
         {mainQuest ? (
           <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
@@ -403,7 +524,6 @@ export default async function TodayPage() {
       <section className="mt-4 mxp-card p-4">
         <div className="flex items-baseline justify-between">
           <p className="mxp-label text-mxp-blue">Missions du jour · 3–5</p>
-          <span className="mxp-chip bg-mxp-blue/10 text-mxp-blue">+25 XP</span>
         </div>
         <TaskList tasks={missions} empty="Aucune mission pour l'instant." />
         {missions.filter((t) => t.status === "OPEN").length < 5 && (
@@ -428,7 +548,6 @@ export default async function TodayPage() {
       <section className="mt-4 mxp-card p-4">
         <div className="flex items-baseline justify-between">
           <p className="mxp-label text-mxp-green">Non-négociables</p>
-          <span className="mxp-chip bg-mxp-green/10 text-mxp-green">+20 XP</span>
         </div>
         {nonNegotiables.length === 0 && (
           <p className="mt-2 text-sm text-mxp-muted">
@@ -512,7 +631,6 @@ export default async function TodayPage() {
       <section className="mt-4 mb-6 mxp-card p-4">
         <div className="flex items-baseline justify-between">
           <p className="mxp-label text-mxp-muted">Side quests · optionnel</p>
-          <span className="mxp-chip bg-mxp-bg text-mxp-muted">+8 XP</span>
         </div>
         <TaskList tasks={sideQuests} empty="Rien ici — c'est très bien ainsi." />
         <form action={addTask} className="mt-3 flex gap-2">

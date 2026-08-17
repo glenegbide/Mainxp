@@ -117,8 +117,47 @@ model MxUser {
   events            MxEvent[]
   routineItems      MxRoutineItem[]
   routineLogs       MxRoutineLog[]
+  challenges        MxChallenge[]
+  challengeLogs     MxChallengeLog[]
 
   @@map("mainxp_users")
+}
+
+// ── Challenges (audit #24): time-boxed dares — « Glen, tu acceptes ? » —
+// proposed by the coach (or picked from starters), accepted explicitly,
+// ticked day by day. Ticks are structure (0 XP); COMPLETION is the surprise
+// reward, scaled by duration. Never more than a few alive at once.
+model MxChallenge {
+  id           String    @id @default(cuid())
+  userId       String
+  user         MxUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title        String
+  description  String    @default("") // the dare, in words — why it's worth it
+  durationDays Int // window to finish, from acceptance
+  targetCount  Int // ticks needed (30 meditation days, 1 book…)
+  unitLabel    String    @default("jours")
+  status       String    @default("proposed") // proposed|active|completed|declined|abandoned
+  source       String    @default("coach") // coach|starter|self
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  logs MxChallengeLog[]
+
+  @@index([userId, status])
+  @@map("mainxp_challenges")
+}
+
+model MxChallengeLog {
+  id          String      @id @default(cuid())
+  userId      String
+  user        MxUser      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challengeId String
+  challenge   MxChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  dayKey      String
+
+  @@unique([challengeId, dayKey])
+  @@map("mainxp_challenge_logs")
 }
 
 // ── Routines (audit P9, first slice): the morning ritual — structure you walk
@@ -399,6 +438,8 @@ model MxDayPlan {
   reviewWentWell   String    @default("")
   reviewMissedWhy  String    @default("")
   reviewLesson     String    @default("")
+  reviewFeelings   String    @default("") // qu'as-tu RESSENTI — l'émotion du jour
+  reviewAlignment  String    @default("") // la journée t'a-t-elle rapproché de ta mission ?
   tomorrowBigThing String    @default("")
   preparedAt       DateTime? // tomorrow draft generated
 

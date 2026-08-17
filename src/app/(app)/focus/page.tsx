@@ -30,7 +30,7 @@ export default async function FocusPage() {
       <Link href="/today" className="text-xs text-mxp-muted">← Aujourd&apos;hui</Link>
       <h1 className="mt-2 text-xl font-semibold">Focus</h1>
       <p className="text-sm text-mxp-muted">
-        +15 XP · Focus par bloc de 25 minutes réellement écoulé — vérifié côté serveur,
+        Chaque bloc de 25 minutes réellement écoulé compte — vérifié côté serveur,
         pas de triche possible.
       </p>
 

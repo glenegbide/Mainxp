@@ -161,7 +161,7 @@ export default async function GoalDetailPage({ params }: { params: Promise<{ id:
         <form action={completeGoal} className="mt-5">
           <input type="hidden" name="id" value={goal.id} />
           <button className="w-full rounded-xl border border-mxp-green bg-mxp-card px-4 py-3 text-sm font-semibold text-mxp-green hover:bg-mxp-green hover:text-white">
-            Objectif atteint · +150 XP · +100 pièces
+            Marquer l’objectif comme atteint
           </button>
         </form>
       )}

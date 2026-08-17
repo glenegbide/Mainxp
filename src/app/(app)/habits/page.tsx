@@ -35,13 +35,13 @@ export default async function HabitsPage() {
       <Link href="/today" className="text-xs text-mxp-muted">← Aujourd&apos;hui</Link>
       <h1 className="mt-2 text-xl font-semibold">Habitudes</h1>
       <p className="text-sm text-mxp-muted">
-        Tape ➕ quand c&apos;est fait. Les bonnes habitudes donnent +10 XP (rendement
+        Tape ➕ quand c&apos;est fait. La régularité paie (rendement
         décroissant le même jour) ; suivre une mauvaise habitude n&apos;enlève jamais
         d&apos;XP — elle pèse seulement sur ton Élan.
       </p>
 
       <section className="mxp-card mt-4 p-4">
-        <p className="mxp-label text-mxp-green">Bonnes habitudes · +10 XP</p>
+        <p className="mxp-label text-mxp-green">Bonnes habitudes</p>
         {good.length === 0 && (
           <p className="mt-2 text-sm text-mxp-muted">Ex. lire 10 pages, marcher, appeler un client…</p>
         )}
