@@ -207,24 +207,24 @@ export default async function TodayPage() {
         </Link>
       )}
 
-      {/* ── Quick actions: one quiet row, state shown by a check ── */}
+      {/* ── Quick actions: one quiet row, each icon seated on its area color ── */}
       <div className="mt-3 grid grid-cols-4 gap-2">
         {(
           [
-            ["/today/morning", "☀️", "Matin", !!dayPlan?.startedAt],
-            ["/focus", "⏱️", "Focus", false],
-            ["/habits", "✚", "Habitudes", false],
-            ["/today/night", "🌙", "Soir", !!dayPlan?.reviewedAt],
+            ["/today/morning", "☀️", "Matin", "bg-mxp-orange/10", !!dayPlan?.startedAt],
+            ["/focus", "⏱️", "Focus", "bg-mxp-blue/10", false],
+            ["/habits", "✚", "Habitudes", "bg-mxp-green/10", false],
+            ["/today/night", "🌙", "Soir", "bg-mxp-purple/10", !!dayPlan?.reviewedAt],
           ] as const
-        ).map(([href, icon, label, done]) => (
+        ).map(([href, icon, label, tint, done]) => (
           <Link
             key={href}
             href={href}
-            className={`mxp-card flex flex-col items-center gap-0.5 px-2 py-2.5 text-center text-[11px] font-semibold transition ${
+            className={`mxp-card flex flex-col items-center gap-1 px-2 py-2.5 text-center text-[11px] font-semibold ${
               done ? "text-mxp-muted" : "text-mxp-ink"
             }`}
           >
-            <span aria-hidden className={`text-base leading-none ${done ? "grayscale opacity-60" : ""}`}>
+            <span aria-hidden className={`mxp-tile ${done ? "bg-mxp-bg grayscale opacity-70" : tint}`}>
               {icon}
             </span>
             {label}
@@ -236,15 +236,23 @@ export default async function TodayPage() {
       <div className="mt-2 grid grid-cols-2 gap-2">
         <Link
           href="/dump"
-          className="block rounded-xl border border-dashed border-mxp-purple/40 px-3 py-2 text-center text-xs font-semibold text-mxp-purple transition hover:border-solid hover:bg-mxp-card"
+          className="mxp-card flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-mxp-ink"
         >
-          🧠 Vide-tête — je range
+          <span aria-hidden className="mxp-tile bg-mxp-purple/10">🧠</span>
+          <span>
+            Vide-tête
+            <span className="block text-[10px] font-normal text-mxp-muted">je range pour toi</span>
+          </span>
         </Link>
         <Link
           href="/journal"
-          className="block rounded-xl border border-dashed border-mxp-teal/50 px-3 py-2 text-center text-xs font-semibold text-mxp-teal transition hover:border-solid hover:bg-mxp-card"
+          className="mxp-card flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-mxp-ink"
         >
-          📓 Journal — là, maintenant
+          <span aria-hidden className="mxp-tile bg-mxp-teal/10">📓</span>
+          <span>
+            Journal
+            <span className="block text-[10px] font-normal text-mxp-muted">là, maintenant</span>
+          </span>
         </Link>
       </div>
 

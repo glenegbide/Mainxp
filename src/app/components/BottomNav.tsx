@@ -41,11 +41,11 @@ const ICONS: Record<string, React.ReactNode> = {
 };
 
 const TABS = [
-  { href: "/today", label: "Today", icon: "today" },
+  { href: "/today", label: "Jour", icon: "today" },
   { href: "/coach", label: "Coach", icon: "coach" },
-  { href: "/progress", label: "Progress", icon: "progress" },
+  { href: "/progress", label: "Progrès", icon: "progress" },
   { href: "/social", label: "Social", icon: "social" },
-  { href: "/me", label: "Me", icon: "me" },
+  { href: "/me", label: "Moi", icon: "me" },
 ] as const;
 
 export function BottomNav() {
