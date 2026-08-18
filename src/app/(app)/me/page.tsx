@@ -232,6 +232,12 @@ export default async function MePage({
             vraies, payées en pièces
           </span>
         </Link>
+        <Link href="/library" className="mxp-card col-span-2 p-4 text-sm font-semibold">
+          📚 Bibliothèque
+          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
+            tes livres, tes notes, ce que tu appliques
+          </span>
+        </Link>
       </div>
 
       <section className="mxp-card mt-4 p-4 text-sm">

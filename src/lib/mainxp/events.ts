@@ -39,7 +39,8 @@ export type MxEventType =
   | "journal_written"
   | "challenge_accepted"
   | "challenge_tick"
-  | "challenge_completed";
+  | "challenge_completed"
+  | "book_finished";
 
 export interface EventPayload {
   [key: string]: string | number | boolean | null | undefined;
@@ -259,6 +260,17 @@ export function xpForEvent(
       return null; // saying yes is the start, not the achievement
     case "challenge_tick":
       return null; // daily structure — the completion is the reward
+    case "book_finished":
+      // A finished book is a real accomplishment — Knowledge, discovered
+      // after the last page, never advertised.
+      return {
+        sourceType: "book",
+        sourceId: String(p.bookId ?? ""),
+        reason: `Livre terminé : ${title}`,
+        mainDelta: 50,
+        coinsDelta: 25,
+        attributeDeltas: { KNOWLEDGE: 40 },
+      };
     case "challenge_completed": {
       // The SURPRISE: never advertised upfront, scaled by the dare's length,
       // reason carries the why. 7 days → 61 XP, 30 days → 130 XP (capped).

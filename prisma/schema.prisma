@@ -119,8 +119,29 @@ model MxUser {
   routineLogs       MxRoutineLog[]
   challenges        MxChallenge[]
   challengeLogs     MxChallengeLog[]
+  books             MxBook[]
 
   @@map("mainxp_users")
+}
+
+// ── Library (audit P9): books with the user's own writing — what it taught,
+// what gets APPLIED. Adding a book is organizing (0 XP); FINISHING one is a
+// real accomplishment (Knowledge XP, discovered, never advertised).
+model MxBook {
+  id         String    @id @default(cuid())
+  userId     String
+  user       MxUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title      String
+  author     String    @default("")
+  status     String    @default("reading") // to_read | reading | finished | abandoned
+  notes      String    @default("") // ce que j'en retiens — écrit en lisant
+  lessons    String    @default("") // ce que j'APPLIQUE — la leçon en action
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId, status])
+  @@map("mainxp_books")
 }
 
 // ── Challenges (audit #24): time-boxed dares — « Glen, tu acceptes ? » —

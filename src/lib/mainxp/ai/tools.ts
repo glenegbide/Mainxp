@@ -282,6 +282,58 @@ const TOOLS: ToolDef[] = [
   },
   {
     spec: {
+      name: "get_library",
+      description: "Les livres de l'utilisateur : en cours (avec ses notes et leçons appliquées), à lire, terminés. Pour discuter lecture, suivre le défi livre, ou relier une leçon de lecture à sa situation.",
+      input_schema: { type: "object", properties: {} },
+    },
+    run: async (user) => {
+      const books = await prisma.mxBook.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      });
+      return ok(
+        books.map((b) => ({
+          id: b.id,
+          title: b.title,
+          author: b.author || null,
+          status: b.status,
+          notes: b.notes ? b.notes.slice(0, 300) : null,
+          lessons: b.lessons || null,
+        }))
+      );
+    },
+  },
+  {
+    spec: {
+      name: "add_book",
+      description: "Ajouter un livre à la bibliothèque (quand l'utilisateur dit ce qu'il lit ou veut lire). status: reading|to_read. Ajouter = organiser (0 XP) ; c'est FINIR qui compte — et l'utilisateur le marque lui-même.",
+      input_schema: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          author: { type: "string" },
+          status: { type: "string", enum: ["reading", "to_read"] },
+        },
+        required: ["title"],
+      },
+    },
+    run: async (user, input) => {
+      const bookTitle = str(input.title, 300);
+      if (!bookTitle) return err("titre manquant");
+      const book = await prisma.mxBook.create({
+        data: {
+          userId: user.id,
+          title: bookTitle,
+          author: str(input.author, 200) ?? "",
+          status: oneOf(input.status, ["reading", "to_read"] as const) ?? "reading",
+        },
+      });
+      return ok({ id: book.id, title: book.title, status: book.status });
+    },
+  },
+  {
+    spec: {
       name: "search_memory",
       description: "Recherche dans la mémoire du coach (souvenirs actifs, non expirés) par mots-clés.",
       input_schema: {

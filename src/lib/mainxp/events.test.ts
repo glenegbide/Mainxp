@@ -61,6 +61,11 @@ describe("xpForEvent — centralized XP policy (system of record)", () => {
       .toMatchObject({ mainDelta: 130 });
   });
 
+  it("finishing a book feeds the Sage — Knowledge XP, discovered not advertised", () => {
+    expect(xpForEvent("book_finished", { bookId: "b1", title: "Deep Work" }))
+      .toMatchObject({ mainDelta: 50, coinsDelta: 25, sourceType: "book", attributeDeltas: { KNOWLEDGE: 40 } });
+  });
+
   it("rewards journal writing at JOURNAL value (diminishing lives ledger-side)", () => {
     expect(xpForEvent("journal_written", { entryId: "j1", kind: "free", mood: "dur" }))
       .toMatchObject({ mainDelta: 10, coinsDelta: 4, sourceType: "journal", attributeDeltas: { MIND: 8 } });
