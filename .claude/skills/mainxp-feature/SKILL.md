@@ -38,7 +38,16 @@ Every surface needs loading-free server rendering, an empty state, and an
 honest disabled state if a dependency is missing. New strings via
 `src/lib/mainxp/i18n.ts` keys.
 
-## 5. No-shame check
+## 5. Surprise-reward check
+
+Never advertise XP amounts before an action — no "+N XP" chips or copy in the
+UI, no amounts revealed by the coach. XP is discovered after the real action,
+with a human reason string in the ledger. Coin COSTS stay visible. Structure
+(routine/challenge ticks, writing, creating) earns 0 XP; completion earns.
+User writing spaces are part of every ritual feature — and the coach must be
+able to read them (thread new text into get_today_context or a tool).
+
+## 5b. No-shame check
 
 Copy states facts and numbers, never judgment. Failure/absence paths get the
 gentle treatment (élan decays softly, comeback has no guilt, minimum day is a

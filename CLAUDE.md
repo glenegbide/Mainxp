@@ -28,6 +28,47 @@ system doc for whatever you touch (XP_SYSTEM, GOAL_SYSTEM, COACH_SYSTEM, …).
    from `src/lib/mainxp/day.ts`; timestamps stay UTC.
 8. **Authorization in services.** Every query filters by `userId` via
    `requireMxUser()`/`getMxUser()`; the proxy redirect is UX, not security.
+9. **Rewards are a SURPRISE.** Never advertise XP amounts before an action —
+   no "+N XP" chips/copy as bait, in UI or coach replies. XP is discovered
+   after the real action, with its reason in the ledger. Coin COSTS stay
+   visible (spending is a decision). The coach, asked "combien ça rapporte ?",
+   answers that it's discovered by doing.
+10. **Structure earns nothing; completion does.** Routine ticks (morning/
+    evening), challenge ticks, writing spaces, creating/organizing: 0 XP.
+    The rewarded moments are completed real actions — and they need a reason
+    string in the ledger. Journal is the one rewarded writing (diminishing
+    same-day: sincerity over volume).
+11. **Challenges require explicit acceptance.** The coach/starters PROPOSE
+    (« Glen, tu acceptes ? » — nominative, tied to what the user works on);
+    only the user accepts, max 3 alive, completion XP scales with duration
+    (capped at 30 days). Quitting is allowed and never punished.
+12. **The user's words are first-class data.** Every ritual has free-writing
+    spaces (morning intention, journal + mood, review feelings/alignment,
+    habit descriptions, routine notes, task notes). The coach reads them
+    (get_today_context, night feedback) and reacts to THEM, not generalities —
+    emotion acknowledged before coaching.
+
+## The coach is the brain (P1/P2/P10 — built)
+
+- **Tools only** (`src/lib/mainxp/ai/tools.ts`): validated, capped, event-first
+  — reads (today context, goals+pace, priorities, capacity, bird's-eye view,
+  challenges, memory) and writes (task, goal, NN, habit, memory, journal,
+  gratitude, propose_challenge). Never raw SQL, never around the caps. Agent
+  loop in `coach.ts` (`runCoachAgentLoop`, bounded rounds); providers only
+  translate wire formats (`provider.ts` — Gemini needs thoughtSignature echoed
+  on functionCalls).
+- **Priority engine** (`src/lib/mainxp/priority.ts`): ONE action + 1–3 WHY
+  facts; the Today card and the coach's get_priorities share the computation.
+- **Personality**: life assistant + accountability partner for a high achiever
+  (numbers-first reviews, commitments remembered and followed up unprompted,
+  ONE dated next step, direct-but-no-shame) + senior-expert discussion in
+  immobilier (métier: agent à Genève), finance, entrepreneuriat — with honest
+  confidence limits on precise laws/rates.
+- **Proactive**: daily morning brief via `/api/cron/daily-brief` (Vercel cron,
+  self-authenticated, idempotent per day) and evening feedback after the night
+  review (`nightFeedback` in day-actions) — both fail silent, never block the
+  user's flow. AI keys are per-user, set in-app (Moi → Coach IA), validated
+  live before saving; env keys are only a server-wide fallback.
 
 ## Conventions
 
@@ -44,8 +85,9 @@ system doc for whatever you touch (XP_SYSTEM, GOAL_SYSTEM, COACH_SYSTEM, …).
 - New UI strings go through `src/lib/mainxp/i18n.ts` keys (French first);
   existing screens migrate opportunistically.
 - Design system: tokens + `mxp-*` classes in `src/app/globals.css` (light
-  mode, purple identity, Part 58 color semantics). Display face: Bricolage
-  Grotesque; body: Geist. Original pixel hero: `src/app/components/PixelHero.tsx`
+  mode, purple identity, Part 58 color semantics) — full guide in the
+  `mainxp-design` skill. Display face: Unbounded (identity moments only);
+  body: Geist. Original pixel hero: `src/app/components/PixelHero.tsx`
   (visual tiers earned at levels 10/25/50/75/100).
 - UI copy is French (tutoiement), concise, no exclamation-mark hype.
 
