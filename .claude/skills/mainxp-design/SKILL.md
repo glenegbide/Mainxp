@@ -5,11 +5,21 @@ description: The MAINXP visual language — design tokens, mxp-* component class
 
 # MAINXP design
 
-The identity in one line: **~70% premium app, ~20% game, ~10% manga energy** —
-light, warm, purple. It must feel like a serious life tool that happens to be
-a game, never a toy. Source of truth is `src/app/globals.css` (tokens +
+The identity in one line: **~70% premium app, ~20% game, ~10% anime/alchemy
+energy** — light, warm, purple. Quality bar: a premium $100,000 consumer
+mobile product — never generic Tailwind UI. `docs/DESIGN_BIBLE.md` is the
+law; source of truth for implementation is `src/app/globals.css` (tokens +
 components) and `src/app/layout.tsx` (fonts, shell). When this skill and the
 code disagree, the code wins — then update this skill.
+
+**A screen is not done because it works.** The review loop is mandatory for
+every major screen: build → screenshot → `design-director` critique →
+`ux-behavior-expert` → `frontend-motion-expert` (agents in `.claude/agents/`)
+→ improve → re-review. Hard rules: NO emoji as final icons (inline stroke
+SVGs, see `src/app/components/icons.tsx` / `BottomNav.tsx`); one dominant
+purpose, one visual anchor, one primary action per screen; never all accent
+colors at equal strength; when torn between MORE and LESS, choose LESS and
+make what stays exceptional.
 
 ## Tokens (never hardcode colors)
 

@@ -91,6 +91,20 @@ system doc for whatever you touch (XP_SYSTEM, GOAL_SYSTEM, COACH_SYSTEM, …).
   (visual tiers earned at levels 10/25/50/75/100).
 - UI copy is French (tutoiement), concise, no exclamation-mark hype.
 
+## Design quality directive ($100K bar — non-negotiable)
+
+`docs/DESIGN_BIBLE.md` is the design law; `.claude/agents/` holds the expert
+team (design-director, ux-behavior-expert, frontend-motion-expert, + product/
+game/lore/finance/notifications/backend/qa). **A screen is not done because it
+works.** Every major screen: build → design-director critique → ux critique →
+motion critique → improve → re-review. Hard rules: no emoji as final icons
+(premium SVG iconography); no identical-card piles; one dominant purpose /
+anchor / action per screen; strong hierarchy, generous whitespace, 8pt
+spacing, 44px taps; never all colors at equal strength; light/warm-white
+default; game layer through character/rank/gems/quests/celebrations — never
+clutter. When torn between MORE and LESS: choose LESS, make what stays
+exceptional.
+
 ## Verify before pushing
 
 `npm run lint` · `npx tsc --noEmit` · `npm test` (vitest) · `npm run build`.

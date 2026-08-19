@@ -29,6 +29,14 @@ import {
   tickChallengeToday,
 } from "./challenge-actions";
 import { STARTER_CHALLENGES } from "@/lib/mainxp/challenges";
+import {
+  IconLoop,
+  IconMoon,
+  IconPen,
+  IconSpark,
+  IconSunrise,
+  IconTimer,
+} from "../../components/icons";
 
 export default async function TodayPage() {
   const user = await getMxUser();
@@ -154,9 +162,9 @@ export default async function TodayPage() {
                 Niv. {lp.level}
                 {totals.main === 0 ? " · Novice" : ""}
               </span>
-              <span className="mxp-chip bg-white/16 tabular-nums">🪙 {totals.coins}</span>
+              <span className="mxp-chip bg-white/16 tabular-nums">{totals.coins} pièces</span>
               <span className="mxp-chip bg-white/16 tabular-nums">
-                🔥 {streak} jour{streak === 1 ? "" : "s"}
+                {streak} jour{streak === 1 ? "" : "s"} de suite
               </span>
             </div>
           </div>
@@ -175,7 +183,7 @@ export default async function TodayPage() {
             <span className="tracking-wide">ÉLAN</span>
             <span className="tabular-nums">
               {elan.value === null
-                ? "🌙 récupération"
+                ? "Récupération"
                 : `${elan.value}/100${elan.missedDays > 0 ? ` · ${elan.missedDays} j manqué${elan.missedDays > 1 ? "s" : ""}` : ""}`}
             </span>
           </div>
@@ -203,57 +211,45 @@ export default async function TodayPage() {
           href="/onboarding"
           className="mt-3 block rounded-2xl border-2 border-mxp-purple/50 bg-mxp-purple-soft px-5 py-3 text-sm font-medium text-mxp-purple-deep"
         >
-          ✦ Apprends à me connaître — 5 questions pour que le coach comprenne ta vie →
+          Apprends à me connaître — 5 questions pour que le coach comprenne ta vie →
         </Link>
       )}
 
-      {/* ── Quick actions: one quiet row, each icon seated on its area color ── */}
-      <div className="mt-3 grid grid-cols-4 gap-2">
+      {/* ── Rituels & outils : une seule rangée calme, icônes premium (pas
+          d'emoji), l'état se lit à la couleur — pas de bruit. ── */}
+      <div className="mt-3 grid grid-cols-6 gap-1.5">
         {(
           [
-            ["/today/morning", "☀️", "Matin", "bg-mxp-orange/10", !!dayPlan?.startedAt],
-            ["/focus", "⏱️", "Focus", "bg-mxp-blue/10", false],
-            ["/habits", "✚", "Habitudes", "bg-mxp-green/10", false],
-            ["/today/night", "🌙", "Soir", "bg-mxp-purple/10", !!dayPlan?.reviewedAt],
+            ["/today/morning", IconSunrise, "Matin", "text-mxp-orange bg-mxp-orange/10", !!dayPlan?.startedAt],
+            ["/focus", IconTimer, "Focus", "text-mxp-blue bg-mxp-blue/10", false],
+            ["/habits", IconLoop, "Habitudes", "text-mxp-green bg-mxp-green/10", false],
+            ["/journal", IconPen, "Journal", "text-mxp-teal bg-mxp-teal/10", false],
+            ["/dump", IconSpark, "Vide-tête", "text-mxp-purple bg-mxp-purple/10", false],
+            ["/today/night", IconMoon, "Soir", "text-mxp-purple-deep bg-mxp-purple/10", !!dayPlan?.reviewedAt],
           ] as const
-        ).map(([href, icon, label, tint, done]) => (
+        ).map(([href, Icon, label, tint, done]) => (
           <Link
             key={href}
             href={href}
-            className={`mxp-card flex flex-col items-center gap-1 px-2 py-2.5 text-center text-[11px] font-semibold ${
-              done ? "text-mxp-muted" : "text-mxp-ink"
-            }`}
+            className="group flex flex-col items-center gap-1 py-1 text-center"
           >
-            <span aria-hidden className={`mxp-tile ${done ? "bg-mxp-bg grayscale opacity-70" : tint}`}>
-              {icon}
+            <span
+              aria-hidden
+              className={`mxp-tile transition ${
+                done ? "bg-mxp-bg text-mxp-muted" : tint
+              } group-active:scale-95`}
+            >
+              <Icon className="h-[18px] w-[18px]" />
             </span>
-            {label}
-            {done ? " ✓" : ""}
+            <span
+              className={`text-[10px] font-semibold leading-tight ${
+                done ? "text-mxp-muted" : "text-mxp-ink"
+              }`}
+            >
+              {label}
+            </span>
           </Link>
         ))}
-      </div>
-
-      <div className="mt-2 grid grid-cols-2 gap-2">
-        <Link
-          href="/dump"
-          className="mxp-card flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-mxp-ink"
-        >
-          <span aria-hidden className="mxp-tile bg-mxp-purple/10">🧠</span>
-          <span>
-            Vide-tête
-            <span className="block text-[10px] font-normal text-mxp-muted">je range pour toi</span>
-          </span>
-        </Link>
-        <Link
-          href="/journal"
-          className="mxp-card flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-mxp-ink"
-        >
-          <span aria-hidden className="mxp-tile bg-mxp-teal/10">📓</span>
-          <span>
-            Journal
-            <span className="block text-[10px] font-normal text-mxp-muted">là, maintenant</span>
-          </span>
-        </Link>
       </div>
 
       {goalAtRisk && (
@@ -368,7 +364,7 @@ export default async function TodayPage() {
           }).format(new Date())
         ) >= 20 && (
           <Link href="/today/night" className="mt-4 block mxp-card mxp-bluec p-4">
-            <p className="mxp-label text-mxp-blue">🌙 C&apos;est l&apos;heure</p>
+            <p className="mxp-label text-mxp-blue">C&apos;est l&apos;heure</p>
             <p className="mt-1 text-sm font-medium">
               Comment s&apos;est passée ta journée, {user.name} ?
             </p>
@@ -467,7 +463,7 @@ export default async function TodayPage() {
       {/* ── Main Quest ── */}
       <section className="mt-4 mxp-card mxp-quest p-4">
         <div className="flex items-baseline justify-between">
-          <p className="mxp-label text-mxp-purple">⚡ Main Quest</p>
+          <p className="mxp-label text-mxp-purple">Quête principale</p>
         </div>
         {mainQuest ? (
           <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
