@@ -82,6 +82,50 @@ dd {
   font-variant-numeric: tabular-nums;
 }
 
+/* ── Type ramp (DESIGN_BIBLE: hierarchy carries rank, not hue) ── */
+.mxp-display {
+  font-family: var(--font-display), var(--font-geist), sans-serif;
+  font-size: 27px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+.mxp-title {
+  font-size: 21px;
+  line-height: 1.22;
+  letter-spacing: -0.015em;
+  font-weight: 600;
+}
+.mxp-body {
+  font-size: 15px;
+  line-height: 1.45;
+}
+.mxp-meta {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--mxp-muted);
+}
+
+/* ── THE anchor: exactly one per screen (the day's dominant object) ── */
+.mxp-anchor {
+  position: relative;
+  border-radius: 26px;
+  padding: 22px;
+  border: 1px solid rgba(124, 58, 237, 0.22);
+  background:
+    radial-gradient(420px 200px at 88% -40%, rgba(124, 58, 237, 0.1), transparent 70%),
+    linear-gradient(180deg, #ffffff, #fdfcff);
+  box-shadow: 0 2px 4px rgba(28, 25, 23, 0.05), 0 26px 60px -28px rgba(109, 40, 217, 0.55);
+}
+
+/* Chrome-less tier for supporting lists — kills the identical-card pile */
+.mxp-quiet-card {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0 2px;
+}
+
 /* ── Card system ── */
 .mxp-card {
   background: var(--mxp-card);
@@ -166,17 +210,18 @@ a.mxp-card:active {
   position: relative;
   transition: width 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
+/* One shine on arrival — never an endless pulse (DESIGN_BIBLE microinteractions) */
 .mxp-xpbar > i::after {
   content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.85) 50%, transparent 70%);
   transform: translateX(-100%);
-  animation: mxp-shine 3.2s ease-in-out infinite;
+  animation: mxp-shine 1.6s cubic-bezier(0.22, 0.61, 0.36, 1) 0.35s 1 both;
 }
 @keyframes mxp-shine {
-  0%, 55% { transform: translateX(-100%); }
-  85%, 100% { transform: translateX(100%); }
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
 }
 
 /* ── Progress rails ── */
@@ -186,7 +231,7 @@ a.mxp-card:active {
   background: #f1eee9;
   overflow: hidden;
 }
-.mxp-rail > i {
+.mxp-rail > * {
   display: block;
   height: 100%;
   border-radius: 99px;
@@ -196,6 +241,7 @@ a.mxp-card:active {
 /* ── Buttons ── */
 .mxp-btn {
   border: 0;
+  min-height: 44px;
   cursor: pointer;
   border-radius: 13px;
   font-family: inherit;
@@ -258,6 +304,7 @@ a.mxp-card:active {
 
 .mxp-btn-ghost {
   border: 1px solid var(--mxp-line);
+  min-height: 44px;
   cursor: pointer;
   border-radius: 13px;
   font-family: inherit;
@@ -272,7 +319,9 @@ a.mxp-card:active {
 /* ── Inputs ── */
 .mxp-input {
   border: 1px solid var(--mxp-line);
-  border-radius: 13px;
+  border-radius: 14px;
+  font-size: 16px; /* below 16px iOS Safari zooms the viewport on focus */
+  min-height: 48px;
   background: var(--mxp-card);
   color: var(--mxp-ink);
   font-family: inherit;
@@ -287,6 +336,7 @@ a.mxp-card:active {
 
 /* ── Check circle (non-negotiables, milestones) ── */
 .mxp-check {
+  position: relative;
   width: 30px;
   height: 30px;
   flex: none;
@@ -298,6 +348,15 @@ a.mxp-card:active {
   line-height: 1;
   cursor: pointer;
   transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.mxp-check::before {
+  /* 48px touch target without growing the visual disc */
+  content: "";
+  position: absolute;
+  inset: -9px;
+}
+.mxp-check:not(.on) {
+  color: rgba(28, 25, 23, 0.28); /* the ✓ is hinted at rest — a real affordance */
 }
 .mxp-check:active { transform: scale(0.88); }
 .mxp-check.on {

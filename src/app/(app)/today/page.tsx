@@ -23,14 +23,7 @@ import { addTaskNote } from "./actions";
 import { tapHabit } from "../habits/actions";
 import { activateMinimumDay, submitComeback, toggleMinimumSlot } from "./day-actions";
 import {
-  acceptProposedChallenge,
-  acceptStarterChallenge,
-  declineChallenge,
-  tickChallengeToday,
-} from "./challenge-actions";
-import { STARTER_CHALLENGES } from "@/lib/mainxp/challenges";
-import {
-  IconLoop,
+  IconFlag,
   IconMoon,
   IconPen,
   IconSpark,
@@ -63,15 +56,11 @@ export default async function TodayPage() {
     prisma.mxGoal.findMany({ where: { userId: user.id, status: "ACTIVE" } }),
     prisma.mxDayPlan.findUnique({ where: { userId_dayKey: { userId: user.id, dayKey: today } } }),
   ]);
-  const [challenges, challengeLogs] = await Promise.all([
-    prisma.mxChallenge.findMany({
-      where: { userId: user.id, status: { in: ["proposed", "active"] } },
-      include: { logs: true },
-      orderBy: { createdAt: "asc" },
-    }),
-    prisma.mxChallengeLog.findMany({ where: { userId: user.id, dayKey: today } }),
-  ]);
-  const tickedToday = new Set(challengeLogs.map((l) => l.challengeId));
+  const challenges = await prisma.mxChallenge.findMany({
+    where: { userId: user.id, status: "active" },
+    include: { logs: true },
+    orderBy: { createdAt: "asc" },
+  });
   const [elan, gearEquipped, goodHabits, lastEvent, comebackDoneToday] = await Promise.all([
     elanReport(user.id, user.timezone, user.restMode),
     prisma.mxGearOwned.findMany({ where: { userId: user.id, equipped: true } }),
@@ -156,16 +145,19 @@ export default async function TodayPage() {
             <PixelHero level={lp.level} size={46} gear={equippedIds} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate font-displaymx text-xl font-bold">{user.name}</p>
+            <p className="truncate text-[15px] font-semibold text-white/85">{user.name}</p>
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-              <span className="mxp-chip bg-white/16">
+              <span className="font-displaymx text-[22px] leading-none tabular-nums">
                 Niv. {lp.level}
-                {totals.main === 0 ? " · Novice" : ""}
               </span>
-              <span className="mxp-chip bg-white/16 tabular-nums">{totals.coins} pièces</span>
-              <span className="mxp-chip bg-white/16 tabular-nums">
-                {streak} jour{streak === 1 ? "" : "s"} de suite
-              </span>
+              {totals.coins > 0 && (
+                <span className="mxp-chip bg-white/16 tabular-nums">{totals.coins} pièces</span>
+              )}
+              {streak > 0 && (
+                <span className="mxp-chip bg-white/16 tabular-nums">
+                  {streak} jour{streak === 1 ? "" : "s"} de suite
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -194,12 +186,12 @@ export default async function TodayPage() {
                 width: `${elan.value ?? 100}%`,
                 background:
                   elan.value === null
-                    ? "rgba(255,255,255,.45)"
+                    ? "rgba(255,255,255,.4)"
                     : elan.value >= 70
-                      ? "linear-gradient(90deg,#6ee7b7,#34d399)"
+                      ? "rgba(255,255,255,.9)"
                       : elan.value >= 40
-                        ? "linear-gradient(90deg,#fdba74,#fb923c)"
-                        : "linear-gradient(90deg,#fda4af,#f87171)",
+                        ? "rgba(255,255,255,.6)"
+                        : "rgba(255,255,255,.35)",
               }}
             />
           </div>
@@ -215,61 +207,24 @@ export default async function TodayPage() {
         </Link>
       )}
 
-      {/* ── Rituels & outils : une seule rangée calme, icônes premium (pas
-          d'emoji), l'état se lit à la couleur — pas de bruit. ── */}
-      <div className="mt-3 grid grid-cols-6 gap-1.5">
-        {(
-          [
-            ["/today/morning", IconSunrise, "Matin", "text-mxp-orange bg-mxp-orange/10", !!dayPlan?.startedAt],
-            ["/focus", IconTimer, "Focus", "text-mxp-blue bg-mxp-blue/10", false],
-            ["/habits", IconLoop, "Habitudes", "text-mxp-green bg-mxp-green/10", false],
-            ["/journal", IconPen, "Journal", "text-mxp-teal bg-mxp-teal/10", false],
-            ["/dump", IconSpark, "Vide-tête", "text-mxp-purple bg-mxp-purple/10", false],
-            ["/today/night", IconMoon, "Soir", "text-mxp-purple-deep bg-mxp-purple/10", !!dayPlan?.reviewedAt],
-          ] as const
-        ).map(([href, Icon, label, tint, done]) => (
-          <Link
-            key={href}
-            href={href}
-            className="group flex flex-col items-center gap-1 py-1 text-center"
-          >
-            <span
-              aria-hidden
-              className={`mxp-tile transition ${
-                done ? "bg-mxp-bg text-mxp-muted" : tint
-              } group-active:scale-95`}
-            >
-              <Icon className="h-[18px] w-[18px]" />
-            </span>
-            <span
-              className={`text-[10px] font-semibold leading-tight ${
-                done ? "text-mxp-muted" : "text-mxp-ink"
-              }`}
-            >
-              {label}
-            </span>
-          </Link>
-        ))}
-      </div>
-
       {goalAtRisk && (
         <Link
           href={`/goals/${goalAtRisk.id}`}
-          className="mt-3 block mxp-card mxp-alert px-5 py-3 text-sm"
+          className="mt-3 block mxp-card px-5 py-3 mxp-meta"
         >
           <span className="font-semibold text-mxp-orange">Objectif à risque : </span>
           {goalAtRisk.title} →
         </Link>
       )}
 
-      <h1 className="mt-6 text-xl font-semibold">Aujourd&apos;hui</h1>
+      <h1 className="mt-7 mxp-display">Aujourd&apos;hui</h1>
       <p className="text-sm text-mxp-muted">
         {dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)}
       </p>
 
       {/* ── Comeback Quest ── */}
       {showComeback && (
-        <section className="mxp-card mxp-quest mt-4 p-4">
+        <section className="mxp-card mt-4 p-4">
           <div className="flex items-baseline justify-between">
             <p className="mxp-label text-mxp-purple">Quête de retour</p>
           </div>
@@ -305,8 +260,7 @@ export default async function TodayPage() {
           <p className="mxp-label text-mxp-teal">Journée minimum</p>
           <p className="mt-1 text-sm text-mxp-muted">
             Aujourd&apos;hui n&apos;a pas besoin d&apos;être parfait. Protège ces trois
-            choses et appelle ça une journée de récupération réussie —
-            +15 si les trois.
+            choses et appelle ça une journée de récupération réussie.
           </p>
           <ul className="mt-3 space-y-2.5">
             {(
@@ -330,27 +284,89 @@ export default async function TodayPage() {
             ))}
           </ul>
         </section>
-      ) : (
-        <form action={activateMinimumDay} className="mt-2">
-          <button className="mxp-quiet">
-            Journée difficile ? → Passe en journée minimum
-          </button>
-        </form>
-      )}
+      ) : null}
 
-      {/* ── WHAT NOW? — one action, explained (never a list of orders) ── */}
-      <section className="mt-4 mxp-card mxp-alert p-4">
-        <p className="mxp-label text-mxp-orange">
-          Et maintenant ?
+      {/* ── L'ANCRE — la seule chose dominante de l'écran : ce qui compte
+          maintenant, expliqué, avec UNE action pleine largeur. Quête
+          principale et « et maintenant ? » ne font qu'un. ── */}
+      <section className="mt-5 mxp-anchor">
+        <p className="mxp-label text-mxp-purple">
+          {mainQuest && mainQuest.status === "OPEN" ? "Quête principale" : "Et maintenant ?"}
         </p>
-        <p className="mt-1 text-sm font-medium">{recommendation.action}</p>
-        <ul className="mt-1.5 space-y-0.5">
-          {recommendation.why.map((fact) => (
-            <li key={fact} className="text-xs text-mxp-muted">
-              · {fact}
-            </li>
-          ))}
-        </ul>
+
+        {mainQuest ? (
+          <>
+            <p
+              className={`mt-2 mxp-title ${
+                mainQuest.status === "DONE" ? "text-mxp-muted line-through" : ""
+              }`}
+            >
+              {mainQuest.title}
+            </p>
+            {mainQuest.status === "OPEN" ? (
+              <>
+                <ul className="mt-3 space-y-1">
+                  {recommendation.why.map((fact) => (
+                    <li key={fact} className="mxp-meta">
+                      {fact}
+                    </li>
+                  ))}
+                </ul>
+                <form action={completeTask} className="mt-5">
+                  <input type="hidden" name="id" value={mainQuest.id} />
+                  <button className="mxp-btn w-full py-3.5 text-[15px]">C&apos;est fait</button>
+                </form>
+              </>
+            ) : (
+              <>
+                <p className="mt-2 mxp-body text-mxp-muted">{recommendation.action}</p>
+                {mainQuest.notes ? (
+                  <p className="mt-3 rounded-xl bg-mxp-bg px-3 py-2 mxp-meta italic">
+                    {mainQuest.notes}
+                  </p>
+                ) : (
+                  <form action={addTaskNote} className="mt-4 flex gap-2">
+                    <input type="hidden" name="id" value={mainQuest.id} />
+                    <input
+                      type="text"
+                      name="note"
+                      maxLength={500}
+                      placeholder="Une note ? Ce que tu retiens…"
+                      className="min-w-0 flex-1 mxp-input px-3"
+                    />
+                    <button className="mxp-btn-ghost px-4" aria-label="Enregistrer la note">
+                      <IconPen className="h-[18px] w-[18px]" />
+                    </button>
+                  </form>
+                )}
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            <p className="mt-2 mxp-title">{recommendation.action}</p>
+            <ul className="mt-3 space-y-1">
+              {recommendation.why.map((fact) => (
+                <li key={fact} className="mxp-meta">
+                  {fact}
+                </li>
+              ))}
+            </ul>
+            <form action={setMainQuest} className="mt-5 space-y-2">
+              <input
+                type="text"
+                name="title"
+                required
+                maxLength={300}
+                placeholder="Le résultat le plus important du jour…"
+                className="w-full mxp-input px-4"
+              />
+              <button className="mxp-btn w-full py-3.5 text-[15px]">
+                Définir ma quête principale
+              </button>
+            </form>
+          </>
+        )}
       </section>
 
       {/* ── Evening nudge: the app comes to you — « comment s'est passée ta
@@ -363,7 +379,7 @@ export default async function TodayPage() {
             timeZone: user.timezone,
           }).format(new Date())
         ) >= 20 && (
-          <Link href="/today/night" className="mt-4 block mxp-card mxp-bluec p-4">
+          <Link href="/today/night" className="mt-6 block mxp-card p-4">
             <p className="mxp-label text-mxp-blue">C&apos;est l&apos;heure</p>
             <p className="mt-1 text-sm font-medium">
               Comment s&apos;est passée ta journée, {user.name} ?
@@ -374,160 +390,33 @@ export default async function TodayPage() {
           </Link>
         )}
 
-      {/* ── Défis — « tu acceptes ? » : proposed dares + active progress ── */}
-      {challenges.length > 0 && (
-        <section className="mt-4 mxp-card mxp-goldc p-4">
-          <p className="mxp-label text-mxp-gold">Défis</p>
-          <ul className="mt-2 space-y-3">
-            {challenges.map((c) => {
-              const ticks = c.logs.length;
-              const ratio = Math.min(100, Math.round((ticks / c.targetCount) * 100));
-              return (
-                <li key={c.id}>
-                  {c.status === "proposed" ? (
-                    <div>
-                      <p className="text-sm font-medium">
-                        {user.name}, tu acceptes ? — {c.title}
-                      </p>
-                      {c.description && (
-                        <p className="mt-0.5 text-xs text-mxp-muted">{c.description}</p>
-                      )}
-                      <div className="mt-2 flex gap-2">
-                        <form action={acceptProposedChallenge} className="flex-1">
-                          <input type="hidden" name="id" value={c.id} />
-                          <button className="w-full mxp-btn mxp-btn-gold px-3 py-2 text-xs">
-                            J&apos;accepte le défi
-                          </button>
-                        </form>
-                        <form action={declineChallenge}>
-                          <input type="hidden" name="id" value={c.id} />
-                          <button className="mxp-btn-ghost px-3 py-2 text-xs">Pas maintenant</button>
-                        </form>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-3">
-                      <form action={tickChallengeToday}>
-                        <input type="hidden" name="id" value={c.id} />
-                        <button
-                          aria-pressed={tickedToday.has(c.id)}
-                          disabled={tickedToday.has(c.id)}
-                          className={`mxp-check ${tickedToday.has(c.id) ? "on" : ""}`}
-                        >
-                          ✓
-                        </button>
-                      </form>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium">{c.title}</p>
-                        <div className="mxp-rail mt-1.5">
-                          <div
-                            className="h-full rounded-full bg-mxp-gold"
-                            style={{ width: `${ratio}%` }}
-                          />
-                        </div>
-                        <p className="mt-1 text-xs tabular-nums text-mxp-muted">
-                          {ticks}/{c.targetCount} {c.unitLabel}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      )}
-      {challenges.length === 0 && (
-        <section className="mt-4 mxp-card p-4">
-          <p className="mxp-label text-mxp-gold">Un défi, {user.name} ?</p>
-          <ul className="mt-2 space-y-2">
-            {STARTER_CHALLENGES.map((sc) => (
-              <li key={sc.key} className="flex items-center gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium">{sc.title}</p>
-                  <p className="text-xs text-mxp-muted">{sc.description}</p>
-                </div>
-                <form action={acceptStarterChallenge}>
-                  <input type="hidden" name="key" value={sc.key} />
-                  <button className="mxp-btn-ghost px-3 py-1.5 text-xs">J&apos;accepte</button>
-                </form>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-2 text-xs text-mxp-muted">
-            Ton coach peut aussi t&apos;en proposer sur mesure — demande-lui.
-          </p>
-        </section>
-      )}
-
-      {/* ── Main Quest ── */}
-      <section className="mt-4 mxp-card mxp-quest p-4">
-        <div className="flex items-baseline justify-between">
-          <p className="mxp-label text-mxp-purple">Quête principale</p>
-        </div>
-        {mainQuest ? (
-          <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
-            <p
-              className={`min-w-0 flex-1 text-sm font-medium ${
-                mainQuest.status === "DONE" ? "text-mxp-muted line-through" : ""
-              }`}
-            >
-              {mainQuest.title}
-            </p>
-            {mainQuest.status === "OPEN" ? (
-              <form action={completeTask}>
-                <input type="hidden" name="id" value={mainQuest.id} />
-                <button className="mxp-btn px-3 py-1.5 text-xs">
-                  Accompli
-                </button>
-              </form>
-            ) : (
-              <span className="text-lg" aria-label="accomplie">
-                ✅
-              </span>
-            )}
-            {mainQuest.status === "DONE" &&
-              (mainQuest.notes ? (
-                <p className="w-full rounded-lg bg-mxp-bg px-3 py-1.5 text-xs italic text-mxp-muted">
-                  📝 {mainQuest.notes}
-                </p>
-              ) : (
-                <form action={addTaskNote} className="flex w-full gap-1.5">
-                  <input type="hidden" name="id" value={mainQuest.id} />
-                  <input
-                    type="text"
-                    name="note"
-                    maxLength={500}
-                    placeholder="Une note ? (ce qui a marché, ce que tu retiens…)"
-                    className="min-w-0 flex-1 mxp-input px-3 py-1.5 text-xs"
-                  />
-                  <button className="mxp-btn-ghost px-2.5 py-1.5 text-xs" title="Enregistrer la note">
-                    📝
-                  </button>
-                </form>
-              ))}
-          </div>
-        ) : (
-          <form action={setMainQuest} className="mt-2 flex gap-2">
-            <input
-              type="text"
-              name="title"
-              required
-              maxLength={300}
-              placeholder="Le résultat le plus important du jour…"
-              className="min-w-0 flex-1 mxp-input px-3 py-2 text-sm"
-            />
-            <button className="mxp-btn px-3 py-2 text-xs">
-              Définir
-            </button>
-          </form>
-        )}
-      </section>
+      {/* ── Un défi actif : une ligne, jamais un menu (les défis vivent sur /defis) ── */}
+      {challenges
+        .slice(0, 1)
+        .map((c) => {
+          const ticks = c.logs.length;
+          return (
+            <Link key={c.id} href="/defis" className="mt-6 block">
+              <div className="flex items-baseline justify-between gap-3">
+                <p className="mxp-body font-medium">{c.title}</p>
+                <span className="mxp-meta tabular-nums">
+                  {ticks}/{c.targetCount}
+                </span>
+              </div>
+              <div className="mxp-rail mt-2">
+                <i
+                  className="bg-mxp-purple"
+                  style={{ width: `${Math.min(100, Math.round((ticks / c.targetCount) * 100))}%` }}
+                />
+              </div>
+            </Link>
+          );
+        })}
 
       {/* ── Daily Missions ── */}
       <section className="mt-4 mxp-card p-4">
         <div className="flex items-baseline justify-between">
-          <p className="mxp-label text-mxp-blue">Missions du jour · 3–5</p>
+          <p className="mxp-label text-mxp-blue">Missions du jour</p>
         </div>
         <TaskList tasks={missions} empty="Aucune mission pour l'instant." />
         {missions.filter((t) => t.status === "OPEN").length < 5 && (
@@ -652,6 +541,53 @@ export default async function TodayPage() {
           </button>
         </form>
       </section>
+      {/* ── Rituels & outils : une seule rangée calme, icônes premium (pas
+          d'emoji), l'état se lit à la couleur — pas de bruit. ── */}
+      <div className="mt-8 grid grid-cols-6 gap-1.5">
+        {(
+          [
+            ["/today/morning", IconSunrise, "Matin", "text-mxp-orange bg-mxp-orange/10", !!dayPlan?.startedAt],
+            ["/focus", IconTimer, "Focus", "text-mxp-blue bg-mxp-blue/10", false],
+            ["/defis", IconFlag, "Défis", "text-mxp-gold bg-mxp-gold/10", false],
+            ["/journal", IconPen, "Journal", "text-mxp-teal bg-mxp-teal/10", false],
+            ["/dump", IconSpark, "Vide-tête", "text-mxp-purple bg-mxp-purple/10", false],
+            ["/today/night", IconMoon, "Soir", "text-mxp-purple-deep bg-mxp-purple/10", !!dayPlan?.reviewedAt],
+          ] as const
+        ).map(([href, Icon, label, tint, done]) => (
+          <Link
+            key={href}
+            href={href}
+            aria-label={`${label}${done ? " — fait" : ""}`}
+            className="group flex flex-col items-center gap-1 py-1 text-center"
+          >
+            <span
+              aria-hidden
+              className={`mxp-tile transition ${
+                done ? "bg-mxp-bg text-mxp-muted" : tint
+              } group-active:scale-95`}
+            >
+              <Icon className="h-[18px] w-[18px]" />
+            </span>
+            <span
+              className={`text-[11px] font-semibold leading-tight ${
+                done ? "text-mxp-muted" : "text-mxp-ink"
+              }`}
+            >
+              {label}
+            </span>
+          </Link>
+        ))}
+      </div>
+
+
+      {!minimum && (
+        <form action={activateMinimumDay} className="mt-6 mb-2">
+          <button className="mxp-quiet">
+            Journée difficile ? → Passe en journée minimum
+          </button>
+        </form>
+      )}
+
     </main>
   );
 }
@@ -674,11 +610,6 @@ function TaskList({
             }`}
           >
             {t.title}
-            {t.postponeCount >= 3 && t.status === "OPEN" && (
-              <span className="ml-2 rounded bg-mxp-orange/15 px-1.5 py-0.5 text-[10px] font-semibold text-mxp-orange">
-                mode difficile ×{t.postponeCount >= 6 ? 2 : 1.5}
-              </span>
-            )}
           </span>
           {t.status === "OPEN" ? (
             <span className="flex shrink-0 gap-1">
@@ -704,19 +635,17 @@ function TaskList({
                 <input type="hidden" name="id" value={t.id} />
                 <button
                   title="Supprimer"
-                  className="mxp-input px-2 py-1 text-xs text-mxp-muted hover:text-mxp-red"
+                  className="mxp-btn-ghost px-2.5 text-mxp-muted hover:text-mxp-red"
                 >
                   ×
                 </button>
               </form>
             </span>
-          ) : (
-            <span aria-label="accomplie">✅</span>
-          )}
+          ) : null}
           {t.status === "DONE" &&
             (t.notes ? (
               <p className="w-full rounded-lg bg-mxp-bg px-3 py-1.5 text-xs italic text-mxp-muted no-underline">
-                📝 {t.notes}
+                {t.notes}
               </p>
             ) : (
               <form action={addTaskNote} className="flex w-full gap-1.5">
@@ -729,7 +658,7 @@ function TaskList({
                   className="min-w-0 flex-1 mxp-input px-3 py-1.5 text-xs"
                 />
                 <button className="mxp-btn-ghost px-2.5 py-1.5 text-xs" title="Enregistrer la note">
-                  📝
+                  ·
                 </button>
               </form>
             ))}

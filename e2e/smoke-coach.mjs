@@ -17,8 +17,8 @@ await page.fill('textarea[name="why"]', "La liberté financière pour ma famille
 await page.click('text=Saison Revenus');
 await page.click('button:has-text("C\'est parti")');
 await page.waitForURL("**/today");
-await page.fill('input[placeholder*="résultat le plus important"]', "Signer le mandat Berger");
-await page.click('button:has-text("Définir")');
+await page.fill('.mxp-anchor input[name="title"]', "Signer le mandat Berger");
+await page.getByRole("button", { name: /Définir ma quête/ }).click();
 await page.waitForSelector('text=Signer le mandat Berger');
 
 // Coach message 1: state a priority (goes into DB conversation history)

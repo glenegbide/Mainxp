@@ -69,11 +69,11 @@ await page.click('button:has-text("DÉMARRER LA JOURNÉE")');
 await page.waitForURL("**/today");
 b = await body();
 if (!b.includes("Appeler 10 propriétaires")) fail("main quest not set from morning flow");
-if (!b.includes("Matin ✓")) fail("morning quick action not marked done");
+if (!(await page.locator('a[aria-label="Matin — fait"]').count())) fail("morning ritual not marked done");
 
 // 5. Complete Main Quest
-await page.click('section:has-text("Main Quest") button:has-text("Accompli")');
-await page.waitForSelector('section:has-text("Main Quest") [aria-label="accomplie"]');
+await page.getByRole("button", { name: "C'est fait" }).click();
+await page.waitForSelector('.mxp-anchor .line-through');
 
 // 6. Focus: start 25min, end immediately → completed session recorded, no XP block
 await page.goto(`${BASE}/focus`);
@@ -92,7 +92,7 @@ await page.fill('input[name="tomorrowBigThing"]', "Relancer les 3 propriétaires
 await page.click('button:has-text("Clore la journée")');
 await page.waitForURL("**/today");
 b = await body();
-if (!b.includes("Soir ✓")) fail("night review not marked done");
+if (!(await page.locator('a[aria-label="Soir — fait"]').count())) fail("night review not marked done");
 
 // 8. Ledger + coins: verify exact totals on Progress
 // XP: quest 100 + milestone 40 + morning 10 + night 15 + gratitude 10 = 175

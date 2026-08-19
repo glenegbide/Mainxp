@@ -22,11 +22,11 @@ if (!b.includes("ÉLAN")) fail("élan gauge missing from hero");
 if (!b.includes("100/100")) fail("élan should start full");
 
 // earn coins: set + complete main quest (+50c), NN (+10c +15c bonus)
-await page.fill('input[placeholder*="résultat le plus important"]', "Boucler la présentation investisseur");
-await page.click('button:has-text("Définir")');
+await page.fill('.mxp-anchor input[name="title"]', "Boucler la présentation investisseur");
+await page.getByRole("button", { name: /Définir ma quête/ }).click();
 await page.waitForSelector('text=Boucler la présentation');
-await page.click('section:has-text("Main Quest") button:has-text("Accompli")');
-await page.waitForSelector('section:has-text("Main Quest") [aria-label="accomplie"]');
+await page.getByRole("button", { name: "C'est fait" }).click();
+await page.waitForSelector('.mxp-anchor .line-through');
 await page.fill('input[placeholder*="appels de prospection"]', "Entraînement (BJJ)");
 await page.click('section:has-text("Non-négociables") button:has-text("+")');
 await page.waitForSelector('li:has-text("Entraînement (BJJ)")');
@@ -77,7 +77,7 @@ await page.click('button[aria-label="Basculer le mode récupération"]');
 await page.waitForSelector('text=Mode récupération');
 await page.goto(`${BASE}/today`);
 b = await body();
-if (!b.includes("récupération")) fail("élan should show recovery state");
+if (!/récupération/i.test(b)) fail("élan should show recovery state");
 await page.goto(`${BASE}/me`);
 await page.click('button[aria-label="Basculer le mode récupération"]');
 await page.waitForSelector('button[aria-label="Basculer le mode récupération"][aria-pressed="false"]');

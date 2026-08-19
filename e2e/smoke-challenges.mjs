@@ -25,10 +25,11 @@ const todayBody = await page.textContent("body");
 if (/\+\d+\s?XP/.test(todayBody)) fail("advertised XP amount still visible on Today");
 else console.log("1. no advertised XP amounts on Today OK");
 
-// starters visible, personalized ask
-if (!todayBody.includes("Un défi, Defi ?")) fail("starter challenges card missing");
-if (!todayBody.includes("30 jours de méditation")) fail("meditation starter missing");
-else console.log("2. starter dares shown (méditation 30j, livre, organisation)");
+// starters live on /defis now (Today keeps only the day's quest)
+await page.goto(`${BASE}/defis`);
+const defisBody = await page.textContent("body");
+if (!defisBody.includes("30 jours de méditation")) fail("meditation starter missing on /defis");
+else console.log("2. starter dares shown on /defis (méditation 30j, livre, organisation)");
 
 // 2 — accept the 1-book week dare
 await page
@@ -38,8 +39,8 @@ await page.waitForSelector("text=0/1 livre");
 console.log("3. dare accepted → active with progress 0/1");
 
 // tick = 0 XP (structure)
-await page.locator('section:has-text("Défis") .mxp-check').first().click();
-await page.waitForSelector("text=1/1 livre", { timeout: 15000 }).catch(() => {});
+await page.getByRole("button", { name: "Marquer aujourd'hui" }).first().click();
+await page.waitForTimeout(1200);
 // completing 1/1 → challenge completed → surprise XP 61/27
 await page.goto(`${BASE}/progress`);
 const prog = await page.textContent("body");
@@ -47,10 +48,10 @@ if (!prog.includes("61")) fail("expected surprise 61 XP after completing the dar
 if (!prog.includes("Défi relevé")) fail("ledger reason for the dare missing");
 else console.log("4. dare completed → surprise 61 XP with its reason in the ledger");
 
-// completed dare no longer among live ones; starters return
-await page.goto(`${BASE}/today`);
+// completed dare leaves the live list; catalogue returns on /defis
+await page.goto(`${BASE}/defis`);
 const after = await page.textContent("body");
-if (!after.includes("Un défi, Defi ?")) fail("starters should be back after completion");
+if (!after.includes("Relevés · 1")) fail("completed challenge not in the palmarès");
 else console.log("5. challenge lifecycle clean (completed → slot free)");
 
 if (process.exitCode) console.error("CHALLENGES SUITE FAILED");
