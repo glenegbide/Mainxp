@@ -456,3 +456,38 @@ a.mxp-card:active {
   .mxp-xpfloat { animation: none; opacity: 1; transform: translate(-50%, -20px); }
   .mxp-skel { animation: none; }
 }
+
+/* ── Habit tap: a counter with weight, sized for a thumb ── */
+.mxp-tap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 15px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+.mxp-tap:active { transform: scale(0.9); }
+.mxp-tap-good {
+  border: 0;
+  color: #fff;
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.08), 0 8px 18px -10px rgba(16, 185, 129, 0.75);
+}
+.mxp-tap-bad {
+  border: 1.5px solid rgba(249, 115, 22, 0.45);
+  background: var(--mxp-card);
+  color: var(--mxp-orange);
+}
+.mxp-tapcount {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.mxp-tapcount-pulse { transform: scale(1.28); }

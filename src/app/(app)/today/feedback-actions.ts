@@ -44,3 +44,10 @@ export async function toggleMinimumSlotRewarded(slot: string): Promise<ActionRew
   fd.set("slot", slot);
   return withReward(toggleMinimumSlot, fd);
 }
+
+export async function tapHabitRewarded(id: string): Promise<ActionReward> {
+  const { tapHabit } = await import("../habits/actions");
+  const fd = new FormData();
+  fd.set("id", id);
+  return withReward(tapHabit, fd);
+}

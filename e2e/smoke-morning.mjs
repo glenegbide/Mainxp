@@ -60,6 +60,9 @@ else console.log("5. XP = 10 exactly (no farming surface) OK");
 
 // ── Habit with description ──
 await page.goto(`${BASE}/habits`);
+if (!(await page.locator('input[name="title"]').isVisible().catch(() => false))) {
+  await page.click("summary:has-text('Nouvelle habitude')");
+}
 await page.fill('input[name="title"]', "BJJ 3x/semaine");
 await page.fill('textarea[name="description"]', "Lun-mer-ven à midi. Le sac est prêt la veille.");
 await page.getByRole("button", { name: /Créer l.habitude/ }).click();

@@ -23,11 +23,11 @@ Ten criteria, 10 points each.
 
 | Screen | Score | Blocking gaps |
 |---|---|---|
-| `/today` | 92 | Character art is still a placeholder sprite (identity, criterion 10). |
+| `/today` | 94 | Character art is still a placeholder sprite (identity, criterion 10). |
 | `/defis` | 88 | No skeleton of its own; challenge tick lacks the optimistic moment. |
 | `/journal` | 62 | Card pile, no anchor, no type ramp, mood chips carry the screen alone. |
 | `/library` | 64 | Same pile; the current book should be the anchor. |
-| `/habits` | 60 | Two symmetrical lists, no anchor, `+`/`−` buttons below 44px. |
+| `/habits` | 90 | Anchored on today's tally with live taps; character evolution still to come. |
 | `/progress` | 58 | Reads as an admin dashboard; no single story per week. |
 | `/me` | 66 | Long settings stack; titles/gear deserve the game layer. |
 | `/coach` | 74 | Good bones; needs streaming feedback + empty state that teaches. |

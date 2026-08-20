@@ -65,8 +65,8 @@ for (let i = 1; i <= 5; i++) {
 }
 // complete all five missions (+125 XP / +50 coins)
 for (let i = 1; i <= 5; i++) {
-  await page.locator(`li:has-text("Mission ${i}") button[title="Accomplir"]`).first().click();
-  await page.waitForTimeout(350);
+  await page.locator(`button[aria-label="Valider : Mission ${i}"]`).first().click();
+  await page.waitForTimeout(900);
 }
 await expectTotals(175, 75, "five missions completed");
 
@@ -78,8 +78,8 @@ await page.waitForTimeout(600);
 const b6 = await body();
 if (!b6.includes("Mission farming 6")) fail("6th task vanished instead of becoming side quest");
 // completing it awards side-quest value (8/3), not mission value (25/10)
-await page.locator('li:has-text("Mission farming 6") button[title="Accomplir"]').first().click();
-await page.waitForTimeout(500);
+await page.locator('button[aria-label="Valider : Mission farming 6"]').first().click();
+await page.waitForTimeout(1500);
 await expectTotals(183, 78, "6th task = side-quest value (no +25 farm)");
 
 await page.screenshot({ path: `${shots}/integrity-final.png`, fullPage: true });

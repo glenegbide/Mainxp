@@ -33,21 +33,32 @@ await page.waitForSelector('li:has-text("Entraînement (BJJ)")');
 await page.click('li:has-text("Entraînement (BJJ)") button[aria-pressed="false"]');
 await page.waitForSelector('li:has-text("Entraînement (BJJ)") button[aria-pressed="true"]');
 
+
+// The add form lives behind a disclosure that stays open across revalidations.
+async function openHabitForm() {
+  if (!(await page.locator('input[name="title"]').isVisible().catch(() => false))) {
+    await page.click("summary:has-text('Nouvelle habitude')");
+  }
+}
+
 // habits: good habit ×3 taps (10, 10, 6 XP), bad habit tap → élan 97
 await page.goto(`${BASE}/habits`);
+await openHabitForm();
 await page.fill('input[name="title"]', "Lire 10 pages");
 await page.selectOption('select[name="attribute"]', "KNOWLEDGE");
 await page.click('button:has-text("Créer l\'habitude")');
 await page.waitForSelector('li:has-text("Lire 10 pages")');
 for (let i = 1; i <= 3; i++) {
-  await page.click('li:has-text("Lire 10 pages") form button');
+  await page.locator('button[aria-label="Marquer : Lire 10 pages"]').click();
   await page.waitForSelector(`li:has-text("Lire 10 pages") span:has-text("×${i}")`);
+  await page.waitForTimeout(700);
 }
+await openHabitForm();
 await page.fill('input[name="title"]', "Scroller au lit");
 await page.click('label:has-text("À réduire")');
 await page.click('button:has-text("Créer l\'habitude")');
 await page.waitForSelector('li:has-text("Scroller au lit")');
-await page.click('li:has-text("Scroller au lit") form button');
+await page.locator('button[aria-label="Noter un écart : Scroller au lit"]').click();
 await page.waitForSelector('li:has-text("Scroller au lit") span:has-text("×1")');
 await page.screenshot({ path: `${shots}/01-habits.png`, fullPage: true });
 await page.goto(`${BASE}/today`);

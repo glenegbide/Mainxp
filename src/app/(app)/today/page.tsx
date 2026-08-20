@@ -21,6 +21,7 @@ import {
 import { addTaskNote } from "./actions";
 import { CheckAction } from "../../components/CheckAction";
 import {
+  completeTaskRewarded,
   toggleMinimumSlotRewarded,
   toggleNonNegotiableRewarded,
 } from "./feedback-actions";
@@ -28,6 +29,8 @@ import { tapHabit } from "../habits/actions";
 import { activateMinimumDay, submitComeback } from "./day-actions";
 import {
   IconFlag,
+  IconTomorrow,
+  IconTrash,
   IconMoon,
   IconPen,
   IconSpark,
@@ -607,41 +610,38 @@ function TaskList({
   return (
     <ul className="mt-2 space-y-2">
       {tasks.map((t) => (
-        <li key={t.id} className="flex flex-wrap items-center justify-between gap-2">
+        <li key={t.id} className="flex flex-wrap items-center gap-3 py-1">
+          <CheckAction
+            id={t.id}
+            done={t.status === "DONE"}
+            label={t.title}
+            act={completeTaskRewarded}
+          />
           <span
-            className={`min-w-0 flex-1 text-sm ${
+            className={`min-w-0 flex-1 mxp-body ${
               t.status === "DONE" ? "text-mxp-muted line-through" : ""
             }`}
           >
             {t.title}
           </span>
           {t.status === "OPEN" ? (
-            <span className="flex shrink-0 gap-1">
-              <form action={completeTask}>
-                <input type="hidden" name="id" value={t.id} />
-                <button
-                  title="Accomplir"
-                  className="mxp-btn-ghost px-2 py-1 text-xs hover:text-mxp-green"
-                >
-                  ✓
-                </button>
-              </form>
+            <span className="flex shrink-0 items-center gap-1">
               <form action={postponeTask}>
                 <input type="hidden" name="id" value={t.id} />
                 <button
-                  title="Reporter à demain"
-                  className="mxp-input px-2 py-1 text-xs text-mxp-muted hover:text-mxp-ink"
+                  aria-label={`Reporter à demain : ${t.title}`}
+                  className="flex h-11 w-11 items-center justify-center rounded-xl text-mxp-muted transition active:scale-90 hover:bg-mxp-bg hover:text-mxp-ink"
                 >
-                  →
+                  <IconTomorrow className="h-[18px] w-[18px]" />
                 </button>
               </form>
               <form action={deleteTask}>
                 <input type="hidden" name="id" value={t.id} />
                 <button
-                  title="Supprimer"
-                  className="mxp-btn-ghost px-2.5 text-mxp-muted hover:text-mxp-red"
+                  aria-label={`Supprimer : ${t.title}`}
+                  className="flex h-11 w-11 items-center justify-center rounded-xl text-mxp-muted/60 transition active:scale-90 hover:bg-mxp-bg hover:text-mxp-red"
                 >
-                  ×
+                  <IconTrash className="h-[17px] w-[17px]" />
                 </button>
               </form>
             </span>

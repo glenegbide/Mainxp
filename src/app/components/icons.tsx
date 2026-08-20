@@ -99,3 +99,35 @@ export function IconCompass({ className }: IconProps) {
     </svg>
   );
 }
+
+export function IconTomorrow({ className }: IconProps) {
+  // Push to tomorrow — an arrow meeting a day boundary.
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M4 12h11" />
+      <path d="M11 8l4 4-4 4" />
+      <path d="M19 5v14" />
+    </svg>
+  );
+}
+
+export function IconTrash({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M4 7h16" />
+      <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" />
+      <path d="M6.5 7l.8 12a1.5 1.5 0 0 0 1.5 1.4h6.4a1.5 1.5 0 0 0 1.5-1.4l.8-12" />
+    </svg>
+  );
+}
+
+export function IconGem({ className }: IconProps) {
+  // MAINXP artifact mark — faceted, original.
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden>
+      <path d="M7 3h10l4 6-9 12L3 9z" />
+      <path d="M7 3l2 6 3 12 3-12 2-6" />
+      <path d="M3 9h18" />
+    </svg>
+  );
+}
