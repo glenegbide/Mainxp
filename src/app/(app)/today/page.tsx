@@ -17,11 +17,15 @@ import {
   deleteTask,
   postponeTask,
   setMainQuest,
-  toggleNonNegotiable,
 } from "./actions";
 import { addTaskNote } from "./actions";
+import { CheckAction } from "../../components/CheckAction";
+import {
+  toggleMinimumSlotRewarded,
+  toggleNonNegotiableRewarded,
+} from "./feedback-actions";
 import { tapHabit } from "../habits/actions";
-import { activateMinimumDay, submitComeback, toggleMinimumSlot } from "./day-actions";
+import { activateMinimumDay, submitComeback } from "./day-actions";
 import {
   IconFlag,
   IconMoon,
@@ -270,16 +274,16 @@ export default async function TodayPage() {
                 ["mind", "Esprit — une action de reset (respirer, écrire 3 lignes)", dayPlan?.minMindDone],
               ] as const
             ).map(([slot, label, done]) => (
-              <li key={slot} className="flex items-center justify-between gap-3">
-                <span className={`text-sm ${done ? "text-mxp-muted line-through" : ""}`}>
+              <li key={slot} className="flex items-start gap-3 py-1">
+                <CheckAction
+                  id={slot}
+                  done={!!done}
+                  label={label}
+                  act={toggleMinimumSlotRewarded}
+                />
+                <span className={`mxp-body ${done ? "text-mxp-muted line-through" : ""}`}>
                   {label}
                 </span>
-                <form action={toggleMinimumSlot}>
-                  <input type="hidden" name="slot" value={slot} />
-                  <button aria-pressed={!!done} className={`mxp-check ${done ? "on" : ""}`}>
-                    ✓
-                  </button>
-                </form>
               </li>
             ))}
           </ul>
@@ -451,16 +455,16 @@ export default async function TodayPage() {
           {nonNegotiables.map((nn) => {
             const done = doneByNn.get(nn.id) ?? false;
             return (
-              <li key={nn.id} className="flex items-center justify-between gap-3">
-                <span className={`text-sm ${done ? "text-mxp-muted line-through" : ""}`}>
+              <li key={nn.id} className="flex items-center gap-3 py-1">
+                <CheckAction
+                  id={nn.id}
+                  done={done}
+                  label={nn.title}
+                  act={toggleNonNegotiableRewarded}
+                />
+                <span className={`mxp-body ${done ? "text-mxp-muted line-through" : ""}`}>
                   {nn.title}
                 </span>
-                <form action={toggleNonNegotiable}>
-                  <input type="hidden" name="id" value={nn.id} />
-                  <button aria-pressed={done} className={`mxp-check ${done ? "on" : ""}`}>
-                    ✓
-                  </button>
-                </form>
               </li>
             );
           })}

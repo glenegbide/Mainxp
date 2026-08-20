@@ -105,6 +105,17 @@ default; game layer through character/rank/gems/quests/celebrations — never
 clutter. When torn between MORE and LESS: choose LESS, make what stays
 exceptional.
 
+## Next.js traps verified in THIS version (16.2.x)
+
+- **Never add a route-level `loading.tsx`.** It silently breaks
+  `revalidatePath` from server actions: the mutation commits to the database
+  but the screen never updates until a hard reload (verified 2026-08-20 —
+  removing the file restored it instantly). For perceived speed, stream with
+  `<Suspense>` *inside* the page instead. `error.tsx` is safe.
+- Client components must never import a type from a `"use server"` module —
+  it drags server code into the client bundle. Shared result types live in
+  plain modules (`src/lib/mainxp/action-result.ts`).
+
 ## Verify before pushing
 
 `npm run lint` · `npx tsc --noEmit` · `npm test` (vitest) · `npm run build`.
