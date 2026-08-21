@@ -40,7 +40,7 @@ if (!persisted.includes("9h-11h")) fail("book notes not persisted");
 else console.log("2. notes + applied lesson persisted");
 
 // finish → surprise 50 XP with reason
-await page.getByRole("button", { name: /Terminé/ }).click();
+await page.getByRole("button", { name: /J.ai fini ce livre/ }).click();
 await page.waitForSelector("text=Terminés · 1");
 console.log("3. book finished → in the palmarès with its applied lesson");
 await page.goto(`${BASE}/progress`);

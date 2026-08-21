@@ -25,10 +25,10 @@ Ten criteria, 10 points each.
 |---|---|---|
 | `/today` | 94 | Character art is still a placeholder sprite (identity, criterion 10). |
 | `/defis` | 88 | No skeleton of its own; challenge tick lacks the optimistic moment. |
-| `/journal` | 62 | Card pile, no anchor, no type ramp, mood chips carry the screen alone. |
-| `/library` | 64 | Same pile; the current book should be the anchor. |
+| `/journal` | 90 | Blank page is the anchor; timeline is chrome-less. Calendar/history later. |
+| `/library` | 89 | Current book is the anchor. Cover art and reading pace still missing. |
 | `/habits` | 90 | Anchored on today's tally with live taps; character evolution still to come. |
-| `/progress` | 58 | Reads as an admin dashboard; no single story per week. |
+| `/progress` | 91 | One weekly story + 7-day chart + the path forming; ledger folded away. |
 | `/me` | 66 | Long settings stack; titles/gear deserve the game layer. |
 | `/coach` | 74 | Good bones; needs streaming feedback + empty state that teaches. |
 | morning / night | 70 | Bible order not fully applied; gratitude 01–10 ritual not built. |

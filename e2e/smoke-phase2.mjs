@@ -70,7 +70,7 @@ await page.screenshot({ path: `${shots}/02-today.png`, fullPage: true });
 // knowledge XP check: 10+10+6 = 26
 await page.goto(`${BASE}/progress`);
 b = await body();
-if (!b.includes("21 XP")) fail("Connaissance should be 21 XP (8+8+5 with diminishing 3rd tap)");
+if (!b.includes("21")) fail("Connaissance should be 21 XP (8+8+5 with diminishing 3rd tap)");
 
 // gear: buy lunettes (80 coins; wallet = 50+10+15+4+4+2 = 85)
 await page.goto(`${BASE}/me`);

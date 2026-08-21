@@ -85,11 +85,14 @@ export async function birdsEyeView(user: Pick<MxUser, "id" | "timezone">) {
       }),
     ]);
 
+  // NET per day: a reversed award must not keep counting toward the week
+  // (gross sums made an uncheck/recheck look like twice the work).
   const xpByDay = new Map<string, number>();
   for (const t of tx) {
     const d = dayKey(t.createdAt, user.timezone);
-    xpByDay.set(d, (xpByDay.get(d) ?? 0) + Math.max(0, t.mainDelta));
+    xpByDay.set(d, (xpByDay.get(d) ?? 0) + t.mainDelta);
   }
+  for (const [d, v] of xpByDay) xpByDay.set(d, Math.max(0, v));
   const focusByDay = new Map<string, number>();
   for (const f of focus14) {
     const d = dayKey(f.startedAt, user.timezone);
