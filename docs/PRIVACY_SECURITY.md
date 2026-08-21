@@ -85,3 +85,49 @@ chose to send it).
   crafted allowlists, blocking, unlinked support.
 - `e2e/smoke-circle.mjs` — two real accounts in two browser contexts; the
   sentinel sweep runs over every one of the partner's screens.
+
+---
+
+## Account & recovery — built (2026-08)
+
+### Password recovery (`src/lib/mainxp/password-reset.ts`)
+
+- **The token is never stored.** Only its SHA-256 lives in
+  `mainxp_password_resets`; the token itself exists in the email and nowhere
+  else, so a database leak cannot be used to take over accounts.
+- **One hour, one use.** Using a link burns it *and* every other unused link
+  for that account — an old mail sitting in an inbox stops working.
+- **A reset ends every session.** That is the point: it is what removes anyone
+  who already had the old password.
+- **The form is not an existence oracle.** The forgotten-password screen shows
+  the same sentence for a real address, an unknown one, and a rate-limited one.
+  The only other answer it can give is "this server cannot send mail at all",
+  which is a fact about the server and is decided *before* any lookup.
+- **Three requests per hour per account**, counted in the database.
+- Changing the password from inside the app also invalidates unused reset
+  links, and signs out every other device while keeping the current one.
+
+### Email (`src/lib/mainxp/email.ts`)
+
+One provider (Resend), no dependency, and exactly one kind of message: "you
+asked to reset your password". No digests, no re-engagement, no marketing.
+With `RESEND_API_KEY` / `MAINXP_EMAIL_FROM` unset the app says so on screen
+rather than pretending (CLAUDE.md rule 4); in development the link is printed
+to the server log so the flow stays testable.
+
+### The account screen (`/me/compte`)
+
+Name, address, password, devices, deletion. Everything touching identity asks
+for the current password — being able to open the app is not proof of
+ownership. Deletion needs the password *and* the typed word SUPPRIMER, then
+removes the user row and everything cascading from it: no "deactivated"
+limbo, no 30-day hostage period.
+
+### Tests
+
+`password-reset.integration.test.ts` (replay, expiry, rate limit, session
+wipe, sibling-link invalidation), `email.test.ts` (wire shape against a
+stubbed fetch, HTML escaping, honest offline), and `e2e/smoke-account.mjs` —
+ten checks through the real screens, including planting a reset link exactly
+as the email would carry it, and proving a deleted account can no longer
+sign in.

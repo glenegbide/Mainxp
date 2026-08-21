@@ -12,6 +12,9 @@ fails loudly.
 | `smoke-integrity.mjs` | mission-cap farming, NN uncheck/recheck, duplicate submits | 50 → 0 → 50 → 183 |
 | `smoke-coach.mjs` | coach conversation + memory recall (needs an AI key) | — |
 | `smoke-aikey.mjs` | in-app AI key: reject bad key, save real key, coach reply | — |
+| `smoke-notifications.mjs` | modes, quiet hours, installability while logged out, tick auth | — |
+| `smoke-circle.mjs` | two real accounts: default silence, one switch, sentinel leak sweep | — |
+| `smoke-account.mjs` | name/email/password, reset link, single use, deletion | needs `pg` + `.env` |
 
 ## Running
 

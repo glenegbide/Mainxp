@@ -250,9 +250,15 @@ export default async function MePage({
             ce que ton coach sait
           </span>
         </Link>
+        <Link href="/me/compte" className="mxp-card p-4 text-sm font-semibold">
+          Compte
+          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
+            nom, email, mot de passe
+          </span>
+        </Link>
       </div>
 
-      <section className="mxp-card mt-4 p-4 text-sm">
+      <Link href="/me/compte" className="mxp-card mt-4 block p-4 text-sm">
         <dl className="space-y-2">
           <div className="flex justify-between">
             <dt className="text-mxp-muted">Email</dt>
@@ -263,7 +269,7 @@ export default async function MePage({
             <dd>{user.timezone}</dd>
           </div>
         </dl>
-      </section>
+      </Link>
 
       <form action={logout} className="mt-6 mb-6">
         <button className="w-full mxp-btn-ghost px-4 py-3 text-sm text-mxp-red hover:bg-red-50">

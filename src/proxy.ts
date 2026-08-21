@@ -4,6 +4,13 @@ import { NextRequest, NextResponse } from "next/server";
 // in server components and actions (see docs/PRIVACY_SECURITY.md).
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  // Recovery lives outside the session: someone who cannot log in must still
+  // be able to reach these, and someone who IS logged in has no business
+  // being bounced away from a reset link they just opened on this device.
+  const isRecoveryPage =
+    pathname.startsWith("/mot-de-passe-oublie") || pathname.startsWith("/mot-de-passe/");
+  if (isRecoveryPage) return NextResponse.next();
+
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup");
   // Machine endpoints authenticate themselves (MAINXP_JOBS_SECRET / vercel-cron
   // UA) — they carry no session cookie by nature, and redirecting them to

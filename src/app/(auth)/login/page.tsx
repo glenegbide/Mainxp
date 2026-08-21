@@ -8,9 +8,9 @@ const ERRORS: Record<string, string> = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; suite?: string }>;
+  searchParams: Promise<{ error?: string; suite?: string; etat?: string }>;
 }) {
-  const { error, suite } = await searchParams;
+  const { error, suite, etat } = await searchParams;
   return (
     <main className="flex min-h-screen flex-col justify-center px-6 py-12">
       <div className="flex flex-col items-center">
@@ -34,6 +34,11 @@ export default async function LoginPage({
         {error && (
           <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-mxp-red">
             {ERRORS[error] ?? "Une erreur est survenue."}
+          </p>
+        )}
+        {etat === "motdepasse" && (
+          <p className="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-mxp-green">
+            Nouveau mot de passe enregistré. Connecte-toi avec.
           </p>
         )}
         <label className="block">
@@ -63,6 +68,12 @@ export default async function LoginPage({
           Se connecter
         </button>
       </form>
+
+      <p className="mt-4 text-center text-sm">
+        <Link href="/mot-de-passe-oublie" className="text-mxp-muted underline underline-offset-4">
+          Mot de passe oublié ?
+        </Link>
+      </p>
 
       <p className="mt-6 text-center text-sm text-mxp-muted">
         Pas encore de compte ?{" "}

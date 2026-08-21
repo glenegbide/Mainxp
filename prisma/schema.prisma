@@ -134,6 +134,7 @@ model MxUser {
   blocksReceived  MxBlock[]         @relation("MxBlocksReceived")
   supportSent     MxEncouragement[] @relation("MxSupportSent")
   supportReceived MxEncouragement[] @relation("MxSupportReceived")
+  passwordResets  MxPasswordReset[]
 
   @@map("mainxp_users")
 }
@@ -768,4 +769,20 @@ model MxEncouragement {
   @@unique([fromId, toId, dayKey, kind]) // one of each per day: care, not spam
   @@index([toId, createdAt])
   @@map("mainxp_encouragements")
+}
+
+// Password recovery. The token itself is never stored — only its SHA-256 — so
+// a database leak cannot be used to take over accounts. Single use, short
+// lived, and using one logs every other device out.
+model MxPasswordReset {
+  id        String    @id @default(cuid())
+  userId    String
+  user      MxUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@map("mainxp_password_resets")
 }
