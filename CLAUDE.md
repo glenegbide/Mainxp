@@ -54,6 +54,15 @@ system doc for whatever you touch (XP_SYSTEM, GOAL_SYSTEM, COACH_SYSTEM, …).
     cancels the nudge about it. Every evaluation writes a row (SENT, or
     SUPPRESSED with its reason): silence is a decision we can audit and learn
     from. Full invariants: `docs/NOTIFICATION_SYSTEM.md`.
+14. **Le Cercle is invite-only and closed by default.** No feed, no followers,
+    no counts, no discovery — you cannot be found, only invited. Everything one
+    person sees of another passes through `circle/visibility.ts`; adding a
+    second path is the only way to leak. Journal, gratitude, notes, money,
+    memories and coach chat have no switch: they are absent from the types.
+    A link is two rows (one per direction), every switch starts false, a
+    category is not a permission (allowlists are), and opening an invitation
+    changes nothing — accepting is a POST. Full invariants:
+    `docs/PRIVACY_SECURITY.md`.
 
 ## The coach is the brain (P1/P2/P10 — built)
 

@@ -44,7 +44,7 @@ const TABS = [
   { href: "/today", label: "Jour", icon: "today" },
   { href: "/coach", label: "Coach", icon: "coach" },
   { href: "/progress", label: "Progrès", icon: "progress" },
-  { href: "/social", label: "Social", icon: "social" },
+  { href: "/social", label: "Cercle", icon: "social" },
   { href: "/me", label: "Moi", icon: "me" },
 ] as const;
 

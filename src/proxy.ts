@@ -16,6 +16,10 @@ export function proxy(req: NextRequest) {
   if (!isAuthPage && !hasSession) {
     const url = req.nextUrl.clone();
     url.pathname = "/login";
+    url.search = "";
+    // Someone opening an invitation has no account yet — remember where they
+    // were going, or the link dies on the login screen.
+    if (pathname.startsWith("/social/rejoindre/")) url.searchParams.set("suite", pathname);
     return NextResponse.redirect(url);
   }
   if (isAuthPage && hasSession) {

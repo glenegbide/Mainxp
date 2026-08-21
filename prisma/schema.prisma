@@ -126,6 +126,15 @@ model MxUser {
   pushSubs          MxPushSubscription[]
   notifications     MxNotification[]
 
+  invitesSent     MxCircleInvite[]  @relation("MxInvitesSent")
+  invitesAccepted MxCircleInvite[]  @relation("MxInvitesAccepted")
+  circleShares    MxCircleLink[]    @relation("MxCircleOwner") // what I show
+  circleReceives  MxCircleLink[]    @relation("MxCirclePartner") // what I am shown
+  blocksMade      MxBlock[]         @relation("MxBlocksMade")
+  blocksReceived  MxBlock[]         @relation("MxBlocksReceived")
+  supportSent     MxEncouragement[] @relation("MxSupportSent")
+  supportReceived MxEncouragement[] @relation("MxSupportReceived")
+
   @@map("mainxp_users")
 }
 
@@ -667,4 +676,96 @@ model MxMessage {
 
   @@index([conversationId, createdAt])
   @@map("mainxp_messages")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LE CERCLE — accountability partners.
+//
+// Design law (docs/PRIVACY_SECURITY.md): sharing is per-direction and every
+// switch defaults to false. A link between two people is TWO rows — mine says
+// what I show you, yours says what you show me — so revoking is local and
+// instant, and no query can ever "inherit" the other side's generosity.
+//
+// Money, journal, gratitude, notes, memories and coach conversations have no
+// switch at all: they are not shareable by construction, not by configuration.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// A share link the inviter sends by message. It carries no personal data — it
+// is only a claimable token, and accepting it is an explicit POST.
+model MxCircleInvite {
+  id           String    @id @default(cuid())
+  inviterId    String
+  inviter      MxUser    @relation("MxInvitesSent", fields: [inviterId], references: [id], onDelete: Cascade)
+  token        String    @unique
+  label        String    @default("") // the inviter's own words: « pour Marc »
+  acceptedById String?
+  acceptedBy   MxUser?   @relation("MxInvitesAccepted", fields: [acceptedById], references: [id], onDelete: SetNull)
+  acceptedAt   DateTime?
+  revokedAt    DateTime?
+  expiresAt    DateTime
+  createdAt    DateTime  @default(now())
+
+  @@index([inviterId, createdAt])
+  @@map("mainxp_circle_invites")
+}
+
+// One row per direction. `userId` is the person SHARING; `partnerId` is who
+// they share with.
+model MxCircleLink {
+  id        String @id @default(cuid())
+  userId    String
+  user      MxUser @relation("MxCircleOwner", fields: [userId], references: [id], onDelete: Cascade)
+  partnerId String
+  partner   MxUser @relation("MxCirclePartner", fields: [partnerId], references: [id], onDelete: Cascade)
+
+  status String @default("active") // active | paused | ended
+
+  // The four switches. All false: a fresh partner sees a name and nothing else.
+  shareElan       Boolean @default(false) // streak + keep rate
+  shareMainQuest  Boolean @default(false) // today's headline, done or not
+  shareChallenges Boolean @default(false) // only the ones in the allowlist
+  shareWeekly     Boolean @default(false) // the week's shape, never the ledger
+
+  // Allowlists: sharing a category never means sharing everything in it.
+  goalIds      String[] @default([])
+  challengeIds String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, partnerId])
+  @@index([partnerId, status])
+  @@map("mainxp_circle_links")
+}
+
+// A block is absolute and mutual in effect: it hides both directions and
+// survives re-invitation.
+model MxBlock {
+  id        String   @id @default(cuid())
+  userId    String
+  user      MxUser   @relation("MxBlocksMade", fields: [userId], references: [id], onDelete: Cascade)
+  blockedId String
+  blocked   MxUser   @relation("MxBlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, blockedId])
+  @@map("mainxp_blocks")
+}
+
+// « Je te soutiens » — the only social action. No likes, no comments, no feed:
+// support is sent to a person, not performed for an audience.
+model MxEncouragement {
+  id        String   @id @default(cuid())
+  fromId    String
+  from      MxUser   @relation("MxSupportSent", fields: [fromId], references: [id], onDelete: Cascade)
+  toId      String
+  to        MxUser   @relation("MxSupportReceived", fields: [toId], references: [id], onDelete: Cascade)
+  kind      String   @default("support") // support | proud | push
+  dayKey    String
+  seenAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@unique([fromId, toId, dayKey, kind]) // one of each per day: care, not spam
+  @@index([toId, createdAt])
+  @@map("mainxp_encouragements")
 }

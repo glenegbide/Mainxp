@@ -12,9 +12,9 @@ const ERRORS: Record<string, string> = {
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; suite?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, suite } = await searchParams;
   return (
     <main className="flex min-h-screen flex-col justify-center px-6 py-12">
       <div className="flex flex-col items-center">
@@ -34,6 +34,7 @@ export default async function SignupPage({
       </p>
 
       <form action={signup} className="mt-10 space-y-4">
+        {suite && <input type="hidden" name="suite" value={suite} />}
         {error && (
           <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-mxp-red">
             {ERRORS[error] ?? "Une erreur est survenue."}
@@ -82,7 +83,10 @@ export default async function SignupPage({
 
       <p className="mt-6 text-center text-sm text-mxp-muted">
         Déjà un compte ?{" "}
-        <Link href="/login" className="font-medium text-mxp-purple">
+        <Link
+          href={suite ? `/login?suite=${encodeURIComponent(suite)}` : "/login"}
+          className="font-medium text-mxp-purple"
+        >
           Se connecter
         </Link>
       </p>

@@ -32,3 +32,56 @@ AI memory, spirituality. Treated accordingly from Phase 0.
 Clubs ship only with: block user, leave club, remove member, report content,
 mute, private/public visibility, invitation controls. The social schema must
 reserve these capabilities from its first migration.
+
+---
+
+## Le Cercle — built (2026-08)
+
+Invite-only accountability partners. No feed, no followers, no counts, no
+discovery: **you cannot be found in MAINXP, only invited.** Max 6 partners.
+
+### The door
+
+`src/lib/mainxp/circle/visibility.ts` is the ONLY path from one person's data
+to another's. It is pure, and its test suite plants sentinel strings in the
+private fields and searches the rendered card for them.
+
+1. **Money, journal, gratitude, notes, memories and coach conversations have no
+   switch.** They are absent from `SharerFacts` and from `PartnerCard`, so they
+   are unrepresentable — not "off by default", but impossible to turn on.
+2. **A link is two rows**, one per direction. My row says what I show you.
+   Revoking is local, instant, and cannot inherit the other side's generosity.
+3. **Every switch defaults to false.** A fresh partner sees a first name.
+4. **Categories are not permissions.** `shareChallenges` shares nothing until
+   specific challenge ids are allowlisted; a shared Main Quest names its goal
+   only if that goal id is allowlisted.
+5. **Allowlists are re-validated server-side** against what the user owns, so a
+   crafted form cannot grant access to rows that are not theirs.
+6. **Blocking ends both directions and survives re-invitation.**
+7. **Pausing keeps the person and drops the facts** — the same shape as a new
+   partner, so a pause can never read as an accusation.
+
+### The invitation
+
+A random 24-byte token in a share link, valid 14 days, single use, revocable.
+**Opening it changes nothing**: the page only reads (message apps and mail
+clients prefetch URLs). The link becomes a link between people when a
+signed-in person presses the button — a POST. An invited person without an
+account keeps their destination through signup via the `suite` parameter,
+which is accepted only when it is an in-app path.
+
+### The only social action
+
+« Je te soutiens » — one per person per day, enforced by a unique constraint.
+No likes, no comments, no visible counters: support is sent to a person, not
+performed for an audience. It arrives as a push through `notify/direct.ts`,
+which respects sleep and rest mode but not the machine's daily cap (a human
+chose to send it).
+
+### Tests
+
+- `visibility.test.ts` — 17 sentinel/permission tests on the pure door.
+- `service.integration.test.ts` — invitations, expiry, revocation, re-use,
+  crafted allowlists, blocking, unlinked support.
+- `e2e/smoke-circle.mjs` — two real accounts in two browser contexts; the
+  sentinel sweep runs over every one of the partner's screens.
