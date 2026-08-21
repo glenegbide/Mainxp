@@ -47,6 +47,13 @@ system doc for whatever you touch (XP_SYSTEM, GOAL_SYSTEM, COACH_SYSTEM, …).
     habit descriptions, routine notes, task notes). The coach reads them
     (get_today_context, night feedback) and reacts to THEM, not generalities —
     emotion acknowledged before coaching.
+13. **A notification must cite a number, or stay silent.** No trigger may emit
+    generic encouragement (`evidence` is required beside the copy, so the path
+    does not exist), no notification names an XP amount, quiet hours are never
+    overridden — not by Beast mode, not by urgency 100 — and doing the thing
+    cancels the nudge about it. Every evaluation writes a row (SENT, or
+    SUPPRESSED with its reason): silence is a decision we can audit and learn
+    from. Full invariants: `docs/NOTIFICATION_SYSTEM.md`.
 
 ## The coach is the brain (P1/P2/P10 — built)
 

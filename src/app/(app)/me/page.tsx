@@ -238,6 +238,12 @@ export default async function MePage({
             livres, notes, leçons
           </span>
         </Link>
+        <Link href="/me/notifications" className="mxp-card p-4 text-sm font-semibold">
+          Notifications
+          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
+            quand MAINXP peut te parler
+          </span>
+        </Link>
         <Link href="/me/knowledge" className="mxp-card p-4 text-sm font-semibold">
           🧠 Connaissance
           <span className="mt-0.5 block text-xs font-normal text-mxp-muted">

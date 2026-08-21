@@ -1,0 +1,51 @@
+# The notification heartbeat.
+#
+# Every nudge must leave the server at the right LOCAL minute (an iOS PWA
+# cannot schedule anything itself), and Vercel Hobby allows a single cron per
+# day — which the daily brief already uses. So the tick lives here.
+#
+# The route is idempotent by construction: each decision is inserted under a
+# unique dedupeKey before it is delivered, so a late, duplicated, or
+# overlapping run can never send the same notification twice.
+#
+# Repository secrets required:
+#   MAINXP_APP_URL      https://your-deployment.vercel.app  (no trailing slash)
+#   MAINXP_JOBS_SECRET  same value as the environment variable in Vercel
+
+name: notification tick
+
+on:
+  schedule:
+    - cron: "*/15 * * * *" # GitHub may delay a run under load; harmless here
+  workflow_dispatch: # manual run, for verifying a fresh deployment
+
+concurrency:
+  group: notification-tick
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call /api/jobs/tick
+        env:
+          APP_URL: ${{ secrets.MAINXP_APP_URL }}
+          JOBS_SECRET: ${{ secrets.MAINXP_JOBS_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${APP_URL:-}" ] || [ -z "${JOBS_SECRET:-}" ]; then
+            echo "MAINXP_APP_URL / MAINXP_JOBS_SECRET not set — nothing to call."
+            exit 0
+          fi
+          body=$(mktemp)
+          code=$(curl -sS --max-time 120 --retry 2 --retry-delay 5 \
+            -o "$body" -w '%{http_code}' \
+            -H "authorization: Bearer ${JOBS_SECRET}" \
+            "${APP_URL}/api/jobs/tick")
+          echo "HTTP ${code}"
+          cat "$body"
+          echo
+          # A failing tick must be visible: silence is the failure mode that
+          # looks exactly like "nothing was worth sending".
+          [ "$code" = "200" ]

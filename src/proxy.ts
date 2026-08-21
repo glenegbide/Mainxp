@@ -5,9 +5,12 @@ import { NextRequest, NextResponse } from "next/server";
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup");
-  // Cron endpoints authenticate themselves (CRON_SECRET / vercel-cron UA) —
-  // they have no session cookie by nature.
-  if (pathname.startsWith("/api/cron/")) return NextResponse.next();
+  // Machine endpoints authenticate themselves (MAINXP_JOBS_SECRET / vercel-cron
+  // UA) — they carry no session cookie by nature, and redirecting them to
+  // /login would silently turn every scheduled tick into a no-op.
+  if (pathname.startsWith("/api/cron/") || pathname.startsWith("/api/jobs/")) {
+    return NextResponse.next();
+  }
   const hasSession = !!req.cookies.get("mxp_session")?.value;
 
   if (!isAuthPage && !hasSession) {
@@ -24,6 +27,12 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  // Everything except Next internals and static assets.
-  matcher: ["/((?!_next/static|_next/image|favicon\\.ico|icon\\.png|robots\\.txt).*)"],
+  // Everything except Next internals and public files. The installability
+  // assets (manifest, icons) and the service worker MUST stay reachable while
+  // logged out: a redirected /sw.js aborts registration, and a redirected
+  // manifest breaks "Sur l'écran d'accueil" — the only door to notifications
+  // on iOS.
+  matcher: [
+    "/((?!_next/static|_next/image|favicon\\.ico|robots\\.txt|sw\\.js|manifest\\.webmanifest|.*\\.(?:png|jpg|jpeg|webp|svg|ico|txt)$).*)",
+  ],
 };

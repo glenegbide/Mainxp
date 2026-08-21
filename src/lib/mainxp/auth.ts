@@ -65,6 +65,19 @@ export async function getMxUser(): Promise<MxUser | null> {
     include: { user: true },
   });
   if (!session || session.expiresAt < new Date()) return null;
+
+  // "Is the user in the app right now?" — the notification engine suppresses
+  // pushes for 10 minutes after this. Conditional so it costs at most one
+  // write per 5 minutes, never one per page view.
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60_000);
+  if (!session.user.lastSeenAt || session.user.lastSeenAt < fiveMinutesAgo) {
+    void prisma.mxUser
+      .updateMany({
+        where: { id: session.user.id, OR: [{ lastSeenAt: null }, { lastSeenAt: { lt: fiveMinutesAgo } }] },
+        data: { lastSeenAt: new Date() },
+      })
+      .catch(() => {});
+  }
   return session.user;
 }
 

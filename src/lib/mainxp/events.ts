@@ -371,5 +371,13 @@ export async function emitEvent(
       await awardXp(input);
     }
   }
+  // Cancellation: doing the thing pre-empts the nudge (notify/on-event.ts).
+  try {
+    const { notifyOnEvent } = await import("@/lib/mainxp/notify/on-event");
+    await notifyOnEvent(user, type);
+  } catch {
+    /* notifications must never block a real action */
+  }
+
   return replay ? null : event;
 }

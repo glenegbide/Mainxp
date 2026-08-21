@@ -75,9 +75,12 @@ export function contextFromRows(rows: PriorityRows): PriorityContext {
 
 /** DB-loading variant for the coach tools. */
 export async function loadRecommendation(
-  user: Pick<MxUser, "id" | "timezone" | "restMode">
+  user: Pick<MxUser, "id" | "timezone" | "restMode">,
+  // Scheduled jobs evaluate "a moment", not "right now" — a retried tick must
+  // reach the same conclusion as the minute it was meant to run.
+  now = new Date()
 ): Promise<{ context: PriorityContext; recommendation: Recommendation }> {
-  const today = dayKey(new Date(), user.timezone);
+  const today = dayKey(now, user.timezone);
   const [tasks, goals, nonNegotiables, nnLogs, dayPlan] = await Promise.all([
     prisma.mxTask.findMany({ where: { userId: user.id, dayKey: today } }),
     prisma.mxGoal.findMany({ where: { userId: user.id, status: "ACTIVE" } }),
@@ -89,6 +92,7 @@ export async function loadRecommendation(
     tasks, goals, nonNegotiables, nnLogs, dayPlan,
     restMode: user.restMode,
     timezone: user.timezone,
+    now,
   });
   return { context, recommendation: whatNow(context) };
 }

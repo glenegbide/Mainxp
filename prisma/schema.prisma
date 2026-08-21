@@ -93,6 +93,9 @@ model MxUser {
   quietHoursEnd    Int?
   restMode         Boolean  @default(false) // "Récupération" — pauses élan decay, never punishes rest
   aiKey            String? // personal AI provider key (server-side only, set in-app; overrides env)
+  notifDailyCap    Int? // null = the mode's default
+  lastSeenAt       DateTime? // "is the user in the app right now?" — suppresses pushes
+  pushEnabledAt    DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -120,8 +123,59 @@ model MxUser {
   challenges        MxChallenge[]
   challengeLogs     MxChallengeLog[]
   books             MxBook[]
+  pushSubs          MxPushSubscription[]
+  notifications     MxNotification[]
 
   @@map("mainxp_users")
+}
+
+// ── Web Push (PWA): one row per installed device that granted permission.
+// Endpoints expire; a 404/410 from the push service retires the row.
+model MxPushSubscription {
+  id            String    @id @default(cuid())
+  userId        String
+  user          MxUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint      String    @unique // re-subscribe upserts, never duplicates
+  p256dh        String
+  auth          String
+  platform      String    @default("")
+  userAgent     String    @default("")
+  failureCount  Int       @default(0)
+  lastSuccessAt DateTime?
+  disabledAt    DateTime? // 410/404 → soft-disable, keep for audit
+  createdAt     DateTime  @default(now())
+
+  @@index([userId, disabledAt])
+  @@map("mainxp_push_subscriptions")
+}
+
+// ── Delivery record: what was sent, why, and what the user did with it.
+// This is what lets MAINXP learn which notifications actually help — and
+// stay silent when they don't (MASTER_1M_PROMPT §7).
+model MxNotification {
+  id               String    @id @default(cuid())
+  userId           String
+  user             MxUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type             String // main_quest_stale | commitment_open | night_review | goal_pace_behind | challenge_tick
+  dayKey           String // user-timezone day
+  /** "<userId>:<type>:<dayKey>[:<targetId>]" — the ONLY thing preventing double sends. */
+  dedupeKey        String    @unique
+  title            String
+  body             String
+  url              String    @default("/today")
+  mode             String // notificationMode at decision time
+  urgency          Int       @default(0)
+  status           String    @default("QUEUED") // QUEUED | SENT | SUPPRESSED | FAILED
+  /** quiet_hours | daily_cap | min_gap | in_app | mode | rest_mode | no_subscription | not_relevant | resolved — silence is a RECORDED decision, never an absence of data. */
+  suppressedReason String?
+  evidence         Json      @default("{}") // the numbers that justified the copy
+  sentAt           DateTime?
+  openedAt         DateTime?
+  createdAt        DateTime  @default(now())
+
+  @@index([userId, dayKey])
+  @@index([userId, type, createdAt])
+  @@map("mainxp_notifications")
 }
 
 // ── Library (audit P9): books with the user's own writing — what it taught,
