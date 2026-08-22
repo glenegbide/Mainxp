@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
 import { dayKey } from "@/lib/mainxp/day";
+import { xpTotals } from "@/lib/mainxp/xp/ledger";
+import { levelProgress } from "@/lib/mainxp/xp/curve";
+import { dominantAttribute } from "@/lib/mainxp/xp/dominant";
 import { endFocus, startFocus } from "./actions";
 import { FocusTimer } from "./FocusTimer";
 
@@ -11,7 +14,7 @@ export default async function FocusPage() {
   if (!user) redirect("/login");
   const today = dayKey(new Date(), user.timezone);
 
-  const [running, todayTasks, recentSessions] = await Promise.all([
+  const [running, todayTasks, recentSessions, totals, gearEquipped] = await Promise.all([
     prisma.mxFocusSession.findFirst({ where: { userId: user.id, endedAt: null } }),
     prisma.mxTask.findMany({
       where: { userId: user.id, dayKey: today, status: "OPEN" },
@@ -23,25 +26,36 @@ export default async function FocusPage() {
       take: 5,
       include: { task: true },
     }),
+    xpTotals(user.id),
+    prisma.mxGearOwned.findMany({ where: { userId: user.id, equipped: true } }),
   ]);
+  const level = levelProgress(totals.main).level;
+  const equippedIds = gearEquipped.map((g) => g.gearId);
+  const dominant = dominantAttribute(totals.attributes);
 
   return (
     <main className="px-4 pt-5 pb-8">
       <Link href="/today" className="text-xs text-mxp-muted">← Aujourd&apos;hui</Link>
-      <h1 className="mt-2 text-xl font-semibold">Focus</h1>
-      <p className="text-sm text-mxp-muted">
-        Chaque bloc de 25 minutes réellement écoulé compte — vérifié côté serveur,
-        pas de triche possible.
+      <h1 className="mt-2 mxp-display">L&apos;Arène</h1>
+      <p className="mxp-meta mt-1">
+        Ici, ton personnage s&apos;entraîne en vrai : chaque bloc de 25 minutes réellement
+        écoulé est vérifié côté serveur.
       </p>
 
       {running ? (
-        <section className="mt-5 mxp-card mxp-bluec p-6">
+        <section className="mxp-arena mt-5 p-5">
           {running.taskId && (
-            <p className="mb-3 text-center text-sm text-mxp-muted">
+            <p className="mb-3 text-center mxp-body font-medium">
               {todayTasks.find((t) => t.id === running.taskId)?.title ?? "Session en cours"}
             </p>
           )}
-          <FocusTimer startedAtIso={running.startedAt.toISOString()} plannedMin={running.plannedMin} />
+          <FocusTimer
+            startedAtIso={running.startedAt.toISOString()}
+            plannedMin={running.plannedMin}
+            level={level}
+            gear={equippedIds}
+            dominant={dominant}
+          />
           <form action={endFocus} className="mt-5 space-y-3">
             <input type="hidden" name="id" value={running.id} />
             <label className="block text-xs text-mxp-muted">

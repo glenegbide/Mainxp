@@ -628,6 +628,10 @@ model MxGratitudeEntry {
   userId      String
   user        MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
   dayKey      String
+  /** morning | night | free (coach tool). Both rituals store; XP pays once/day. */
+  period      String   @default("free")
+  /** 0–9 — the 01–10 ritual keeps the user's own order. */
+  position    Int      @default(0)
   content     String
   whyItMatter String   @default("")
   thankWho    String   @default("")
@@ -635,6 +639,7 @@ model MxGratitudeEntry {
   note        String   @default("")
   createdAt   DateTime @default(now())
 
+  @@unique([userId, dayKey, period, position])
   @@index([userId, dayKey])
   @@map("mainxp_gratitude_entries")
 }

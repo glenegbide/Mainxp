@@ -1,37 +1,77 @@
 "use client";
 
-import { useEffect, useState } from "react";
+// The Training Arena's center: a ring of time closing around your character.
+// The ring is the ONE continuously-moving element in MAINXP — allowed because
+// it communicates elapsed time, nothing else. Display only: the duration that
+// counts is measured server-side, so pausing the tab changes nothing.
 
-/** Countdown display only — the XP-earning duration is verified server-side. */
-export function FocusTimer({ startedAtIso, plannedMin }: { startedAtIso: string; plannedMin: number }) {
+import { useEffect, useMemo, useState } from "react";
+import { BlockHero, type Dominant } from "../../components/BlockHero";
+
+export function FocusTimer({
+  startedAtIso,
+  plannedMin,
+  level = 1,
+  gear = [],
+  dominant = "FOCUS",
+}: {
+  startedAtIso: string;
+  plannedMin: number;
+  level?: number;
+  gear?: string[];
+  dominant?: Dominant;
+}) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
   }, []);
 
-  const elapsed = Math.max(0, Math.floor((now - new Date(startedAtIso).getTime()) / 1000));
-  const total = plannedMin * 60;
+  const started = useMemo(() => new Date(startedAtIso).getTime(), [startedAtIso]);
+  const elapsed = Math.max(0, Math.floor((now - started) / 1000));
+  const total = Math.max(1, plannedMin * 60);
   const remaining = Math.max(0, total - elapsed);
+  const ratio = Math.min(1, elapsed / total);
   const mm = String(Math.floor(remaining / 60)).padStart(2, "0");
   const ss = String(remaining % 60).padStart(2, "0");
-  const ratio = Math.min(1, elapsed / total);
+
+  const r = 54;
+  const circumference = 2 * Math.PI * r;
 
   return (
-    <div className="text-center">
-      <p
-        className="font-displaymx text-5xl font-bold tabular-nums text-mxp-blue"
-        role="timer"
-        aria-live="off"
-      >
-        {mm}:{ss}
-      </p>
-      <p className="mt-1 text-xs text-mxp-muted">
-        {remaining === 0 ? "Temps écoulé — termine la session pour encaisser l'XP." : `sur ${plannedMin} min`}
-      </p>
-      <div className="mx-auto mt-3 h-2 w-full overflow-hidden rounded-full bg-mxp-bg">
-        <div className="h-full rounded-full bg-mxp-blue" style={{ width: `${ratio * 100}%` }} />
+    <div className="text-center" aria-label="Session de focus en cours">
+      <div className="relative mx-auto h-[236px] w-[236px]">
+        <svg className="absolute inset-0 -rotate-90" viewBox="0 0 120 120" aria-hidden>
+          <circle cx="60" cy="60" r={r} fill="none" stroke="var(--mxp-line)" strokeWidth="4.5" />
+          <circle
+            cx="60"
+            cy="60"
+            r={r}
+            fill="none"
+            stroke="var(--mxp-blue)"
+            strokeWidth="4.5"
+            strokeLinecap="round"
+            strokeDasharray={`${circumference * ratio} ${circumference * (1 - ratio)}`}
+            className="transition-[stroke-dasharray] duration-700 ease-linear"
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <BlockHero level={level} size={62} gear={gear} dominant={dominant} />
+          <p
+            className="mt-1 font-displaymx text-[40px] leading-none tabular-nums text-mxp-ink"
+            role="timer"
+            aria-live="off"
+          >
+            {mm}:{ss}
+          </p>
+          <p className="mxp-meta mt-1.5">
+            {remaining === 0 ? "Temps écoulé — termine la session" : `sur ${plannedMin} min`}
+          </p>
+        </div>
       </div>
+      <p className="mxp-meta mx-auto mt-1 max-w-[280px]">
+        Une seule chose. Le reste peut attendre.
+      </p>
     </div>
   );
 }

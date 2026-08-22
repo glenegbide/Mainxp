@@ -20,7 +20,7 @@ await page.waitForURL("**/today");
 
 // coach must be offline with a link to settings
 await page.goto("http://localhost:3500/coach");
-await page.waitForSelector("text=Coach hors ligne");
+await page.waitForSelector("text=il lui faut une voix");
 await page.waitForSelector("text=Configurer ma clé IA");
 console.log("1. coach offline + settings link OK");
 

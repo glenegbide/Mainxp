@@ -87,7 +87,8 @@ if (!b.includes("0 min")) fail("early-ended focus session not listed at 0 min");
 // 7. Night review with gratitude + One Big Thing → tomorrow prepared
 await page.goto(`${BASE}/today/night`);
 await page.fill('textarea[name="wentWell"]', "Main Quest bouclée avant midi.");
-await page.fill('textarea[name="gratitude"]', "Le café du matin avec Sarah.");
+// gratitude is now the 01–10 ritual — one line still pays the same daily XP
+await page.fill('input[name="gratitudeNight_0"]', "Le café du matin avec Sarah.");
 await page.fill('input[name="tomorrowBigThing"]', "Relancer les 3 propriétaires chauds");
 await page.click('button:has-text("Clore la journée")');
 await page.waitForURL("**/today");
@@ -125,7 +126,10 @@ await page.screenshot({ path: `${shots}/05-rewards.png`, fullPage: true });
 // 10. Coach: honest offline state without key
 await page.goto(`${BASE}/coach`);
 b = await body();
-if (!b.includes("Coach hors ligne")) fail("coach should be honestly offline without API key");
+// The coach now leads with its standing position (computed locally) and is
+// honest that discussion needs a key — both must be present.
+if (!b.includes("Sa position, là maintenant")) fail("coach brief missing without API key");
+if (!b.includes("il lui faut une voix")) fail("coach should be honestly offline without API key");
 
 // 11. North Star editable
 await page.goto(`${BASE}/me/north-star`);

@@ -4,11 +4,17 @@ import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
 import { xpTotals } from "@/lib/mainxp/xp/ledger";
 import { levelProgress } from "@/lib/mainxp/xp/curve";
+import { ATTRIBUTE_LABEL, dominantAttribute } from "@/lib/mainxp/xp/dominant";
 import { earnedTitles, ROMAN } from "@/lib/mainxp/titles";
 import { GEAR_CATALOG } from "@/lib/mainxp/gear";
-import { PixelHero } from "../../components/PixelHero";
+import { BlockHero } from "../../components/BlockHero";
 import { providerNameForKey } from "@/lib/mainxp/ai/provider";
 import { buyGear, logout, removeAiKey, saveAiKey, toggleGear, toggleRestMode } from "./actions";
+
+// MOI — who you are BECOMING, then what you own, then where you're going.
+// Settings are real but quiet: identity is the anchor, administration is not
+// (SCREEN_PRIORITY_MATRIX: character stage → path/titles → relics → journey →
+// quiet rows). Nothing here advertises an XP amount, ever.
 
 export default async function MePage({
   searchParams,
@@ -27,37 +33,57 @@ export default async function MePage({
   const equipped = gearOwned.filter((g) => g.equipped).map((g) => g.gearId);
   const ownedIds = new Set(gearOwned.map((g) => g.gearId));
   const earned = titles.filter((t) => t.tier > 0);
+  const dominant = dominantAttribute(totals.attributes);
+  const nextTitle = titles.find((t) => t.next !== null);
 
   return (
     <main className="px-4 pt-5 pb-8">
-      <h1 className="text-xl font-semibold">Moi</h1>
+      <h1 className="mxp-display">Moi</h1>
+      <p className="mxp-meta mt-1">Qui tu deviens — construit par ce que tu fais.</p>
 
-      <section className="mxp-hero mt-4 p-5 text-white">
-        <div className="relative z-10 flex items-center gap-4">
-          <div className="flex h-[86px] w-20 flex-none items-end justify-center rounded-2xl bg-white/12 pb-1 ring-1 ring-white/25">
-            <PixelHero level={lp.level} size={60} gear={equipped} />
-          </div>
-          <div className="min-w-0">
-            <p className="font-displaymx text-xl font-bold">{user.name}</p>
-            {earned.length > 0 && (
-              <p className="mt-0.5 text-xs font-semibold text-amber-200">
-                {earned.map((t) => `${t.def.name} ${ROMAN[t.tier]}`).join(" · ")}
-              </p>
-            )}
-            <p className="mt-0.5 text-sm text-white/85">
-              Niveau {lp.level} · {totals.main === 0 ? "Novice" : `${totals.main} XP`} · 🪙{" "}
-              {totals.coins}
+      {/* ── The character stage: the anchor. Everything on it was earned. ── */}
+      <section className="mxp-stage mt-4">
+        <div className="relative z-10 flex flex-col items-center px-5 pt-6 pb-5 text-center">
+          <BlockHero level={lp.level} size={128} gear={equipped} dominant={dominant} />
+          <p className="mt-3 font-displaymx text-[21px] leading-tight">{user.name}</p>
+          <p className="mxp-meta mt-0.5">
+            Niveau {lp.level} · Voie {ATTRIBUTE_LABEL[dominant]}
+          </p>
+          {earned.length > 0 && (
+            <p className="mt-2 flex flex-wrap justify-center gap-1.5">
+              {earned.map((t) => (
+                <span key={t.def.id} className="mxp-relic">
+                  {t.def.name} {ROMAN[t.tier]}
+                </span>
+              ))}
             </p>
-            {user.restMode && (
-              <p className="mt-1 inline-block rounded-full bg-white/15 px-2.5 py-0.5 text-[11px] font-semibold">
-                🌙 Mode récupération
-              </p>
-            )}
+          )}
+          <div className="mt-4 w-full max-w-[260px]">
+            <div className="mxp-rail">
+              <i className="bg-mxp-purple" style={{ width: `${Math.max(2, Math.round(lp.ratio * 100))}%` }} />
+            </div>
+            <p className="mxp-meta mt-1.5 tabular-nums">
+              {lp.intoLevel}/{lp.neededForNext} vers le niveau {lp.level + 1}
+            </p>
           </div>
+          {user.restMode && (
+            <p className="mt-2 rounded-full bg-mxp-teal/10 px-3 py-1 text-[11px] font-semibold text-mxp-teal">
+              Mode récupération — l&apos;Élan est en pause, pas toi
+            </p>
+          )}
         </div>
       </section>
 
-      {/* ── Earned titles (never chosen, never bought) ── */}
+      {/* What the next evolution asks for — stated as a deed, never a number. */}
+      {nextTitle && (
+        <p className="mxp-meta mt-3 px-1">
+          Prochaine marche : <strong>{nextTitle.def.name}</strong>
+          {nextTitle.tier > 0 && ` ${ROMAN[nextTitle.tier + 1]}`} — {nextTitle.def.metric} (
+          {nextTitle.count}/{nextTitle.next}).
+        </p>
+      )}
+
+      {/* ── Titles: they are earned, never chosen, never bought ── */}
       <section className="mxp-card mt-4 p-4">
         <p className="mxp-label text-mxp-purple">Titres — ils se gagnent</p>
         <ul className="mt-2 space-y-2.5">
@@ -86,12 +112,12 @@ export default async function MePage({
           ))}
         </ul>
         <p className="mt-3 text-xs text-mxp-muted">
-          D&apos;autres archétypes (Le Titan, Le Sage…) arrivent avec le sport et la lecture.
-          Certains titres secrets ne se révèlent qu&apos;une fois gagnés.
+          D&apos;autres archétypes arrivent avec le sport et la lecture. Certains titres
+          secrets ne se révèlent qu&apos;une fois gagnés.
         </p>
       </section>
 
-      {/* ── Gear shop: cosmetics only, bought with earned Coins ── */}
+      {/* ── Gear: cosmetics bought with earned coins — the character wears them ── */}
       <section className="mxp-card mxp-goldc mt-4 p-4">
         <p className="mxp-label text-mxp-gold">Équipement · 🪙 {totals.coins}</p>
         <p className="mt-1 text-xs text-mxp-muted">
@@ -105,8 +131,8 @@ export default async function MePage({
             const affordable = totals.coins >= g.costCoins;
             return (
               <li key={g.id} className="flex items-center gap-3">
-                <span className="flex h-11 w-10 flex-none items-end justify-center rounded-xl bg-mxp-bg pb-0.5">
-                  <PixelHero level={lp.level} size={30} gear={[g.id]} />
+                <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-mxp-bg">
+                  <BlockHero level={lp.level} size={38} gear={[g.id]} dominant={dominant} />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium">{g.name}</span>
@@ -142,13 +168,41 @@ export default async function MePage({
         </ul>
       </section>
 
-      {/* ── Personal AI key: tested live before saving, stored server-side ── */}
+      {/* ── The journey: where this character's story continues ── */}
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <Link href="/progress" className="mxp-card p-4 text-sm font-semibold">
+          Le chemin
+          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
+            ta semaine, tes preuves
+          </span>
+        </Link>
+        <Link href="/me/north-star" className="mxp-card p-4 text-sm font-semibold">
+          North Star
+          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
+            pourquoi, saison, règles
+          </span>
+        </Link>
+        <Link href="/me/rewards" className="mxp-card p-4 text-sm font-semibold">
+          Récompenses
+          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
+            vraies, payées en pièces
+          </span>
+        </Link>
+        <Link href="/library" className="mxp-card p-4 text-sm font-semibold">
+          Bibliothèque
+          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
+            livres, notes, leçons
+          </span>
+        </Link>
+      </div>
+
+      {/* ── Coach IA: the one setting that changes what the product can do ── */}
       <section id="coach-ia" className="mxp-card mt-4 p-4">
         <p className="mxp-label text-mxp-purple">Coach IA</p>
         {user.aiKey ? (
           <>
             <p className="mt-2 text-sm font-medium">
-              ✅ Coach actif — {providerNameForKey(user.aiKey)}
+              ✓ Coach actif — {providerNameForKey(user.aiKey)}
             </p>
             <p className="mt-1 text-xs text-mxp-muted">
               Clé …{user.aiKey.slice(-4)} vérifiée et stockée côté serveur. Ta mémoire vit
@@ -191,14 +245,14 @@ export default async function MePage({
         )}
       </section>
 
-      {/* ── Recovery mode ── */}
-      <section className="mxp-card mt-4 p-4">
-        <div className="flex items-center justify-between gap-3">
+      {/* ── Quiet rows: real settings, deliberately unspectacular ── */}
+      <section className="mxp-card mt-4 divide-y divide-mxp-line">
+        <div className="flex items-center justify-between gap-3 p-4">
           <div>
             <p className="text-sm font-medium">Mode récupération</p>
             <p className="mt-0.5 text-xs text-mxp-muted">
-              Maladie, vacances, semaine difficile : ton Élan ne baisse pas pendant le
-              repos. Récupérer fait partie du jeu.
+              Maladie, vacances, semaine difficile : l&apos;Élan ne baisse pas pendant le
+              repos.
             </p>
           </div>
           <form action={toggleRestMode}>
@@ -217,59 +271,24 @@ export default async function MePage({
             </button>
           </form>
         </div>
+        {(
+          [
+            ["/me/knowledge", "Connaissance", "ce que ton coach sait de toi"],
+            ["/me/notifications", "Notifications", "quand MAINXP peut te parler"],
+            ["/me/compte", "Compte", `${user.email} · mot de passe, appareils`],
+          ] as const
+        ).map(([href, label, sub]) => (
+          <Link key={href} href={href} className="flex items-center justify-between gap-3 p-4">
+            <span>
+              <span className="block text-sm font-medium">{label}</span>
+              <span className="mt-0.5 block text-xs text-mxp-muted">{sub}</span>
+            </span>
+            <span aria-hidden className="text-mxp-muted">
+              →
+            </span>
+          </Link>
+        ))}
       </section>
-
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        <Link href="/me/north-star" className="mxp-card p-4 text-sm font-semibold">
-          🧭 North Star
-          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
-            pourquoi, saison, règles
-          </span>
-        </Link>
-        <Link href="/me/rewards" className="mxp-card p-4 text-sm font-semibold">
-          🪙 Récompenses
-          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
-            vraies, payées en pièces
-          </span>
-        </Link>
-        <Link href="/library" className="mxp-card p-4 text-sm font-semibold">
-          📚 Bibliothèque
-          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
-            livres, notes, leçons
-          </span>
-        </Link>
-        <Link href="/me/notifications" className="mxp-card p-4 text-sm font-semibold">
-          Notifications
-          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
-            quand MAINXP peut te parler
-          </span>
-        </Link>
-        <Link href="/me/knowledge" className="mxp-card p-4 text-sm font-semibold">
-          🧠 Connaissance
-          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
-            ce que ton coach sait
-          </span>
-        </Link>
-        <Link href="/me/compte" className="mxp-card p-4 text-sm font-semibold">
-          Compte
-          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
-            nom, email, mot de passe
-          </span>
-        </Link>
-      </div>
-
-      <Link href="/me/compte" className="mxp-card mt-4 block p-4 text-sm">
-        <dl className="space-y-2">
-          <div className="flex justify-between">
-            <dt className="text-mxp-muted">Email</dt>
-            <dd>{user.email}</dd>
-          </div>
-          <div className="flex justify-between">
-            <dt className="text-mxp-muted">Fuseau horaire</dt>
-            <dd>{user.timezone}</dd>
-          </div>
-        </dl>
-      </Link>
 
       <form action={logout} className="mt-6 mb-6">
         <button className="w-full mxp-btn-ghost px-4 py-3 text-sm text-mxp-red hover:bg-red-50">

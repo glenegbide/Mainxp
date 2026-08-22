@@ -573,7 +573,19 @@ const TOOLS: ToolDef[] = [
         {
           idempotencyKey: `gratitude:${user.id}:${today}`,
           domainOps: [
-            prisma.mxGratitudeEntry.create({ data: { userId: user.id, dayKey: today, content } }),
+            // period "free" + next position: coexists with the 01–10 rituals
+            // without colliding on their unique (user, day, period, position).
+            prisma.mxGratitudeEntry.create({
+              data: {
+                userId: user.id,
+                dayKey: today,
+                period: "free",
+                position: await prisma.mxGratitudeEntry.count({
+                  where: { userId: user.id, dayKey: today, period: "free" },
+                }),
+                content,
+              },
+            }),
           ],
         }
       );

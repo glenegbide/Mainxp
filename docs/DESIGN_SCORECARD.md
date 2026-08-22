@@ -23,15 +23,16 @@ Ten criteria, 10 points each.
 
 | Screen | Score | Blocking gaps |
 |---|---|---|
-| `/today` | 94 | Character art is still a placeholder sprite (identity, criterion 10). |
+| `/today` | 94 | Block Hero landed; density pass done. |
 | `/defis` | 88 | No skeleton of its own; challenge tick lacks the optimistic moment. |
 | `/journal` | 90 | Blank page is the anchor; timeline is chrome-less. Calendar/history later. |
 | `/library` | 89 | Current book is the anchor. Cover art and reading pace still missing. |
 | `/habits` | 90 | Anchored on today's tally with live taps; character evolution still to come. |
 | `/progress` | 91 | One weekly story + 7-day chart + the path forming; ledger folded away. |
-| `/me` | 66 | Long settings stack; titles/gear deserve the game layer. |
-| `/coach` | 74 | Good bones; needs streaming feedback + empty state that teaches. |
-| morning / night | 70 | Bible order not fully applied; gratitude 01–10 ritual not built. |
+| `/me` | 90 | Rebuilt: character stage anchor, path + titles, relic chips, quiet settings rows. Next: relic art per title. |
+| `/coach` | 88 | Standing-position brief (visible facts) + teaching empty state + honest pending state. Missing: streaming. |
+| morning / night | 88 | Gratitude 01–10 (sunrise/moon), smart-tomorrow classification. Next: full bible order pass on morning. |
+| `/focus` | 89 | Training Arena: ring chamber + Block Hero; game energy concentrated here. |
 
 ## Process
 

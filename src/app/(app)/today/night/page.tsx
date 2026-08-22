@@ -4,6 +4,8 @@ import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
 import { dayKey } from "@/lib/mainxp/day";
 import { addRoutineItem, archiveRoutineItem, saveNight, toggleRoutineItem } from "../day-actions";
+import { GratitudeRitual } from "../../../components/GratitudeRitual";
+import { loadGratitude } from "@/lib/mainxp/gratitude";
 
 export default async function NightPage() {
   const user = await getMxUser();
@@ -23,6 +25,7 @@ export default async function NightPage() {
     }),
     prisma.mxRoutineLog.findMany({ where: { userId: user.id, dayKey: today } }),
   ]);
+  const nightGratitude = await loadGratitude(user.id, today, "night");
   const routineDone = new Map(routineLogs.map((l) => [l.routineItemId, l.done]));
 
   const done = tasks.filter((t) => t.status === "DONE");
@@ -51,12 +54,53 @@ export default async function NightPage() {
           <dt className="text-mxp-muted">Non-négociables</dt>
           <dd className="text-right tabular-nums">{nnLogs.length}/{nns.length}</dd>
         </dl>
-        {open.length > 0 && (
-          <p className="mt-2 text-xs text-mxp-muted">
-            Les actions ouvertes passeront automatiquement à demain.
-          </p>
-        )}
       </section>
+
+      {/* ── Demain se décide, il ne se subit pas : chaque action ouverte est
+          classée délibérément. Reporter sans y penser est exactement comme ça
+          qu'une liste devient un cimetière. ── */}
+      {open.length > 0 && (
+        <section className="mt-4 mxp-card p-4">
+          <p className="mxp-label text-mxp-orange">Ce qui reste ouvert — décide</p>
+          <ul className="mt-2 space-y-3">
+            {open.map((t) => (
+              <li key={t.id}>
+                <p className="mxp-body font-medium">
+                  {t.title}
+                  {t.postponeCount > 0 && (
+                    <span className="mxp-meta"> · déjà reporté {t.postponeCount}×</span>
+                  )}
+                </p>
+                <div className="mt-1.5 flex gap-1.5" role="radiogroup" aria-label={`Demain : ${t.title}`}>
+                  {([
+                    ["carry", "Demain"],
+                    ["backlog", "Plus tard"],
+                    ["cancel", "Abandonner"],
+                  ] as const).map(([value, label], i) => (
+                    <label key={value} className="flex-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name={`tomorrow_${t.id}`}
+                        value={value}
+                        defaultChecked={i === 0}
+                        form="night-form"
+                        className="peer sr-only"
+                      />
+                      <span className="block rounded-lg border border-mxp-line px-2 py-1.5 text-center text-xs font-medium text-mxp-muted transition peer-checked:border-mxp-purple peer-checked:bg-mxp-purple-soft/60 peer-checked:text-mxp-purple-deep">
+                        {label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+          <p className="mxp-meta mt-2.5">
+            Abandonner n&apos;est pas un échec — c&apos;est décider que ça ne vaut plus ta
+            journée de demain.
+          </p>
+        </section>
+      )}
 
       {/* ── Routine du soir — même moteur que le matin, cochée hors formulaire.
           Structure, pas mérite : 0 XP. ── */}
@@ -125,7 +169,7 @@ export default async function NightPage() {
         )}
       </section>
 
-      <form action={saveNight} className="mt-4 space-y-4">
+      <form id="night-form" action={saveNight} className="mt-4 space-y-4">
         <label className="block">
           <span className="text-sm font-medium">Qu&apos;est-ce qui a bien marché ?</span>
           <textarea
@@ -182,15 +226,7 @@ export default async function NightPage() {
             className="mt-1 w-full mxp-input px-4 py-3 text-sm"
           />
         </label>
-        <label className="block">
-          <span className="text-sm font-medium">Gratitude — qu&apos;est-ce qui a compté aujourd&apos;hui ?</span>
-          <textarea
-            name="gratitude"
-            rows={2}
-            placeholder="Optionnel — ce qui a compté, vraiment"
-            className="mt-1 w-full mxp-input px-4 py-3 text-sm"
-          />
-        </label>
+        <GratitudeRitual period="night" initial={nightGratitude} />
         <label className="block">
           <span className="text-sm font-medium">La Grande Chose de demain</span>
           <span className="block text-xs text-mxp-muted">

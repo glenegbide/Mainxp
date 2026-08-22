@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { requireMxUser } from "@/lib/mainxp/auth";
 import { addDays, dayKey } from "@/lib/mainxp/day";
 import { emitEvent } from "@/lib/mainxp/events";
+import { gratitudeItems, saveGratitudeList } from "@/lib/mainxp/gratitude";
 
 const s = (v: FormDataEntryValue | null, max = 1000) => String(v ?? "").trim().slice(0, max);
 const scale10 = (v: FormDataEntryValue | null) => {
@@ -50,6 +51,13 @@ export async function saveMorning(formData: FormData): Promise<void> {
     }
   }
 
+  // Gratitude du matin (01–10). Stored always; the ledger's daily key decides
+  // whether it pays — never this code.
+  const morningGratitude = gratitudeItems(formData, "gratitudeMorning");
+  if (morningGratitude.length > 0 || formData.has("gratitudeMorning_0")) {
+    await saveGratitudeList(user, today, "morning", morningGratitude);
+  }
+
   await emitEvent(
     user,
     "morning_started",
@@ -83,30 +91,41 @@ export async function saveNight(formData: FormData): Promise<void> {
     update: reviewFields,
   });
 
-  // Gratitude (Part 30) — optional, its own record + XP.
-  const gratitude = s(formData.get("gratitude"), 1000);
-  if (gratitude) {
-    await prisma.mxGratitudeEntry.create({
-      data: { userId: user.id, dayKey: today, content: gratitude },
-    });
-    await emitEvent(
-      user,
-      "gratitude_logged",
-      { day: today },
-      { idempotencyKey: `gratitude:${user.id}:${today}` }
-    );
+  // Gratitude du soir (01–10). Same daily idempotency key as the morning:
+  // both lists are kept, at most one payout per day.
+  const nightGratitude = gratitudeItems(formData, "gratitudeNight");
+  if (nightGratitude.length > 0 || formData.has("gratitudeNight_0")) {
+    await saveGratitudeList(user, today, "night", nightGratitude);
   }
 
-  // ── Tomorrow preparation (Part 32): carry-overs + Main Quest candidate ──
-  await prisma.mxTask.updateMany({
-    where: { userId: user.id, dayKey: today, status: "OPEN", tier: { not: "MAIN_QUEST" } },
-    data: { dayKey: tomorrow },
+  // ── Smart tomorrow (Part 32, upgraded): every open task is CLASSIFIED, not
+  // blindly carried. The form sends tomorrow_<taskId> = carry|backlog|cancel;
+  // anything unstated (older clients, race with a new task) still carries —
+  // carrying is the safe default, losing work never is. ──
+  const openTasks = await prisma.mxTask.findMany({
+    where: { userId: user.id, dayKey: today, status: "OPEN" },
+    select: { id: true, tier: true },
   });
-  // An unfinished Main Quest carries over as a hard-mode candidate.
-  await prisma.mxTask.updateMany({
-    where: { userId: user.id, dayKey: today, status: "OPEN", tier: "MAIN_QUEST" },
-    data: { dayKey: tomorrow, postponeCount: { increment: 1 } },
-  });
+  for (const t of openTasks) {
+    const decision = String(formData.get(`tomorrow_${t.id}`) ?? "carry");
+    if (decision === "cancel") {
+      await prisma.mxTask.update({ where: { id: t.id }, data: { status: "CANCELLED" } });
+    } else if (decision === "backlog" && t.tier !== "MAIN_QUEST") {
+      await prisma.mxTask.update({
+        where: { id: t.id },
+        data: { tier: "BACKLOG", dayKey: null },
+      });
+    } else {
+      // carry — the Main Quest carries as a hard-mode candidate.
+      await prisma.mxTask.update({
+        where: { id: t.id },
+        data:
+          t.tier === "MAIN_QUEST"
+            ? { dayKey: tomorrow, postponeCount: { increment: 1 } }
+            : { dayKey: tomorrow },
+      });
+    }
+  }
   if (oneBigThing) {
     const existing = await prisma.mxTask.findFirst({
       where: { userId: user.id, dayKey: tomorrow, tier: "MAIN_QUEST" },

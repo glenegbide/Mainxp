@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { addDays, dayKey } from "@/lib/mainxp/day";
 import { addRoutineItem, archiveRoutineItem, saveMorning } from "../day-actions";
 import { toggleRoutineStepRewarded } from "../feedback-actions";
+import { GratitudeRitual } from "../../../components/GratitudeRitual";
+import { loadGratitude } from "@/lib/mainxp/gratitude";
 import { CheckAction } from "../../../components/CheckAction";
 import { NoteAction } from "../../../components/NoteAction";
 import { noteOnRoutineStep } from "../../note-actions";
@@ -47,6 +49,7 @@ export default async function MorningPage() {
       }),
       prisma.mxRoutineLog.findMany({ where: { userId: user.id, dayKey: today } }),
     ]);
+  const morningGratitude = await loadGratitude(user.id, today, "morning");
   const routineDone = new Map(routineLogs.map((l) => [l.routineItemId, l.done]));
   const routineNote = new Map(routineLogs.map((l) => [l.routineItemId, l.note]));
 
@@ -152,6 +155,10 @@ export default async function MorningPage() {
             )}
           </section>
         )}
+
+        {/* Gratitude du matin — avant de regarder les chiffres, regarder ce qui
+            est déjà là. Les deux rituels stockent ; l'XP ne paie qu'une fois. */}
+        <GratitudeRitual period="morning" initial={morningGratitude} />
 
         {goals.length > 0 && (
           <section className="mxp-card p-4">

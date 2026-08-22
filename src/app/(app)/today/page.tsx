@@ -8,7 +8,8 @@ import { whatNow } from "@/lib/mainxp/priority";
 import { contextFromRows } from "@/lib/mainxp/priority-context";
 import { xpTotals } from "@/lib/mainxp/xp/ledger";
 import { levelProgress } from "@/lib/mainxp/xp/curve";
-import { PixelHero } from "../../components/PixelHero";
+import { BlockHero } from "../../components/BlockHero";
+import { dominantAttribute } from "@/lib/mainxp/xp/dominant";
 import { elanReport } from "@/lib/mainxp/elan";
 import {
   addNonNegotiable,
@@ -167,8 +168,13 @@ export default async function TodayPage() {
           two hairlines. ── */}
       <section className="mxp-hero px-3.5 py-3 text-white">
         <div className="relative z-10 flex items-center gap-3">
-          <span className="flex h-11 w-10 flex-none items-end justify-center rounded-xl bg-white/12 ring-1 ring-white/20">
-            <PixelHero level={lp.level} size={34} gear={equippedIds} />
+          <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-white/12 ring-1 ring-white/20">
+            <BlockHero
+              level={lp.level}
+              size={40}
+              gear={equippedIds}
+              dominant={dominantAttribute(totals.attributes)}
+            />
           </span>
           <span className="min-w-0 flex-1">
             <span className="flex items-baseline gap-2">

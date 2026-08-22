@@ -37,7 +37,10 @@ system doc for whatever you touch (XP_SYSTEM, GOAL_SYSTEM, COACH_SYSTEM, …).
     evening), challenge ticks, writing spaces, creating/organizing: 0 XP.
     The rewarded moments are completed real actions — and they need a reason
     string in the ledger. Journal is the one rewarded writing (diminishing
-    same-day: sincerity over volume).
+    same-day: sincerity over volume). Gratitude is 01–10 twice a day (morning
+    and night both STORE via `lib/mainxp/gratitude.ts`) but pays AT MOST once
+    per day — one shared idempotency key (`gratitude:<user>:<day>`) across the
+    two rituals and the coach tool. Never award per sentence.
 11. **Challenges require explicit acceptance.** The coach/starters PROPOSE
     (« Glen, tu acceptes ? » — nominative, tied to what the user works on);
     only the user accepts, max 3 alive, completion XP scales with duration
@@ -113,8 +116,13 @@ the thing: writing on a habit does not tap it and earns nothing.
 - Design system: tokens + `mxp-*` classes in `src/app/globals.css` (light
   mode, purple identity, Part 58 color semantics) — full guide in the
   `mainxp-design` skill. Display face: Unbounded (identity moments only);
-  body: Geist. Original pixel hero: `src/app/components/PixelHero.tsx`
-  (visual tiers earned at levels 10/25/50/75/100).
+  body: Geist. Original character: the Block Hero
+  (`src/app/components/BlockHero.tsx`) — modular collectible silhouette, core
+  colored by the DOMINANT attribute (`lib/mainxp/xp/dominant.ts`), earned
+  layers at 10/25/50; gear stays the cosmetic catalog. Game intensity by
+  screen: Today 10–15 %, Focus (l'Arène) 35–45 %, Moi/Progrès 55–70 % —
+  victory moments briefly more, then back to calm. `PixelHero` is legacy;
+  new surfaces use BlockHero.
 - UI copy is French (tutoiement), concise, no exclamation-mark hype.
 
 ## Design quality directive ($100K bar — non-negotiable)
