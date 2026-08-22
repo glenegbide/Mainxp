@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireMxUser } from "@/lib/mainxp/auth";
@@ -27,5 +28,6 @@ export async function saveOnboarding(formData: FormData): Promise<void> {
       update: { why, season, mission90Days },
     }),
   ]);
+  revalidatePath("/", "layout");
   redirect("/today");
 }

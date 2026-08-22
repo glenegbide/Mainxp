@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireMxUser } from "@/lib/mainxp/auth";
@@ -40,5 +41,6 @@ export async function saveWeeklyReview(formData: FormData): Promise<void> {
     { week },
     { idempotencyKey: `weekly:${user.id}:${week}` }
   );
+  revalidatePath("/", "layout");
   redirect("/progress");
 }

@@ -71,7 +71,7 @@ export default async function JoinPage({
         </p>
         <form action={joinCircle} className="mt-4">
           <input type="hidden" name="token" value={token} />
-          <button className="mxp-btn w-full py-3.5 text-[15px]">
+          <button className="mxp-btn w-full py-3 text-[15px]">
             Accepter l&apos;invitation
           </button>
         </form>

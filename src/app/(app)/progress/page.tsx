@@ -115,7 +115,7 @@ export default async function ProgressPage() {
       </section>
 
       {/* ── Who you are becoming ── */}
-      <section className="mt-7">
+      <section className="mt-6">
         <p className="mxp-label text-mxp-muted">Ton personnage</p>
         <div className="mt-3 flex items-baseline gap-3">
           <span className="font-displaymx text-[26px] leading-none tabular-nums">
@@ -160,7 +160,7 @@ export default async function ProgressPage() {
       </section>
 
       {/* ── Where the details live (quiet, never competing) ── */}
-      <nav className="mt-7 divide-y divide-mxp-line border-y border-mxp-line">
+      <nav className="mt-6 divide-y divide-mxp-line border-y border-mxp-line">
         {[
           ["/progress/week", "Revue hebdomadaire", "la semaine en chiffres, 3 questions"],
           ["/goals", "Objectifs", "rythme et échéances"],

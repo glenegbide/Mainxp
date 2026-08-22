@@ -147,7 +147,7 @@ export function PushSetup({ vapidPublicKey, active }: { vapidPublicKey: string; 
       <button
         onClick={enable}
         disabled={state === "working"}
-        className="mxp-btn w-full py-3.5 text-[15px]"
+        className="mxp-btn w-full py-3 text-[15px]"
       >
         {state === "working" ? "Activation…" : "Activer les notifications"}
       </button>

@@ -1,6 +1,7 @@
 "use server";
 
 import { createHash } from "node:crypto";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireMxUser } from "@/lib/mainxp/auth";
@@ -26,6 +27,7 @@ export async function processDump(formData: FormData): Promise<void> {
     const reply = await provider.structuredExtract(EXTRACT_INSTRUCTION, text);
     proposals = parseDumpReply(reply);
   } catch {
+    revalidatePath("/", "layout");
     redirect("/dump?error=provider");
   }
   if (!proposals || proposals.length === 0) redirect("/dump?error=empty");
@@ -110,5 +112,6 @@ export async function confirmDump(formData: FormData): Promise<void> {
     }
   }
 
+  revalidatePath("/", "layout");
   redirect("/today");
 }

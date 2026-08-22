@@ -18,8 +18,8 @@
   --mxp-orange: #f97316; /* challenge / momentum */
   --mxp-red: #ef4444; /* urgent warnings / Beast Mode only */
 
-  --mxp-shadow: 0 1px 2px rgba(28, 25, 23, 0.03), 0 12px 32px -20px rgba(91, 33, 182, 0.25);
-  --mxp-shadow-lift: 0 2px 4px rgba(28, 25, 23, 0.04), 0 18px 44px -20px rgba(91, 33, 182, 0.32);
+  --mxp-shadow: 0 1px 2px rgba(28, 25, 23, 0.03), 0 6px 16px -14px rgba(91, 33, 182, 0.22);
+  --mxp-shadow-lift: 0 1px 3px rgba(28, 25, 23, 0.04), 0 12px 28px -18px rgba(91, 33, 182, 0.3);
 }
 
 @theme inline {
@@ -85,15 +85,15 @@ dd {
 /* ── Type ramp (DESIGN_BIBLE: hierarchy carries rank, not hue) ── */
 .mxp-display {
   font-family: var(--font-display), var(--font-geist), sans-serif;
-  font-size: 27px;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  font-size: 25px;
+  line-height: 1.12;
+  letter-spacing: -0.022em;
   font-weight: 600;
 }
 .mxp-title {
-  font-size: 21px;
-  line-height: 1.22;
-  letter-spacing: -0.015em;
+  font-size: 19px;
+  line-height: 1.25;
+  letter-spacing: -0.016em;
   font-weight: 600;
 }
 .mxp-body {
@@ -109,13 +109,13 @@ dd {
 /* ── THE anchor: exactly one per screen (the day's dominant object) ── */
 .mxp-anchor {
   position: relative;
-  border-radius: 26px;
-  padding: 22px;
-  border: 1px solid rgba(124, 58, 237, 0.22);
+  border-radius: 18px;
+  padding: 16px 16px 17px;
+  border: 1px solid rgba(124, 58, 237, 0.17);
   background:
     radial-gradient(420px 200px at 88% -40%, rgba(124, 58, 237, 0.1), transparent 70%),
     linear-gradient(180deg, #ffffff, #fdfcff);
-  box-shadow: 0 2px 4px rgba(28, 25, 23, 0.05), 0 26px 60px -28px rgba(109, 40, 217, 0.55);
+  box-shadow: 0 1px 3px rgba(28, 25, 23, 0.045), 0 14px 32px -24px rgba(109, 40, 217, 0.45);
 }
 
 /* Chrome-less tier for supporting lists — kills the identical-card pile */
@@ -130,7 +130,7 @@ dd {
 .mxp-card {
   background: var(--mxp-card);
   border: 1px solid var(--mxp-line);
-  border-radius: 20px;
+  border-radius: 14px;
   box-shadow: var(--mxp-shadow);
 }
 a.mxp-card {
@@ -149,10 +149,10 @@ a.mxp-card:active {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   flex: none;
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 16px;
   line-height: 1;
 }
@@ -175,7 +175,7 @@ a.mxp-card:active {
 .mxp-hero {
   position: relative;
   overflow: hidden;
-  border-radius: 22px;
+  border-radius: 18px;
   background:
     radial-gradient(340px 160px at 82% -30px, rgba(255, 255, 255, 0.28), transparent 70%),
     radial-gradient(280px 200px at -10% 110%, rgba(45, 12, 110, 0.55), transparent 70%),
@@ -241,14 +241,14 @@ a.mxp-card:active {
 /* ── Buttons ── */
 .mxp-btn {
   border: 0;
-  min-height: 44px;
+  min-height: 42px;
   cursor: pointer;
-  border-radius: 13px;
+  border-radius: 11px;
   font-family: inherit;
-  font-weight: 650;
+  font-weight: 600;
   color: #fff;
   background: linear-gradient(135deg, #7c3aed, #6d28d9);
-  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.08), 0 8px 20px -10px rgba(109, 40, 217, 0.7);
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.06), 0 5px 12px -8px rgba(109, 40, 217, 0.55);
   transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
 }
 .mxp-btn:hover { filter: brightness(1.06); }
@@ -256,23 +256,23 @@ a.mxp-card:active {
 .mxp-btn:disabled { cursor: not-allowed; filter: saturate(0.2) brightness(1.05); box-shadow: none; }
 .mxp-btn-teal {
   background: linear-gradient(135deg, #14b8a6, #0f9488);
-  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.08), 0 8px 20px -10px rgba(20, 184, 166, 0.7);
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.06), 0 5px 12px -8px rgba(20, 184, 166, 0.55);
 }
 .mxp-btn-blue {
   background: linear-gradient(135deg, #3b82f6, #2563eb);
-  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.08), 0 8px 20px -10px rgba(59, 130, 246, 0.7);
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.06), 0 5px 12px -8px rgba(59, 130, 246, 0.55);
 }
 .mxp-btn-gold {
   background: linear-gradient(135deg, #d9a514, #b8860b);
-  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.08), 0 8px 20px -10px rgba(202, 138, 4, 0.7);
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.06), 0 5px 12px -8px rgba(202, 138, 4, 0.55);
 }
 .mxp-btn-orange {
   background: linear-gradient(135deg, #f97316, #ea580c);
-  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.08), 0 8px 20px -10px rgba(249, 115, 22, 0.7);
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.06), 0 5px 12px -8px rgba(249, 115, 22, 0.55);
 }
 .mxp-btn-green {
   background: linear-gradient(135deg, #10b981, #059669);
-  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.08), 0 8px 20px -10px rgba(16, 185, 129, 0.7);
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.06), 0 5px 12px -8px rgba(16, 185, 129, 0.55);
 }
 
 /* Quiet inline action — for secondary moves that shouldn't shout (minimum day) */
@@ -304,9 +304,9 @@ a.mxp-card:active {
 
 .mxp-btn-ghost {
   border: 1px solid var(--mxp-line);
-  min-height: 44px;
+  min-height: 42px;
   cursor: pointer;
-  border-radius: 13px;
+  border-radius: 11px;
   font-family: inherit;
   font-weight: 600;
   color: var(--mxp-ink);
@@ -319,9 +319,9 @@ a.mxp-card:active {
 /* ── Inputs ── */
 .mxp-input {
   border: 1px solid var(--mxp-line);
-  border-radius: 14px;
+  border-radius: 12px;
   font-size: 16px; /* below 16px iOS Safari zooms the viewport on focus */
-  min-height: 48px;
+  min-height: 44px;
   background: var(--mxp-card);
   color: var(--mxp-ink);
   font-family: inherit;
@@ -337,8 +337,8 @@ a.mxp-card:active {
 /* ── Check circle (non-negotiables, milestones) ── */
 .mxp-check {
   position: relative;
-  width: 30px;
-  height: 30px;
+  width: 27px;
+  height: 27px;
   flex: none;
   border-radius: 50%;
   border: 1.5px solid #ddd8d0;
@@ -353,7 +353,7 @@ a.mxp-card:active {
   /* 48px touch target without growing the visual disc */
   content: "";
   position: absolute;
-  inset: -9px;
+  inset: -11px; /* the disc shrank; the 48px touch target must not */
 }
 .mxp-check:not(.on) {
   color: rgba(28, 25, 23, 0.28); /* the ✓ is hinted at rest — a real affordance */
@@ -491,3 +491,72 @@ a.mxp-card:active {
   transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .mxp-tapcount-pulse { transform: scale(1.28); }
+
+/* ── The note at the moment of doing (NoteAction) ──
+   Collapsed it must be almost invisible: an offer, not a chore. Written, it
+   reads as the user's own voice under the thing they did. */
+.mxp-noteadd {
+  display: inline-block;
+  margin-top: 3px;
+  padding: 2px 8px 2px 0;
+  font-size: 12px;
+  font-weight: 550;
+  color: #b0aaa2;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color 0.14s ease;
+}
+.mxp-noteadd:hover,
+.mxp-noteadd:focus-visible {
+  color: var(--mxp-purple);
+}
+.mxp-note {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 5px 9px;
+  text-align: left;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--mxp-muted);
+  background: rgba(124, 58, 237, 0.045);
+  border: 0;
+  border-left: 2px solid rgba(124, 58, 237, 0.28);
+  border-radius: 0 8px 8px 0;
+  cursor: text;
+  transition: background 0.14s ease;
+}
+.mxp-note:hover {
+  background: rgba(124, 58, 237, 0.075);
+}
+/* The confirmation floats over the note — appending it to the text would
+   reflow the row for a second and a half, which reads as jank. */
+.mxp-note-flash {
+  position: absolute;
+  right: 8px;
+  top: 5px;
+  color: var(--mxp-green);
+  font-weight: 600;
+  animation: mxp-fade 1.4s ease forwards;
+}
+@keyframes mxp-fade {
+  0%, 60% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.mxp-noteedit {
+  width: 100%;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 16px; /* iOS zooms below 16 */
+  line-height: 1.4;
+  color: var(--mxp-ink);
+  background: var(--mxp-card);
+  border: 1px solid rgba(124, 58, 237, 0.35);
+  border-radius: 10px;
+  resize: none;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+.mxp-noteedit::placeholder { color: #b0aaa2; }

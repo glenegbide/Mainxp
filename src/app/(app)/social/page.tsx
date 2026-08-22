@@ -148,7 +148,7 @@ export default async function SocialPage({
 
       {/* ── What I show, per person. Closed by default, in every sense. ── */}
       {partners.length > 0 && (
-        <section className="mt-7">
+        <section className="mt-6">
           <p className="mxp-label text-mxp-muted">Ce que tu partages</p>
           <div className="mt-2 space-y-2">
             {partners.map((p) => {
@@ -265,7 +265,7 @@ export default async function SocialPage({
 
       {/* ── Invitations already sent ── */}
       {invites.length > 0 && (
-        <section className="mt-7">
+        <section className="mt-6">
           <p className="mxp-label text-mxp-muted">Invitations en attente</p>
           <ul className="mt-2 divide-y divide-mxp-line">
             {invites.map((i) => (
@@ -287,7 +287,7 @@ export default async function SocialPage({
       )}
 
       {partners.length > 0 && partners.length < MAX_PARTNERS && (
-        <section className="mt-7">
+        <section className="mt-6">
           <p className="mxp-label text-mxp-muted">Inviter quelqu&apos;un d&apos;autre</p>
           <InviteLink create={newInvite} />
         </section>

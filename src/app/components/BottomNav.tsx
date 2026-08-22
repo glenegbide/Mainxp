@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 const ICONS: Record<string, React.ReactNode> = {
   today: (
@@ -50,15 +51,29 @@ const TABS = [
 
 export function BottomNav() {
   const pathname = usePathname();
+  // The tab lights up on touch, not when the server answers. Waiting for the
+  // navigation to commit is what made the app feel slow even when it wasn't:
+  // 150 ms of "did it register?" costs more than 150 ms of loading.
+  const [wanted, setWanted] = useState<string | null>(null);
+  const current = wanted ?? pathname;
+  if (wanted && pathname === wanted) setWanted(null);
+
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40">
       <div className="mx-auto flex w-full max-w-md items-stretch border-t border-mxp-line bg-white/90 px-1 pb-[max(env(safe-area-inset-bottom),4px)] backdrop-blur-md">
         {TABS.map((tab) => {
-          const active = pathname === tab.href || pathname.startsWith(tab.href + "/");
+          const active = current === tab.href || current.startsWith(tab.href + "/");
           return (
             <Link
               key={tab.href}
               href={tab.href}
+              prefetch
+              onNavigate={() => {
+                setWanted(tab.href);
+                if (typeof navigator !== "undefined") navigator.vibrate?.(6);
+                // If a navigation is abandoned, the highlight must not lie.
+                window.setTimeout(() => setWanted((w) => (w === tab.href ? null : w)), 4000);
+              }}
               aria-current={active ? "page" : undefined}
               className={`group flex flex-1 flex-col items-center gap-0.5 pt-2 pb-1.5 text-[10.5px] font-semibold transition ${
                 active ? "text-mxp-purple" : "text-mxp-muted hover:text-mxp-ink"

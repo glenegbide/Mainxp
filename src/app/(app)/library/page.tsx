@@ -56,7 +56,7 @@ export default async function LibraryPage() {
           </form>
           <form action={finishBook} className="mt-3">
             <input type="hidden" name="id" value={b.id} />
-            <button className="mxp-btn w-full py-3.5 text-[15px]">J&apos;ai fini ce livre</button>
+            <button className="mxp-btn w-full py-3 text-[15px]">J&apos;ai fini ce livre</button>
           </form>
           <form action={abandonBook} className="mt-2 text-right">
             <input type="hidden" name="id" value={b.id} />
@@ -66,7 +66,7 @@ export default async function LibraryPage() {
       ))}
 
       {/* ── Ajouter ── */}
-      <section className="mt-7">
+      <section className="mt-6">
         <p className="mxp-label text-mxp-muted">Ajouter un livre</p>
         <form action={addBook} className="mt-2 space-y-2">
           <input
@@ -96,7 +96,7 @@ export default async function LibraryPage() {
 
       {/* ── À lire ── */}
       {toRead.length > 0 && (
-        <section className="mt-7">
+        <section className="mt-6">
           <p className="mxp-label text-mxp-muted">À lire</p>
           <ul className="mt-2 divide-y divide-mxp-line">
             {toRead.map((b) => (
@@ -117,7 +117,7 @@ export default async function LibraryPage() {
 
       {/* ── Terminés : le palmarès du Sage ── */}
       {finished.length > 0 && (
-        <section className="mt-7">
+        <section className="mt-6">
           <p className="mxp-label text-mxp-gold">Terminés · {finished.length}</p>
           <ul className="mt-2 space-y-3">
             {finished.map((b) => (

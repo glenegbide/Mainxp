@@ -274,6 +274,8 @@ model MxRoutineLog {
   item          MxRoutineItem @relation(fields: [routineItemId], references: [id], onDelete: Cascade)
   dayKey        String // "YYYY-MM-DD" user timezone
   done          Boolean       @default(true)
+  /** This morning's note on this step — distinct from the item's definition. */
+  note          String        @default("")
 
   @@unique([routineItemId, dayKey])
   @@index([userId, dayKey])
@@ -451,6 +453,8 @@ model MxNonNegotiableLog {
   periodKey       String // dayKey (daily) or weekKey (weekly)
   value           Float           @default(0)
   completed       Boolean         @default(false)
+  /** What it cost, or what made it easy, today. */
+  note            String          @default("")
   updatedAt       DateTime        @updatedAt
 
   @@unique([nonNegotiableId, periodKey])
@@ -491,6 +495,8 @@ model MxHabitLog {
   habit     MxHabit  @relation(fields: [habitId], references: [id], onDelete: Cascade)
   periodKey String // dayKey or weekKey per cadence
   value     Float    @default(1)
+  /** How it actually went, in the user's words. Written at the moment of doing. */
+  note      String   @default("")
   createdAt DateTime @default(now())
 
   @@unique([habitId, periodKey])
@@ -625,6 +631,8 @@ model MxGratitudeEntry {
   content     String
   whyItMatter String   @default("")
   thankWho    String   @default("")
+  /** Added later, when re-reading: what this still does to you. */
+  note        String   @default("")
   createdAt   DateTime @default(now())
 
   @@index([userId, dayKey])

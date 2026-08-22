@@ -62,7 +62,7 @@ export default async function NotificationsPage() {
         )}
       </section>
 
-      <form action={saveNotificationPrefs} className="mt-7 space-y-5">
+      <form action={saveNotificationPrefs} className="mt-6 space-y-5">
         <div>
           <p className="mxp-label text-mxp-muted">Combien MAINXP peut te parler</p>
           <div className="mt-3 space-y-2">
@@ -116,7 +116,7 @@ export default async function NotificationsPage() {
           </div>
         </div>
 
-        <button className="mxp-btn w-full py-3.5 text-[15px]">Enregistrer</button>
+        <button className="mxp-btn w-full py-3 text-[15px]">Enregistrer</button>
       </form>
 
       <p className="mxp-meta mt-4">
@@ -125,7 +125,7 @@ export default async function NotificationsPage() {
       </p>
 
       {recent.length > 0 && (
-        <section className="mt-7">
+        <section className="mt-6">
           <p className="mxp-label text-mxp-muted">Envoyées récemment</p>
           <ul className="mt-2 divide-y divide-mxp-line">
             {recent.map((n) => (

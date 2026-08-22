@@ -18,8 +18,8 @@ await page.waitForURL("**/onboarding");
 await page.click('button:has-text("C\'est parti")');
 await page.waitForURL("**/today");
 let b = await body();
-if (!b.includes("ÉLAN")) fail("élan gauge missing from hero");
-if (!b.includes("100/100")) fail("élan should start full");
+if (!/Élan/i.test(b)) fail("élan gauge missing from the status band");
+if (!b.includes("Élan 100")) fail("élan should start full");
 
 // earn coins: set + complete main quest (+50c), NN (+10c +15c bonus)
 await page.fill('.mxp-anchor input[name="title"]', "Boucler la présentation investisseur");
@@ -63,7 +63,7 @@ await page.waitForSelector('li:has-text("Scroller au lit") span:has-text("×1")'
 await page.screenshot({ path: `${shots}/01-habits.png`, fullPage: true });
 await page.goto(`${BASE}/today`);
 b = await body();
-if (!b.includes("97/100")) fail("élan should be 97 after one bad tap, body: " + b.slice(0, 200));
+if (!b.includes("Élan 97")) fail("élan should be 97 after one bad tap, body: " + b.slice(0, 200));
 if (!b.includes("Lire 10 pages")) fail("habit quick-tap card missing on Today");
 await page.screenshot({ path: `${shots}/02-today.png`, fullPage: true });
 
@@ -88,7 +88,7 @@ await page.click('button[aria-label="Basculer le mode récupération"]');
 await page.waitForSelector('text=Mode récupération');
 await page.goto(`${BASE}/today`);
 b = await body();
-if (!/récupération/i.test(b)) fail("élan should show recovery state");
+if (!/récup/i.test(b)) fail("élan should show recovery state");
 await page.goto(`${BASE}/me`);
 await page.click('button[aria-label="Basculer le mode récupération"]');
 await page.waitForSelector('button[aria-label="Basculer le mode récupération"][aria-pressed="false"]');

@@ -84,7 +84,7 @@ export default async function AccountPage({
       </section>
 
       {/* ── Email ── */}
-      <section className="mt-7">
+      <section className="mt-6">
         <p className="mxp-label text-mxp-muted">Adresse email</p>
         <p className="mxp-meta mt-1">
           C&apos;est ton identifiant de connexion — et l&apos;adresse qui reçoit le lien si
@@ -118,7 +118,7 @@ export default async function AccountPage({
       </section>
 
       {/* ── Password ── */}
-      <section className="mt-7">
+      <section className="mt-6">
         <p className="mxp-label text-mxp-muted">Mot de passe</p>
         <form action={savePassword} className="mt-2 space-y-2">
           <input
@@ -156,7 +156,7 @@ export default async function AccountPage({
       </section>
 
       {/* ── Devices ── */}
-      <section className="mt-7">
+      <section className="mt-6">
         <p className="mxp-label text-mxp-muted">Appareils</p>
         <p className="mxp-meta mt-1 tabular-nums">
           {sessions === 1 ? "1 session ouverte" : `${sessions} sessions ouvertes`}

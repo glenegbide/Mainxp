@@ -64,6 +64,16 @@ system doc for whatever you touch (XP_SYSTEM, GOAL_SYSTEM, COACH_SYSTEM, …).
     changes nothing — accepting is a POST. Full invariants:
     `docs/PRIVACY_SECURITY.md`.
 
+## Writing lives at the moment of doing
+
+Every repeated action carries a note: missions and the Main Quest, each
+non-negotiable, each habit, each morning routine step, each gratitude entry.
+One component (`components/NoteAction.tsx`) + one server-action file
+(`app/(app)/note-actions.ts`) — the same object everywhere, so "leave yourself
+a word" is learned once. It opens in place (no modal, no navigation), saves on
+blur (no Save button), Escape abandons, and a note is never mistaken for doing
+the thing: writing on a habit does not tap it and earns nothing.
+
 ## The coach is the brain (P1/P2/P10 — built)
 
 - **Tools only** (`src/lib/mainxp/ai/tools.ts`): validated, capped, event-first
@@ -131,6 +141,12 @@ exceptional.
 - Client components must never import a type from a `"use server"` module —
   it drags server code into the client bundle. Shared result types live in
   plain modules (`src/lib/mainxp/action-result.ts`).
+- **A write that ends in `redirect()` must `revalidatePath()` first.** With
+  `experimental.staleTimes.dynamic` (set, so prefetched tabs render instantly),
+  the client router cache will otherwise serve the destination as it looked
+  BEFORE the action. Caught 2026-08-22: the morning flow set the Main Quest and
+  Today showed the previous state for 15 seconds. Actions that mutate and stay
+  put are fine — their `revalidatePath` already clears the cache.
 
 ## Verify before pushing
 

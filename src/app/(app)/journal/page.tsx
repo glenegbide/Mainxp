@@ -4,6 +4,8 @@ import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
 import { addDays, dayKey } from "@/lib/mainxp/day";
 import { JOURNAL_MOODS, MOOD_LABEL, type JournalMood } from "@/lib/mainxp/journal";
+import { NoteAction } from "../../components/NoteAction";
+import { noteOnGratitude } from "../note-actions";
 import { addJournalEntry } from "./actions";
 
 // JOURNAL — ONE purpose: write what you're living, right now. The blank page
@@ -14,11 +16,20 @@ export default async function JournalPage() {
   const today = dayKey(new Date(), user.timezone);
   const since = addDays(today, -13);
 
-  const entries = await prisma.mxJournalEntry.findMany({
-    where: { userId: user.id, dayKey: { gte: since } },
-    orderBy: { createdAt: "desc" },
-    take: 60,
-  });
+  const [entries, gratitude] = await Promise.all([
+    prisma.mxJournalEntry.findMany({
+      where: { userId: user.id, dayKey: { gte: since } },
+      orderBy: { createdAt: "desc" },
+      take: 60,
+    }),
+    // Gratitude was written at night and then never seen again — it belongs in
+    // the same timeline, where re-reading it is what gives it its second life.
+    prisma.mxGratitudeEntry.findMany({
+      where: { userId: user.id, dayKey: { gte: since } },
+      orderBy: { createdAt: "desc" },
+      take: 60,
+    }),
+  ]);
 
   const dayLabel = (d: string) =>
     d === today
@@ -32,6 +43,11 @@ export default async function JournalPage() {
   for (const e of entries) {
     byDay.set(e.dayKey, [...(byDay.get(e.dayKey) ?? []), e]);
   }
+  const gratitudeByDay = new Map<string, typeof gratitude>();
+  for (const g of gratitude) {
+    gratitudeByDay.set(g.dayKey, [...(gratitudeByDay.get(g.dayKey) ?? []), g]);
+  }
+  const days = [...new Set([...byDay.keys(), ...gratitudeByDay.keys()])].sort().reverse();
   const todayCount = (byDay.get(today) ?? []).length;
 
   return (
@@ -72,12 +88,12 @@ export default async function JournalPage() {
             placeholder="Comment ça va, là ? Ce qui s'est passé, ce que tu ressens, ce que tu veux te rappeler…"
             className="w-full mxp-input px-4 py-3"
           />
-          <button className="mxp-btn w-full py-3.5 text-[15px]">Écrire</button>
+          <button className="mxp-btn w-full py-3 text-[15px]">Écrire</button>
         </form>
       </section>
 
       {/* ── The timeline: quiet, chrome-less, the writing carries it ── */}
-      {entries.length === 0 ? (
+      {days.length === 0 ? (
         <p className="mxp-body mt-8 text-center text-mxp-muted">
           Première page blanche.
           <span className="mt-1 block mxp-meta">
@@ -85,12 +101,26 @@ export default async function JournalPage() {
           </span>
         </p>
       ) : (
-        <div className="mt-8">
-          {[...byDay.entries()].map(([d, dayEntries]) => (
+        <div className="mt-7">
+          {days.map((d) => (
             <section key={d} className="mt-6 first:mt-0">
               <p className="mxp-label text-mxp-muted">{dayLabel(d)}</p>
               <ul className="mt-2 divide-y divide-mxp-line">
-                {dayEntries.map((e) => (
+                {(gratitudeByDay.get(d) ?? []).map((g) => (
+                  <li key={g.id} className="py-4">
+                    <p className="text-[13px] font-semibold text-mxp-gold">Gratitude</p>
+                    <p className="mt-1.5 whitespace-pre-wrap mxp-body">{g.content}</p>
+                    {g.whyItMatter && <p className="mxp-meta mt-1">{g.whyItMatter}</p>}
+                    <NoteAction
+                      id={g.id}
+                      label={`gratitude — ${g.content.slice(0, 40)}`}
+                      note={g.note}
+                      placeholder="En relisant : qu'est-ce que ça te fait ?"
+                      save={noteOnGratitude}
+                    />
+                  </li>
+                ))}
+                {(byDay.get(d) ?? []).map((e) => (
                   <li key={e.id} className="py-4">
                     <div className="flex items-baseline gap-2">
                       {e.mood && (

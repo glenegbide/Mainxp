@@ -18,8 +18,9 @@ import {
   postponeTask,
   setMainQuest,
 } from "./actions";
-import { addTaskNote } from "./actions";
 import { CheckAction } from "../../components/CheckAction";
+import { NoteAction } from "../../components/NoteAction";
+import { noteOnCommitment, noteOnTask } from "../note-actions";
 import {
   completeTaskRewarded,
   toggleMinimumSlotRewarded,
@@ -43,7 +44,24 @@ export default async function TodayPage() {
   if (!user) redirect("/login");
   const today = dayKey(new Date(), user.timezone);
 
-  const [tasks, nonNegotiables, nnLogs, totals, recentTx, activeGoals, dayPlan] = await Promise.all([
+  // ONE round trip's worth of waiting: every query the screen needs goes out
+  // at the same time. Three sequential waves used to cost three latencies on a
+  // remote database — invisible on localhost, very visible on a phone.
+  const [
+    tasks,
+    nonNegotiables,
+    nnLogs,
+    totals,
+    recentTx,
+    activeGoals,
+    dayPlan,
+    challenges,
+    elan,
+    gearEquipped,
+    goodHabits,
+    lastEvent,
+    comebackDoneToday,
+  ] = await Promise.all([
     prisma.mxTask.findMany({
       where: { userId: user.id, dayKey: today },
       orderBy: [{ createdAt: "asc" }],
@@ -62,13 +80,11 @@ export default async function TodayPage() {
     }),
     prisma.mxGoal.findMany({ where: { userId: user.id, status: "ACTIVE" } }),
     prisma.mxDayPlan.findUnique({ where: { userId_dayKey: { userId: user.id, dayKey: today } } }),
-  ]);
-  const challenges = await prisma.mxChallenge.findMany({
-    where: { userId: user.id, status: "active" },
-    include: { logs: true },
-    orderBy: { createdAt: "asc" },
-  });
-  const [elan, gearEquipped, goodHabits, lastEvent, comebackDoneToday] = await Promise.all([
+    prisma.mxChallenge.findMany({
+      where: { userId: user.id, status: "active" },
+      include: { logs: true },
+      orderBy: { createdAt: "asc" },
+    }),
     elanReport(user.id, user.timezone, user.restMode),
     prisma.mxGearOwned.findMany({ where: { userId: user.id, equipped: true } }),
     prisma.mxHabit.findMany({
@@ -112,6 +128,7 @@ export default async function TodayPage() {
   const missions = tasks.filter((t) => t.tier === "DAILY_MISSION");
   const sideQuests = tasks.filter((t) => t.tier === "SIDE_QUEST");
   const doneByNn = new Map(nnLogs.map((l) => [l.nonNegotiableId, l.completed]));
+  const noteByNn = new Map(nnLogs.map((l) => [l.nonNegotiableId, l.note]));
 
   // Streak: consecutive days (user timezone) with at least one positive XP event.
   const activeDays = new Set(recentTx.map((t) => dayKey(t.createdAt, user.timezone)));
@@ -145,63 +162,31 @@ export default async function TodayPage() {
 
   return (
     <main className="px-4 pt-5">
-      {/* ── Level header (purple hero, design ref 01_HOME_WHITE + game refs) ── */}
-      <section className="mxp-hero p-5 text-white">
-        <div className="relative z-10 flex items-center gap-4">
-          <div className="flex h-[68px] w-16 flex-none items-end justify-center rounded-2xl bg-white/12 pb-1 ring-1 ring-white/25">
-            <PixelHero level={lp.level} size={46} gear={equippedIds} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[15px] font-semibold text-white/85">{user.name}</p>
-            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-              <span className="font-displaymx text-[22px] leading-none tabular-nums">
-                Niv. {lp.level}
+      {/* ── Status band. It used to eat half the first screen; the day's work
+          has to be what you see first, so identity is now one compact row and
+          two hairlines. ── */}
+      <section className="mxp-hero px-3.5 py-3 text-white">
+        <div className="relative z-10 flex items-center gap-3">
+          <span className="flex h-11 w-10 flex-none items-end justify-center rounded-xl bg-white/12 ring-1 ring-white/20">
+            <PixelHero level={lp.level} size={34} gear={equippedIds} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex items-baseline gap-2">
+              <span className="font-displaymx text-[17px] leading-none">Niv. {lp.level}</span>
+              <span className="truncate text-[13px] text-white/75">{user.name}</span>
+            </span>
+            <span className="mt-1 flex items-center gap-2 text-[11px] tabular-nums text-white/75">
+              <span className="mxp-xpbar h-[5px] flex-1">
+                <i style={{ width: `${Math.max(2, Math.round(lp.ratio * 100))}%` }} />
               </span>
-              {totals.coins > 0 && (
-                <span className="mxp-chip bg-white/16 tabular-nums">{totals.coins} pièces</span>
-              )}
-              {streak > 0 && (
-                <span className="mxp-chip bg-white/16 tabular-nums">
-                  {streak} jour{streak === 1 ? "" : "s"} de suite
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="relative z-10 mt-4">
-          <div className="flex justify-between text-[11px] font-medium text-white/85">
-            <span className="tracking-wide">MAINXP</span>
-            <span className="tabular-nums">
-              {lp.intoLevel}/{lp.neededForNext} → niv. {lp.level + 1}
+              <span>{lp.intoLevel}/{lp.neededForNext}</span>
             </span>
-          </div>
-          <div className="mxp-xpbar mt-1.5">
-            <i style={{ width: `${Math.max(2, Math.round(lp.ratio * 100))}%` }} />
-          </div>
-          <div className="mt-2.5 flex justify-between text-[11px] font-medium text-white/85">
-            <span className="tracking-wide">ÉLAN</span>
-            <span className="tabular-nums">
-              {elan.value === null
-                ? "Récupération"
-                : `${elan.value}/100${elan.missedDays > 0 ? ` · ${elan.missedDays} j manqué${elan.missedDays > 1 ? "s" : ""}` : ""}`}
-            </span>
-          </div>
-          <div className="mt-1 h-2 overflow-hidden rounded-full bg-white/20">
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${elan.value ?? 100}%`,
-                background:
-                  elan.value === null
-                    ? "rgba(255,255,255,.4)"
-                    : elan.value >= 70
-                      ? "rgba(255,255,255,.9)"
-                      : elan.value >= 40
-                        ? "rgba(255,255,255,.6)"
-                        : "rgba(255,255,255,.35)",
-              }}
-            />
-          </div>
+          </span>
+          <span className="flex flex-none flex-col items-end gap-0.5 text-[11px] tabular-nums text-white/80">
+            <span>{elan.value === null ? "Récup." : `Élan ${elan.value}`}</span>
+            {totals.coins > 0 && <span>{totals.coins} 🪙</span>}
+            {streak > 0 && <span>{streak} j</span>}
+          </span>
         </div>
       </section>
 
@@ -224,10 +209,10 @@ export default async function TodayPage() {
         </Link>
       )}
 
-      <h1 className="mt-7 mxp-display">Aujourd&apos;hui</h1>
-      <p className="text-sm text-mxp-muted">
-        {dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)}
-      </p>
+      <div className="mt-5 flex items-baseline justify-between gap-3">
+        <h1 className="mxp-display">Aujourd&apos;hui</h1>
+        <p className="mxp-meta">{dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)}</p>
+      </div>
 
       {/* ── Comeback Quest ── */}
       {showComeback && (
@@ -321,31 +306,19 @@ export default async function TodayPage() {
                 </ul>
                 <form action={completeTask} className="mt-5">
                   <input type="hidden" name="id" value={mainQuest.id} />
-                  <button className="mxp-btn w-full py-3.5 text-[15px]">C&apos;est fait</button>
+                  <button className="mxp-btn w-full py-3 text-[15px]">C&apos;est fait</button>
                 </form>
               </>
             ) : (
               <>
                 <p className="mt-2 mxp-body text-mxp-muted">{recommendation.action}</p>
-                {mainQuest.notes ? (
-                  <p className="mt-3 rounded-xl bg-mxp-bg px-3 py-2 mxp-meta italic">
-                    {mainQuest.notes}
-                  </p>
-                ) : (
-                  <form action={addTaskNote} className="mt-4 flex gap-2">
-                    <input type="hidden" name="id" value={mainQuest.id} />
-                    <input
-                      type="text"
-                      name="note"
-                      maxLength={500}
-                      placeholder="Une note ? Ce que tu retiens…"
-                      className="min-w-0 flex-1 mxp-input px-3"
-                    />
-                    <button className="mxp-btn-ghost px-4" aria-label="Enregistrer la note">
-                      <IconPen className="h-[18px] w-[18px]" />
-                    </button>
-                  </form>
-                )}
+                <NoteAction
+                  id={mainQuest.id}
+                  label={mainQuest.title}
+                  note={mainQuest.notes}
+                  placeholder="Ce que tu retiens de cette quête…"
+                  save={noteOnTask}
+                />
               </>
             )}
           </>
@@ -368,7 +341,7 @@ export default async function TodayPage() {
                 placeholder="Le résultat le plus important du jour…"
                 className="w-full mxp-input px-4"
               />
-              <button className="mxp-btn w-full py-3.5 text-[15px]">
+              <button className="mxp-btn w-full py-3 text-[15px]">
                 Définir ma quête principale
               </button>
             </form>
@@ -451,22 +424,33 @@ export default async function TodayPage() {
         </div>
         {nonNegotiables.length === 0 && (
           <p className="mt-2 text-sm text-mxp-muted">
-            3 à 7 engagements quotidiens que tu tiens quoi qu&apos;il arrive.
+            3 à 7 engagements que tu tiens quoi qu&apos;il arrive.
           </p>
         )}
         <ul className="mt-2 space-y-2">
           {nonNegotiables.map((nn) => {
             const done = doneByNn.get(nn.id) ?? false;
             return (
-              <li key={nn.id} className="flex items-center gap-3 py-1">
-                <CheckAction
-                  id={nn.id}
-                  done={done}
-                  label={nn.title}
-                  act={toggleNonNegotiableRewarded}
-                />
-                <span className={`mxp-body ${done ? "text-mxp-muted line-through" : ""}`}>
-                  {nn.title}
+              <li key={nn.id} className="flex items-start gap-3 py-1">
+                <span className="pt-0.5">
+                  <CheckAction
+                    id={nn.id}
+                    done={done}
+                    label={nn.title}
+                    act={toggleNonNegotiableRewarded}
+                  />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className={`mxp-body block ${done ? "text-mxp-muted line-through" : ""}`}>
+                    {nn.title}
+                  </span>
+                  <NoteAction
+                    id={nn.id}
+                    label={nn.title}
+                    note={noteByNn.get(nn.id) ?? ""}
+                    placeholder="Ce que ça t'a coûté, ou ce qui l'a rendu facile…"
+                    save={noteOnCommitment}
+                  />
                 </span>
               </li>
             );
@@ -550,7 +534,7 @@ export default async function TodayPage() {
       </section>
       {/* ── Rituels & outils : une seule rangée calme, icônes premium (pas
           d'emoji), l'état se lit à la couleur — pas de bruit. ── */}
-      <div className="mt-8 grid grid-cols-6 gap-1.5">
+      <div className="mt-7 grid grid-cols-6 gap-1.5">
         {(
           [
             ["/today/morning", IconSunrise, "Matin", "text-mxp-orange bg-mxp-orange/10", !!dayPlan?.startedAt],
@@ -608,64 +592,57 @@ function TaskList({
 }) {
   if (tasks.length === 0) return <p className="mt-2 text-sm text-mxp-muted">{empty}</p>;
   return (
-    <ul className="mt-2 space-y-2">
+    <ul className="mt-1">
       {tasks.map((t) => (
-        <li key={t.id} className="flex flex-wrap items-center gap-3 py-1">
-          <CheckAction
-            id={t.id}
-            done={t.status === "DONE"}
-            label={t.title}
-            act={completeTaskRewarded}
-          />
-          <span
-            className={`min-w-0 flex-1 mxp-body ${
-              t.status === "DONE" ? "text-mxp-muted line-through" : ""
-            }`}
-          >
-            {t.title}
+        <li key={t.id} className="flex items-start gap-3 py-1.5">
+          <span className="pt-0.5">
+            <CheckAction
+              id={t.id}
+              done={t.status === "DONE"}
+              label={t.title}
+              act={completeTaskRewarded}
+            />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span
+              className={`mxp-body block ${
+                t.status === "DONE" ? "text-mxp-muted line-through" : ""
+              }`}
+            >
+              {t.title}
+            </span>
+            {/* Writing is never gated behind finishing: the note lives on the
+                row from the moment the task exists. */}
+            <NoteAction
+              id={t.id}
+              label={t.title}
+              note={t.notes}
+              placeholder="Ce qui a marché, ce qui a bloqué…"
+              save={noteOnTask}
+            />
           </span>
           {t.status === "OPEN" ? (
-            <span className="flex shrink-0 items-center gap-1">
+            <span className="flex shrink-0 items-center">
               <form action={postponeTask}>
                 <input type="hidden" name="id" value={t.id} />
                 <button
                   aria-label={`Reporter à demain : ${t.title}`}
-                  className="flex h-11 w-11 items-center justify-center rounded-xl text-mxp-muted transition active:scale-90 hover:bg-mxp-bg hover:text-mxp-ink"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-mxp-muted transition active:scale-90 hover:bg-mxp-bg hover:text-mxp-ink"
                 >
-                  <IconTomorrow className="h-[18px] w-[18px]" />
+                  <IconTomorrow className="h-[17px] w-[17px]" />
                 </button>
               </form>
               <form action={deleteTask}>
                 <input type="hidden" name="id" value={t.id} />
                 <button
                   aria-label={`Supprimer : ${t.title}`}
-                  className="flex h-11 w-11 items-center justify-center rounded-xl text-mxp-muted/60 transition active:scale-90 hover:bg-mxp-bg hover:text-mxp-red"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-mxp-muted/60 transition active:scale-90 hover:bg-mxp-bg hover:text-mxp-red"
                 >
-                  <IconTrash className="h-[17px] w-[17px]" />
+                  <IconTrash className="h-[16px] w-[16px]" />
                 </button>
               </form>
             </span>
           ) : null}
-          {t.status === "DONE" &&
-            (t.notes ? (
-              <p className="w-full rounded-lg bg-mxp-bg px-3 py-1.5 text-xs italic text-mxp-muted no-underline">
-                {t.notes}
-              </p>
-            ) : (
-              <form action={addTaskNote} className="flex w-full gap-1.5">
-                <input type="hidden" name="id" value={t.id} />
-                <input
-                  type="text"
-                  name="note"
-                  maxLength={500}
-                  placeholder="Une note ? (ce qui a marché, ce que tu retiens…)"
-                  className="min-w-0 flex-1 mxp-input px-3 py-1.5 text-xs"
-                />
-                <button className="mxp-btn-ghost px-2.5 py-1.5 text-xs" title="Enregistrer la note">
-                  ·
-                </button>
-              </form>
-            ))}
         </li>
       ))}
     </ul>

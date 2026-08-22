@@ -3,7 +3,9 @@ import { redirect } from "next/navigation";
 import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
 import { dayKey } from "@/lib/mainxp/day";
+import { NoteAction } from "../../components/NoteAction";
 import { TapAction } from "../../components/TapAction";
+import { noteOnHabit } from "../note-actions";
 import { tapHabitRewarded } from "../today/feedback-actions";
 import { archiveHabit, createHabit } from "./actions";
 import { IconTrash } from "../../components/icons";
@@ -55,7 +57,7 @@ export default async function HabitsPage() {
           </div>
           <ul className="mt-4 divide-y divide-mxp-line">
             {good.map((h) => (
-              <li key={h.id} className="flex items-center gap-3 py-3">
+              <li key={h.id} className="flex items-start gap-3 py-2.5">
                 <TapAction
                   id={h.id}
                   label={h.title}
@@ -65,6 +67,13 @@ export default async function HabitsPage() {
                 <div className="min-w-0 flex-1">
                   <p className="mxp-body font-medium">{h.title}</p>
                   {h.description && <p className="mxp-meta">{h.description}</p>}
+                  <NoteAction
+                    id={h.id}
+                    label={h.title}
+                    note={h.logs[0]?.note ?? ""}
+                    placeholder="Comment c'était aujourd'hui ?"
+                    save={noteOnHabit}
+                  />
                 </div>
                 <form action={archiveHabit}>
                   <input type="hidden" name="id" value={h.id} />
@@ -92,11 +101,11 @@ export default async function HabitsPage() {
 
       {/* ── À réduire — recorded honestly, never punished with XP ── */}
       {bad.length > 0 && (
-        <section className="mt-7">
+        <section className="mt-6">
           <p className="mxp-label text-mxp-muted">À réduire</p>
           <ul className="mt-2 divide-y divide-mxp-line">
             {bad.map((h) => (
-              <li key={h.id} className="flex items-center gap-3 py-3">
+              <li key={h.id} className="flex items-start gap-3 py-2.5">
                 <TapAction
                   id={h.id}
                   label={h.title}
@@ -128,7 +137,7 @@ export default async function HabitsPage() {
 
       {/* ── Adding is quiet: it is organizing, not achieving ── */}
       {habits.length < 15 && (
-        <details className="mt-7">
+        <details className="mt-6">
           <summary className="mxp-quiet cursor-pointer list-none">
             + Nouvelle habitude
           </summary>
@@ -167,7 +176,7 @@ export default async function HabitsPage() {
               placeholder="Pourquoi cette habitude, comment tu t'y prends, ton déclencheur…"
               className="w-full mxp-input px-3 py-2.5"
             />
-            <button className="mxp-btn w-full py-3.5 text-[15px]">Créer l&apos;habitude</button>
+            <button className="mxp-btn w-full py-3 text-[15px]">Créer l&apos;habitude</button>
           </form>
         </details>
       )}

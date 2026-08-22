@@ -51,3 +51,12 @@ export async function tapHabitRewarded(id: string): Promise<ActionReward> {
   fd.set("id", id);
   return withReward(tapHabit, fd);
 }
+
+/** Routine steps earn nothing (structure, not merit) — but they must still
+    answer the finger instantly, so they get the same optimistic contract. */
+export async function toggleRoutineStepRewarded(id: string): Promise<ActionReward> {
+  const { toggleRoutineItem } = await import("./day-actions");
+  const fd = new FormData();
+  fd.set("id", id);
+  return withReward(toggleRoutineItem, fd);
+}

@@ -3,7 +3,11 @@ import { redirect } from "next/navigation";
 import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
 import { addDays, dayKey } from "@/lib/mainxp/day";
-import { addRoutineItem, archiveRoutineItem, saveMorning, toggleRoutineItem } from "../day-actions";
+import { addRoutineItem, archiveRoutineItem, saveMorning } from "../day-actions";
+import { toggleRoutineStepRewarded } from "../feedback-actions";
+import { CheckAction } from "../../../components/CheckAction";
+import { NoteAction } from "../../../components/NoteAction";
+import { noteOnRoutineStep } from "../../note-actions";
 
 function Scale({ name, label }: { name: string; label: string }) {
   return (
@@ -44,6 +48,7 @@ export default async function MorningPage() {
       prisma.mxRoutineLog.findMany({ where: { userId: user.id, dayKey: today } }),
     ]);
   const routineDone = new Map(routineLogs.map((l) => [l.routineItemId, l.done]));
+  const routineNote = new Map(routineLogs.map((l) => [l.routineItemId, l.note]));
 
   const proposal =
     mainQuest?.title ?? yesterdayPlan?.tomorrowBigThing ?? "";
@@ -74,19 +79,26 @@ export default async function MorningPage() {
             const done = routineDone.get(item.id) ?? false;
             return (
               <li key={item.id} className="flex items-start gap-3">
-                <form action={toggleRoutineItem}>
-                  <input type="hidden" name="id" value={item.id} />
-                  <button aria-pressed={done} className={`mxp-check ${done ? "on" : ""}`}>
-                    ✓
-                  </button>
-                </form>
-                <div className="min-w-0 flex-1 pt-1">
-                  <p className={`text-sm ${done ? "text-mxp-muted line-through" : "font-medium"}`}>
+                <CheckAction
+                  id={item.id}
+                  done={done}
+                  label={item.title}
+                  act={toggleRoutineStepRewarded}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className={`mxp-body ${done ? "text-mxp-muted line-through" : "font-medium"}`}>
                     {item.title}
                   </p>
-                  {item.note && <p className="mt-0.5 text-xs text-mxp-muted">{item.note}</p>}
+                  {item.note && <p className="mxp-meta">{item.note}</p>}
+                  <NoteAction
+                    id={item.id}
+                    label={item.title}
+                    note={routineNote.get(item.id) ?? ""}
+                    placeholder="Comment ce matin s'est passé…"
+                    save={noteOnRoutineStep}
+                  />
                 </div>
-                <form action={archiveRoutineItem} className="pt-1">
+                <form action={archiveRoutineItem}>
                   <input type="hidden" name="id" value={item.id} />
                   <button aria-label={`Retirer ${item.title}`} className="text-xs text-mxp-muted hover:text-mxp-red">
                     ✕

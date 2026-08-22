@@ -57,6 +57,7 @@ export async function saveMorning(formData: FormData): Promise<void> {
     { idempotencyKey: `morning:${user.id}:${today}` }
   );
 
+  revalidatePath("/", "layout");
   redirect("/today");
 }
 

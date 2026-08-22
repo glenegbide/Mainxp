@@ -96,7 +96,7 @@ export function InviteLink({
         type="button"
         disabled={pending}
         onClick={make}
-        className="mxp-btn mt-2 w-full py-3.5 text-[15px]"
+        className="mxp-btn mt-2 w-full py-3 text-[15px]"
       >
         {pending ? "Création…" : "Créer le lien"}
       </button>

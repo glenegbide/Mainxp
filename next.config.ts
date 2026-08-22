@@ -8,6 +8,13 @@ const nextConfig: NextConfig = {
     // container start (same deployment pattern as `next start` behind Docker).
     "/": ["./prisma/**", "./src/generated/**"],
   },
+  experimental: {
+    // Prefetched tab payloads are reusable for a few seconds, which is what
+    // turns a tab switch into an instant render instead of a round trip.
+    // Kept short on purpose: a server action's revalidate always wins, but
+    // something another person changed can be up to this many seconds old.
+    staleTimes: { dynamic: 15, static: 180 },
+  },
   // A stale service worker pins users to an old push handler forever.
   async headers() {
     return [

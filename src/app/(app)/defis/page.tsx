@@ -57,7 +57,7 @@ export default async function DefisPage() {
           </p>
           <form action={acceptProposedChallenge} className="mt-5">
             <input type="hidden" name="id" value={c.id} />
-            <button className="mxp-btn w-full py-3.5 text-[15px]">J&apos;accepte</button>
+            <button className="mxp-btn w-full py-3 text-[15px]">J&apos;accepte</button>
           </form>
           <form action={declineChallenge} className="mt-2">
             <input type="hidden" name="id" value={c.id} />
@@ -112,7 +112,7 @@ export default async function DefisPage() {
 
       {/* Catalogue — seulement s'il reste de la place */}
       {alive < 3 && (
-        <section className="mt-7">
+        <section className="mt-6">
           <p className="mxp-label text-mxp-muted">À relever</p>
           <ul className="mt-3 divide-y divide-mxp-line">
             {STARTER_CHALLENGES.map((sc) => (
@@ -137,7 +137,7 @@ export default async function DefisPage() {
       )}
 
       {done.length > 0 && (
-        <section className="mt-7">
+        <section className="mt-6">
           <p className="mxp-label text-mxp-gold">Relevés · {done.length}</p>
           <ul className="mt-2 divide-y divide-mxp-line">
             {done.map((c) => (
