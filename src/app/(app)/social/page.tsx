@@ -80,9 +80,12 @@ export default async function SocialPage({
               const supported = supportByName.get(c.name) ?? 0;
               return (
                 <li key={p.partnerId}>
-                  <div className="flex items-baseline justify-between gap-3">
-                    <p className="mxp-title">{c.name}</p>
-                    {c.level !== null && <p className="mxp-meta tabular-nums">Niveau {c.level}</p>}
+                  <div className="flex items-center gap-3">
+                    <span aria-hidden className="mxp-party-disc">
+                      {c.name.trim().charAt(0).toUpperCase() || "?"}
+                    </span>
+                    <p className="min-w-0 flex-1 truncate mxp-title">{c.name}</p>
+                    {c.level !== null && <p className="mxp-meta flex-none tabular-nums">Niveau {c.level}</p>}
                   </div>
 
                   {c.paused ? (

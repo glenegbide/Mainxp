@@ -22,7 +22,8 @@ import {
 import { CheckAction } from "../../components/CheckAction";
 import { NoteAction } from "../../components/NoteAction";
 import { noteOnCommitment, noteOnTask } from "../note-actions";
-import { IconCoin } from "../../components/icons";
+import { IconBolt, IconCoin } from "../../components/icons";
+import { DayRing } from "../../components/DayRing";
 import {
   completeTaskRewarded,
   toggleMinimumSlotRewarded,
@@ -44,7 +45,8 @@ import {
 export default async function TodayPage() {
   const user = await getMxUser();
   if (!user) redirect("/login");
-  const today = dayKey(new Date(), user.timezone);
+  const now = new Date();
+  const today = dayKey(now, user.timezone);
 
   // ONE round trip's worth of waiting: every query the screen needs goes out
   // at the same time. Three sequential waves used to cost three latencies on a
@@ -63,6 +65,7 @@ export default async function TodayPage() {
     goodHabits,
     lastEvent,
     comebackDoneToday,
+    focusToday,
   ] = await Promise.all([
     prisma.mxTask.findMany({
       where: { userId: user.id, dayKey: today },
@@ -103,8 +106,29 @@ export default async function TodayPage() {
     prisma.mxEvent.findFirst({
       where: { userId: user.id, type: "comeback_completed", dayKey: today },
     }),
+    prisma.mxFocusSession.findMany({
+      where: { userId: user.id, endedAt: { not: null }, startedAt: { gte: new Date(now.getTime() - 20 * 3600_000) } },
+      select: { startedAt: true, endedAt: true },
+    }),
   ]);
   const equippedIds = gearEquipped.map((g) => g.gearId);
+  const focusMinToday = focusToday.reduce(
+    (sum, f) => sum + Math.round((f.endedAt!.getTime() - f.startedAt.getTime()) / 60_000),
+    0
+  );
+  // The sky follows the user's clock (Headspace taught everyone this feels
+  // like care): dawn, day, dusk, night — same band, different light.
+  const hourLocal = Number(
+    new Intl.DateTimeFormat("en-GB", { hour: "numeric", hour12: false, timeZone: user.timezone }).format(new Date())
+  );
+  const sky =
+    hourLocal >= 5 && hourLocal < 9
+      ? "mxp-hero-dawn"
+      : hourLocal >= 9 && hourLocal < 17
+        ? ""
+        : hourLocal >= 17 && hourLocal < 21
+          ? "mxp-hero-dusk"
+          : "mxp-hero-night";
 
   // Comeback Quest (addendum #8): away ≥ 4 days → welcome back, no guilt.
   const awayDays = lastEvent
@@ -167,16 +191,22 @@ export default async function TodayPage() {
       {/* ── Status band. It used to eat half the first screen; the day's work
           has to be what you see first, so identity is now one compact row and
           two hairlines. ── */}
-      <section className="mxp-hero px-3.5 py-3 text-white">
+      <section className={`mxp-hero ${sky} px-3.5 py-3 text-white`}>
         <div className="relative z-10 flex items-center gap-3">
-          <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-white/12 ring-1 ring-white/20">
+          <DayRing
+            questDone={mainQuest?.status === "DONE"}
+            nnKept={nnLogs.filter((l) => l.completed).length}
+            nnTotal={nonNegotiables.length}
+            focusMin={focusMinToday}
+            size={56}
+          >
             <BlockHero
               level={lp.level}
-              size={40}
+              size={34}
               gear={equippedIds}
               dominant={dominantAttribute(totals.attributes)}
             />
-          </span>
+          </DayRing>
           <span className="min-w-0 flex-1">
             <span className="flex items-baseline gap-2">
               <span className="font-displaymx text-[17px] leading-none">Niv. {lp.level}</span>
@@ -196,7 +226,11 @@ export default async function TodayPage() {
                 {totals.coins} <IconCoin className="h-[12px] w-[12px]" />
               </span>
             )}
-            {streak > 0 && <span>{streak} j</span>}
+            {streak > 0 && (
+              <span className="flex items-center gap-0.5 font-semibold text-amber-200">
+                <IconBolt className="h-[11px] w-[11px]" /> {streak} j
+              </span>
+            )}
           </span>
         </div>
       </section>
@@ -292,20 +326,26 @@ export default async function TodayPage() {
       {/* ── L'ANCRE — la seule chose dominante de l'écran : ce qui compte
           maintenant, expliqué, avec UNE action pleine largeur. Quête
           principale et « et maintenant ? » ne font qu'un. ── */}
-      <section className="mt-5 mxp-anchor">
-        <p className="mxp-label text-mxp-purple">
-          {mainQuest && mainQuest.status === "OPEN" ? "Quête principale" : "Et maintenant ?"}
-        </p>
+      <section
+        className={`mt-5 mxp-anchor ${mainQuest?.status === "DONE" ? "mxp-anchor-victory" : ""}`}
+      >
+        {mainQuest?.status === "DONE" ? (
+          <p className="mxp-victory-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M8 4h8v4.5a4 4 0 0 1-8 0V4Z" />
+              <path d="M8 6H5.5c0 2.5 1.1 4 2.8 4.4M16 6h2.5c0 2.5-1.1 4-2.8 4.4M12 12.5V16M9 19h6M10.5 16h3" />
+            </svg>
+            Quête accomplie
+          </p>
+        ) : (
+          <p className="mxp-label text-mxp-purple">
+            {mainQuest ? "Quête principale" : "Et maintenant ?"}
+          </p>
+        )}
 
         {mainQuest ? (
           <>
-            <p
-              className={`mt-2 mxp-title ${
-                mainQuest.status === "DONE" ? "text-mxp-muted line-through" : ""
-              }`}
-            >
-              {mainQuest.title}
-            </p>
+            <p className="mt-2 mxp-title">{mainQuest.title}</p>
             {mainQuest.status === "OPEN" ? (
               <>
                 <ul className="mt-3 space-y-1">

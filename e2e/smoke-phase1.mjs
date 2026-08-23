@@ -73,7 +73,8 @@ if (!(await page.locator('a[aria-label="Matin — fait"]').count())) fail("morni
 
 // 5. Complete Main Quest
 await page.getByRole("button", { name: "C'est fait" }).click();
-await page.waitForSelector('.mxp-anchor .line-through');
+// a finished Main Quest is celebrated, never crossed out
+await page.waitForSelector('.mxp-anchor-victory');
 
 // 6. Focus: start 25min, end immediately → completed session recorded, no XP block
 await page.goto(`${BASE}/focus`);

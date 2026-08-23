@@ -675,3 +675,66 @@ a.mxp-card:active {
   margin: 0;
   font-style: italic;
 }
+
+/* ── The sky follows the clock: same band, different light. Dawn warms it,
+   dusk deepens it, night settles it — day keeps the brand purple. ── */
+.mxp-hero-dawn {
+  background:
+    radial-gradient(340px 160px at 82% -30px, rgba(253, 230, 138, 0.35), transparent 70%),
+    radial-gradient(280px 200px at -10% 110%, rgba(76, 29, 149, 0.6), transparent 70%),
+    linear-gradient(135deg, #7c3aed 0%, #8b5cf6 45%, #d97706 130%);
+}
+.mxp-hero-dusk {
+  background:
+    radial-gradient(340px 160px at 82% -30px, rgba(251, 113, 133, 0.28), transparent 70%),
+    radial-gradient(280px 200px at -10% 110%, rgba(30, 10, 80, 0.65), transparent 70%),
+    linear-gradient(135deg, #5b21b6 0%, #7c3aed 55%, #be3a63 140%);
+}
+.mxp-hero-night {
+  background:
+    radial-gradient(340px 160px at 82% -30px, rgba(147, 197, 253, 0.16), transparent 70%),
+    radial-gradient(280px 200px at -10% 110%, rgba(12, 8, 38, 0.8), transparent 70%),
+    linear-gradient(135deg, #3b2177 0%, #4c1d95 55%, #312e81 100%);
+}
+
+/* ── The victory state of the anchor: gold, briefly loud, then the day moves
+   on. A finished Main Quest is never crossed out — it is CELEBRATED. ── */
+.mxp-anchor-victory {
+  border-color: color-mix(in srgb, var(--mxp-gold) 55%, transparent);
+  background:
+    radial-gradient(420px 200px at 88% -40%, color-mix(in srgb, var(--mxp-gold) 16%, transparent), transparent 70%),
+    linear-gradient(180deg, #fffdf5, #fffaf0);
+  box-shadow: 0 1px 3px rgba(28, 25, 23, 0.045), 0 14px 32px -24px rgba(202, 138, 4, 0.5);
+}
+.mxp-victory-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a6508;
+}
+.mxp-victory-mark svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ── Party disc: a neutral initial until Block Hero portraits are shared —
+   deliberately NOT a photo (Le Cercle shares progress, never faces). ── */
+.mxp-party-disc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--mxp-purple-soft), #fff);
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  font-family: var(--font-display), sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--mxp-purple-deep);
+}

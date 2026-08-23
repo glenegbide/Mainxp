@@ -6,6 +6,8 @@ import { xpTotals } from "@/lib/mainxp/xp/ledger";
 import { levelProgress } from "@/lib/mainxp/xp/curve";
 import { birdsEyeView } from "@/lib/mainxp/insight";
 import { IconGem } from "../../components/icons";
+import { BlockHero } from "../../components/BlockHero";
+import { dominantAttribute } from "@/lib/mainxp/xp/dominant";
 
 // PROGRESSION — one question, answered in two seconds:
 // "Am I actually moving, and who am I becoming?"
@@ -30,7 +32,7 @@ export default async function ProgressPage() {
   const user = await getMxUser();
   if (!user) redirect("/login");
 
-  const [totals, recent, view] = await Promise.all([
+  const [totals, recent, view, gearEquipped] = await Promise.all([
     xpTotals(user.id),
     prisma.mxXpTransaction.findMany({
       where: { userId: user.id },
@@ -38,6 +40,7 @@ export default async function ProgressPage() {
       take: 25,
     }),
     birdsEyeView(user),
+    prisma.mxGearOwned.findMany({ where: { userId: user.id, equipped: true } }),
   ]);
   const lp = levelProgress(totals.main);
 
@@ -114,19 +117,29 @@ export default async function ProgressPage() {
         </dl>
       </section>
 
-      {/* ── Who you are becoming ── */}
+      {/* ── Who you are becoming — the biography, worn by the character ── */}
       <section className="mt-6">
         <p className="mxp-label text-mxp-muted">Ton personnage</p>
-        <div className="mt-3 flex items-baseline gap-3">
-          <span className="font-displaymx text-[26px] leading-none tabular-nums">
-            Niv. {lp.level}
-          </span>
-          <span className="mxp-meta tabular-nums">
-            {lp.intoLevel}/{lp.neededForNext} vers le niveau {lp.level + 1}
-          </span>
-        </div>
-        <div className="mxp-rail mt-2.5">
-          <i className="bg-mxp-purple" style={{ width: `${Math.round(lp.ratio * 100)}%` }} />
+        <div className="mt-3 flex items-center gap-3.5">
+          <BlockHero
+            level={lp.level}
+            size={64}
+            gear={gearEquipped.map((g) => g.gearId)}
+            dominant={dominantAttribute(totals.attributes)}
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline gap-2.5">
+              <span className="font-displaymx text-[24px] leading-none tabular-nums">
+                Niv. {lp.level}
+              </span>
+              <span className="mxp-meta tabular-nums">
+                {lp.intoLevel}/{lp.neededForNext} vers le niv. {lp.level + 1}
+              </span>
+            </div>
+            <div className="mxp-rail mt-2">
+              <i className="bg-mxp-purple" style={{ width: `${Math.round(lp.ratio * 100)}%` }} />
+            </div>
+          </div>
         </div>
 
         {dominant ? (

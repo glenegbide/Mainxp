@@ -26,7 +26,8 @@ await page.fill('.mxp-anchor input[name="title"]', "Boucler la présentation inv
 await page.getByRole("button", { name: /Définir ma quête/ }).click();
 await page.waitForSelector('text=Boucler la présentation');
 await page.getByRole("button", { name: "C'est fait" }).click();
-await page.waitForSelector('.mxp-anchor .line-through');
+// a finished Main Quest is celebrated, never crossed out
+await page.waitForSelector('.mxp-anchor-victory');
 await page.fill('input[placeholder*="appels de prospection"]', "Entraînement (BJJ)");
 await page.click('section:has-text("Non-négociables") button:has-text("+")');
 await page.waitForSelector('li:has-text("Entraînement (BJJ)")');

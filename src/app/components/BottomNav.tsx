@@ -80,7 +80,7 @@ export function BottomNav() {
               }`}
             >
               <span
-                className={`flex h-7 w-12 items-center justify-center rounded-full transition ${
+                className={`flex h-7 w-12 items-center justify-center rounded-full transition group-active:scale-90 ${
                   active ? "bg-mxp-purple-soft" : "group-hover:bg-mxp-bg"
                 }`}
               >
