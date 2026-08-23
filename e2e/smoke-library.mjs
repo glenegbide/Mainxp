@@ -24,9 +24,9 @@ await page.click('a[href="/library"]');
 await page.waitForURL("**/library");
 
 // add current book
-await page.fill('input[name="title"]', "Deep Work");
-await page.fill('input[name="author"]', "Cal Newport");
-await page.locator('form:has(input[name="title"]) button:has-text("+")').click();
+await page.fill('input[placeholder="Titre…"]', "Deep Work");
+await page.fill('input[placeholder*="Auteur"]', "Cal Newport");
+await page.locator('form:has(input[placeholder="Titre…"]) button:has-text("+")').click();
 await page.waitForSelector("text=Deep Work");
 console.log("1. book added (reading)");
 

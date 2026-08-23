@@ -83,6 +83,8 @@ ${user.occupation ? `Métier : ${user.occupation}` : ""}
 ${northStar?.why ? `Pourquoi : ${northStar.why}` : ""}
 ${northStar?.season ? `Saison actuelle : ${northStar.season}` : ""}
 ${northStar?.mission90Days ? `Mission 90 jours : ${northStar.mission90Days}` : ""}
+${northStar?.selfConcept ? `Self-concept (l'histoire qu'il/elle se raconte, au présent) : ${northStar.selfConcept}
+Ton rôle sur l'identité : confronter DOUCEMENT cette histoire aux actes réels — jamais pour juger, toujours pour réduire l'écart. L'identité se réécrit en agissant depuis le nouveau soi, pas en y pensant plus fort.` : ""}
 Main Quest du jour : ${mq ? `${mq.title} (${mq.status === "DONE" ? "accomplie" : "en cours"})` : "non définie"}
 Missions : ${missions.length ? missions.map((m) => `${m.title}${m.status === "DONE" ? " ✓" : ""}`).join(" · ") : "aucune"}
 Non-négociables tenus : ${nnLogs.length}/${nns.length}

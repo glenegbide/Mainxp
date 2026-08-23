@@ -7,6 +7,7 @@ import { addRoutineItem, archiveRoutineItem, saveMorning } from "../day-actions"
 import { toggleRoutineStepRewarded } from "../feedback-actions";
 import { GratitudeRitual } from "../../../components/GratitudeRitual";
 import { loadGratitude } from "@/lib/mainxp/gratitude";
+import { wisdomForDay } from "@/lib/mainxp/wisdom";
 import { CheckAction } from "../../../components/CheckAction";
 import { NoteAction } from "../../../components/NoteAction";
 import { noteOnRoutineStep } from "../../note-actions";
@@ -55,12 +56,20 @@ export default async function MorningPage() {
 
   const proposal =
     mainQuest?.title ?? yesterdayPlan?.tomorrowBigThing ?? "";
+  const wisdom = wisdomForDay(today);
 
   return (
     <main className="px-4 pt-5 pb-8">
       <Link href="/today" className="text-xs text-mxp-muted">← Aujourd&apos;hui</Link>
       <h1 className="mt-2 text-xl font-semibold">Morning Start</h1>
       <p className="text-sm text-mxp-muted">2 minutes pour lancer la journée en pleine possession.</p>
+
+      {/* Sagesse du jour — une ligne, la même toute la journée. Citations :
+          domaine public uniquement, attribuées (docs/ASSET_POLICY.md). */}
+      <figure className="mxp-wisdom mt-4">
+        <blockquote className="mxp-body">{wisdom.text}</blockquote>
+        {wisdom.source && <figcaption className="mxp-meta mt-1.5">{wisdom.source}</figcaption>}
+      </figure>
 
       {/* ── Routine du matin — hors du formulaire principal : chaque coche est
           sauvegardée immédiatement. Structure, pas mérite : 0 XP. ── */}
@@ -72,10 +81,31 @@ export default async function MorningPage() {
           </span>
         </div>
         {routineItems.length === 0 && (
-          <p className="mt-2 text-sm text-mxp-muted">
-            Construis ton rituel : eau, lumière, mouvement, lecture… Les étapes que tu
-            traverses chaque matin, dans ton ordre à toi.
-          </p>
+          <>
+            <p className="mt-2 text-sm text-mxp-muted">
+              Construis ton rituel — les étapes que tu traverses chaque matin, dans ton
+              ordre à toi. Un départ qui a fait ses preuves, en un geste chacun :
+            </p>
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              {(
+                [
+                  ["Marche 5 min", "Dehors, avant le téléphone — la lumière règle l'horloge."],
+                  ["30/30/30", "30 g de protéines, dans les 30 min, puis 30 min de mouvement doux."],
+                  ["Douche", "Le corps réveillé, l'esprit qui suit."],
+                ] as const
+              ).map(([title, note]) => (
+                <form key={title} action={addRoutineItem}>
+                  <input type="hidden" name="title" value={title} />
+                  <input type="hidden" name="note" value={note} />
+                  <button className="mxp-btn-ghost px-3 py-1.5 text-xs">+ {title}</button>
+                </form>
+              ))}
+            </div>
+            <p className="mxp-meta mt-2">
+              La gratitude (01–10) et l&apos;intention sont déjà plus bas — elles font
+              partie du rituel.
+            </p>
+          </>
         )}
         <ul className="mt-2 space-y-2.5">
           {routineItems.map((item) => {

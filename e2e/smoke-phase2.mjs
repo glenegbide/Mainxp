@@ -79,7 +79,7 @@ if (!b.includes("Lunettes de stratège")) fail("gear catalog missing");
 await page.click('li:has-text("Lunettes de stratège") button:has-text("Acheter")');
 await page.waitForSelector('li:has-text("Lunettes de stratège") button:has-text("Retirer")');
 b = await body();
-if (!b.includes("🪙 5")) fail("coins after gear purchase should be 5");
+if (!/Équipement\s*·\s*5(?!\d)/.test(b)) fail("coins after gear purchase should be 5, got: " + (b.match(/Équipement[^C]{0,20}/)?.[0] ?? "?"));
 if (!b.includes("Le Discipliné")) fail("titles section missing");
 await page.screenshot({ path: `${shots}/03-me-gear.png`, fullPage: true });
 

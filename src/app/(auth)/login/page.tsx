@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { IconBolt } from "../../components/icons";
 import { login } from "../actions";
 
 const ERRORS: Record<string, string> = {
@@ -19,7 +20,7 @@ export default async function LoginPage({
           className="flex h-14 w-14 items-center justify-center rounded-2xl text-2xl text-white shadow-lg"
           style={{ background: "linear-gradient(135deg,#7c3aed,#5b21b6)", boxShadow: "0 14px 30px -12px rgba(109,40,217,.7)" }}
         >
-          ⚡
+          <IconBolt className="h-7 w-7" />
         </div>
         <p className="mt-3 font-displaymx text-3xl font-bold tracking-tight">
           MAIN<span className="text-mxp-purple">XP</span>

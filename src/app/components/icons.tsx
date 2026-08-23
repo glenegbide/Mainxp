@@ -131,3 +131,33 @@ export function IconGem({ className }: IconProps) {
     </svg>
   );
 }
+
+/** Earned coin — MAINXP's own mark, never an emoji (asset policy). */
+export function IconCoin({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.5v9M9.2 9.6c.6-.9 1.6-1.4 2.8-1.4 1.7 0 2.9.9 2.9 2.1 0 2.7-5.6 1.5-5.6 4.1 0 1.2 1.2 2.1 2.9 2.1 1.2 0 2.2-.5 2.8-1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** A title still to be earned. */
+export function IconLock({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden>
+      <rect x="5.5" y="10.5" width="13" height="9" rx="2.5" />
+      <path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" />
+      <circle cx="12" cy="15" r="1.3" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+/** The MAINXP bolt — the brand mark, drawn once, used everywhere. */
+export function IconBolt({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
+      <path d="M13.6 2.5 5.8 13.2c-.3.4 0 1 .5 1h4.2l-1.6 7c-.1.6.6 1 1 .5l7.8-10.7c.3-.4 0-1-.5-1h-4.2l1.6-7c.1-.6-.6-1-1-.5Z" />
+    </svg>
+  );
+}

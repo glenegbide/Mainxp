@@ -65,6 +65,43 @@ export default async function LibraryPage() {
         </section>
       ))}
 
+      {/* ── Les livres fondateurs de MAINXP — un geste pour les rejoindre.
+          Le premier est dans le domaine public (1925) ; l'app en cite des
+          passages au matin. Du second, elle ne reprend que les idées, dans
+          nos propres mots — jamais le texte (docs/ASSET_POLICY.md). ── */}
+      {(() => {
+        const have = new Set(books.map((b) => b.title.toLowerCase()));
+        const founders = [
+          ["Le Jeu de la vie et comment le jouer", "Florence Scovel Shinn"],
+          ["Le Guerrier pacifique", "Dan Millman"],
+        ].filter(([t]) => !have.has(t.toLowerCase()));
+        if (founders.length === 0) return null;
+        return (
+          <section className="mt-6">
+            <p className="mxp-label text-mxp-muted">Les fondateurs — l&apos;esprit du jeu</p>
+            <p className="mxp-meta mt-1">
+              Les deux livres dont MAINXP tire sa philosophie : la vie comme un jeu qui se
+              gagne par la parole et l&apos;acte justes, et l&apos;entraînement du guerrier —
+              aucun moment n&apos;est ordinaire.
+            </p>
+            <div className="mt-2.5 space-y-2">
+              {founders.map(([title, author]) => (
+                <form key={title} action={addBook} className="flex items-center gap-3">
+                  <input type="hidden" name="title" value={title} />
+                  <input type="hidden" name="author" value={author} />
+                  <input type="hidden" name="status" value="to_read" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-medium">{title}</span>
+                    <span className="block text-xs text-mxp-muted">{author}</span>
+                  </span>
+                  <button className="mxp-btn-ghost px-3 py-1.5 text-xs">+ Ma pile</button>
+                </form>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
+
       {/* ── Ajouter ── */}
       <section className="mt-6">
         <p className="mxp-label text-mxp-muted">Ajouter un livre</p>

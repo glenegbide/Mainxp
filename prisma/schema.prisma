@@ -322,6 +322,10 @@ model MxNorthStar {
   vision1Year     String   @default("")
   mission90Days   String   @default("")
   season          String   @default("") // e.g. "Revenue Season"
+  /** Self-concept: the story told about oneself, written in the present tense. */
+  selfConcept     String   @default("")
+  /** 1–10: how TRUE the self-concept FEELS when read — mind/heart alignment. */
+  identityFelt    Int?
   priorities      Json     @default("[]")
   personalRules   Json     @default("[]")
   importantPeople Json     @default("[]")

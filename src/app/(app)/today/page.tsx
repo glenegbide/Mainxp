@@ -22,6 +22,7 @@ import {
 import { CheckAction } from "../../components/CheckAction";
 import { NoteAction } from "../../components/NoteAction";
 import { noteOnCommitment, noteOnTask } from "../note-actions";
+import { IconCoin } from "../../components/icons";
 import {
   completeTaskRewarded,
   toggleMinimumSlotRewarded,
@@ -190,7 +191,11 @@ export default async function TodayPage() {
           </span>
           <span className="flex flex-none flex-col items-end gap-0.5 text-[11px] tabular-nums text-white/80">
             <span>{elan.value === null ? "Récup." : `Élan ${elan.value}`}</span>
-            {totals.coins > 0 && <span>{totals.coins} 🪙</span>}
+            {totals.coins > 0 && (
+              <span className="flex items-center gap-1">
+                {totals.coins} <IconCoin className="h-[12px] w-[12px]" />
+              </span>
+            )}
             {streak > 0 && <span>{streak} j</span>}
           </span>
         </div>

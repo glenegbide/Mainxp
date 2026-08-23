@@ -9,6 +9,7 @@ import { earnedTitles, ROMAN } from "@/lib/mainxp/titles";
 import { GEAR_CATALOG } from "@/lib/mainxp/gear";
 import { BlockHero } from "../../components/BlockHero";
 import { providerNameForKey } from "@/lib/mainxp/ai/provider";
+import { IconCoin, IconLock } from "../../components/icons";
 import { buyGear, logout, removeAiKey, saveAiKey, toggleGear, toggleRestMode } from "./actions";
 
 // MOI — who you are BECOMING, then what you own, then where you're going.
@@ -92,7 +93,9 @@ export default async function MePage({
               <div className="flex items-baseline justify-between text-sm">
                 <span className={t.tier > 0 ? "font-semibold" : "text-mxp-muted"}>
                   {t.tier > 0 ? `${t.def.name} ${ROMAN[t.tier]}` : t.def.name}
-                  {t.tier === 0 && " 🔒"}
+                  {t.tier === 0 && (
+                    <IconLock className="ml-1 inline h-[13px] w-[13px] align-[-1px] text-mxp-muted/70" />
+                  )}
                 </span>
                 <span className="text-xs tabular-nums text-mxp-muted">
                   {t.count}
@@ -119,7 +122,10 @@ export default async function MePage({
 
       {/* ── Gear: cosmetics bought with earned coins — the character wears them ── */}
       <section className="mxp-card mxp-goldc mt-4 p-4">
-        <p className="mxp-label text-mxp-gold">Équipement · 🪙 {totals.coins}</p>
+        <p className="mxp-label flex items-center gap-1.5 text-mxp-gold">
+          Équipement ·
+          <IconCoin className="h-[14px] w-[14px]" /> {totals.coins}
+        </p>
         <p className="mt-1 text-xs text-mxp-muted">
           Cosmétique uniquement — l&apos;XP, les niveaux et les titres ne s&apos;achètent
           jamais.
@@ -137,7 +143,13 @@ export default async function MePage({
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium">{g.name}</span>
                   <span className="block text-xs text-mxp-muted">
-                    {owned ? g.description : `🪙 ${g.costCoins}`}
+                    {owned ? (
+                      g.description
+                    ) : (
+                      <>
+                        <IconCoin className="mr-0.5 inline h-[12px] w-[12px] align-[-1.5px]" /> {g.costCoins}
+                      </>
+                    )}
                   </span>
                 </span>
                 {owned ? (
@@ -170,6 +182,12 @@ export default async function MePage({
 
       {/* ── The journey: where this character's story continues ── */}
       <div className="mt-4 grid grid-cols-2 gap-2">
+        <Link href="/me/identite" className="mxp-card p-4 text-sm font-semibold">
+          Identité
+          <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
+            l&apos;histoire, la preuve, l&apos;accord
+          </span>
+        </Link>
         <Link href="/progress" className="mxp-card p-4 text-sm font-semibold">
           Le chemin
           <span className="mt-0.5 block text-xs font-normal text-mxp-muted">
