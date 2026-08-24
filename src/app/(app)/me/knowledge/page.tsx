@@ -36,8 +36,8 @@ export default async function KnowledgePage() {
 
   return (
     <main className="px-4 pt-5 pb-8">
-      <Link href="/me" className="text-xs text-mxp-muted">← Moi</Link>
-      <h1 className="mt-2 text-xl font-semibold">Connaissance</h1>
+      <Link href="/me" className="mxp-meta">← Moi</Link>
+      <h1 className="mt-3 mxp-display">Connaissance</h1>
       <p className="text-sm text-mxp-muted">
         Tout ce que ton coach sait de toi — et que tu peux nourrir directement.
         Dis-lui aussi en chat : « retiens que… ».

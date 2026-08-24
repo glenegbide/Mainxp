@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { IconCheck } from "../../../components/icons";
 import { redirect } from "next/navigation";
 import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
 import { dayKey } from "@/lib/mainxp/day";
-import { addRoutineItem, archiveRoutineItem, saveNight, toggleRoutineItem } from "../day-actions";
+import { addRoutineItem, archiveRoutineItem, saveNight } from "../day-actions";
+import { toggleRoutineStepRewarded } from "../feedback-actions";
+import { CheckAction } from "../../../components/CheckAction";
 import { GratitudeRitual } from "../../../components/GratitudeRitual";
 import { loadGratitude } from "@/lib/mainxp/gratitude";
 
@@ -34,8 +37,8 @@ export default async function NightPage() {
 
   return (
     <main className="px-4 pt-5 pb-8">
-      <Link href="/today" className="text-xs text-mxp-muted">← Aujourd&apos;hui</Link>
-      <h1 className="mt-2 text-xl font-semibold">Revue du soir</h1>
+      <Link href="/today" className="mxp-meta">← Aujourd&apos;hui</Link>
+      <h1 className="mt-3 mxp-display">Revue du soir</h1>
       <p className="text-sm text-mxp-muted">
         Comment s’est passée ta journée ? Raconte — et demain se prépare tout seul.
       </p>
@@ -45,7 +48,15 @@ export default async function NightPage() {
         <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
           <dt className="text-mxp-muted">Main Quest</dt>
           <dd className="text-right">
-            {mainQuest ? (mainQuest.status === "DONE" ? "accomplie ✅" : "non terminée") : "non définie"}
+            {mainQuest ? (
+              mainQuest.status === "DONE" ? (
+                <>accomplie <IconCheck className="inline h-[13px] w-[13px] align-[-2px] text-mxp-green" /></>
+              ) : (
+                "non terminée"
+              )
+            ) : (
+              "non définie"
+            )}
           </dd>
           <dt className="text-mxp-muted">Actions accomplies</dt>
           <dd className="text-right tabular-nums">{done.length}</dd>
@@ -122,17 +133,17 @@ export default async function NightPage() {
             const itemDone = routineDone.get(item.id) ?? false;
             return (
               <li key={item.id} className="flex items-start gap-3">
-                <form action={toggleRoutineItem}>
-                  <input type="hidden" name="id" value={item.id} />
-                  <button aria-pressed={itemDone} className={`mxp-check ${itemDone ? "on" : ""}`}>
-                    ✓
-                  </button>
-                </form>
-                <div className="min-w-0 flex-1 pt-1">
-                  <p className={`text-sm ${itemDone ? "text-mxp-muted line-through" : "font-medium"}`}>
+                <CheckAction
+                  id={item.id}
+                  done={itemDone}
+                  label={item.title}
+                  act={toggleRoutineStepRewarded}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className={`mxp-body ${itemDone ? "text-mxp-muted line-through" : "font-medium"}`}>
                     {item.title}
                   </p>
-                  {item.note && <p className="mt-0.5 text-xs text-mxp-muted">{item.note}</p>}
+                  {item.note && <p className="mxp-meta">{item.note}</p>}
                 </div>
                 <form action={archiveRoutineItem} className="pt-1">
                   <input type="hidden" name="id" value={item.id} />

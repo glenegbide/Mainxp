@@ -30,7 +30,7 @@ export default async function ProjectsPage() {
 
   return (
     <main className="px-4 pt-5 pb-8">
-      <h1 className="text-xl font-semibold">Projets</h1>
+      <h1 className="mxp-display">Projets</h1>
       <p className="text-sm text-mxp-muted">
         Un projet est le moteur d&apos;un objectif : un résultat, des jalons, une prochaine action.
       </p>

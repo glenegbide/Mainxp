@@ -60,8 +60,8 @@ export default async function MorningPage() {
 
   return (
     <main className="px-4 pt-5 pb-8">
-      <Link href="/today" className="text-xs text-mxp-muted">← Aujourd&apos;hui</Link>
-      <h1 className="mt-2 text-xl font-semibold">Morning Start</h1>
+      <Link href="/today" className="mxp-meta">← Aujourd&apos;hui</Link>
+      <h1 className="mt-3 mxp-display">Le matin</h1>
       <p className="text-sm text-mxp-muted">2 minutes pour lancer la journée en pleine possession.</p>
 
       {/* Sagesse du jour — une ligne, la même toute la journée. Citations :

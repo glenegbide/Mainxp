@@ -18,8 +18,8 @@ export default async function DumpPage({
 
   return (
     <main className="px-4 pt-5 pb-8">
-      <Link href="/today" className="text-xs text-mxp-muted">← Aujourd&apos;hui</Link>
-      <h1 className="mt-2 text-xl font-semibold">Vide-tête</h1>
+      <Link href="/today" className="mxp-meta">← Aujourd&apos;hui</Link>
+      <h1 className="mt-3 mxp-display">Vide-tête</h1>
       <p className="text-sm text-mxp-muted">
         Dis tout d&apos;un coup — je range. Chaque élément devient une mission, un rappel,
         une idée ou une note. Rien n&apos;est créé sans ta confirmation.
@@ -78,7 +78,7 @@ export default async function DumpPage({
             placeholder="Ex. 45 francs de parking, appeler Paul demain, idée de club de course, stressé par le loyer du bureau, et j'ai fait mon BJJ."
             className="w-full mxp-input px-4 py-3 text-sm"
           />
-          <button className="w-full mxp-btn px-4 py-3 text-sm">🧠 Trier tout ça</button>
+          <button className="w-full mxp-btn px-4 py-3 text-sm">Trier tout ça</button>
         </form>
       )}
     </main>

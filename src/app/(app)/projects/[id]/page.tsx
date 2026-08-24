@@ -31,7 +31,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       <Link href="/projects" className="text-xs text-mxp-muted">
         ← Projets
       </Link>
-      <h1 className="mt-2 text-xl font-semibold">{project.title}</h1>
+      <h1 className="mt-3 mxp-display">{project.title}</h1>
       {project.desiredOutcome && (
         <p className="mt-1 text-sm text-mxp-muted">Résultat visé : {project.desiredOutcome}</p>
       )}

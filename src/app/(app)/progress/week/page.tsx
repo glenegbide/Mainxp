@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { IconCheck, IconCoin } from "../../../components/icons";
 import { redirect } from "next/navigation";
 import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
@@ -52,8 +53,8 @@ export default async function WeeklyReviewPage() {
 
   return (
     <main className="px-4 pt-5 pb-8">
-      <Link href="/progress" className="text-xs text-mxp-muted">← Progression</Link>
-      <h1 className="mt-2 text-xl font-semibold">Revue hebdomadaire</h1>
+      <Link href="/progress" className="mxp-meta">← Progression</Link>
+      <h1 className="mt-3 mxp-display">Revue hebdomadaire</h1>
       <p className="text-sm text-mxp-muted">Semaine {week} — prendre de la hauteur</p>
 
       <section className="mxp-card mt-4 p-4">
@@ -62,7 +63,7 @@ export default async function WeeklyReviewPage() {
           <dt className="text-mxp-muted">MAINXP gagnée</dt>
           <dd className="text-right tabular-nums">{xpWeek} XP</dd>
           <dt className="text-mxp-muted">Pièces gagnées</dt>
-          <dd className="text-right tabular-nums">🪙 {coinsWeek}</dd>
+          <dd className="flex items-center justify-end gap-1 text-right tabular-nums"><IconCoin className="h-[13px] w-[13px] text-mxp-gold" /> {coinsWeek}</dd>
           <dt className="text-mxp-muted">Main Quests accomplies</dt>
           <dd className="text-right tabular-nums">{quests}/{weekDays.length}</dd>
           <dt className="text-mxp-muted">Non-négociables</dt>
@@ -76,7 +77,7 @@ export default async function WeeklyReviewPage() {
 
       {alreadyDone ? (
         <section className="mxp-card mt-4 p-4 text-sm">
-          <p className="font-medium">Revue de la semaine {week} déjà faite ✅</p>
+          <p className="font-medium">Revue de la semaine {week} déjà faite <IconCheck className="inline h-[14px] w-[14px] align-[-2px] text-mxp-green" /></p>
           <p className="mt-1 text-mxp-muted">
             Reviens en fin de semaine prochaine — ou relis tes revues dans le journal.
           </p>

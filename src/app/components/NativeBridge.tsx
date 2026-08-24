@@ -52,7 +52,7 @@ export function NativeBridge() {
             {
               id: 1,
               title: "MAINXP",
-              body: "☀️ Morning Start — 2 minutes pour lancer la journée.",
+              body: "Le matin t\u2019attend — 2 minutes pour lancer la journée.",
               schedule: { on: { hour: 7, minute: 30 }, allowWhileIdle: true },
             },
             {

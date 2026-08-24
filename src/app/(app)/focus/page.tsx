@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { IconCheck } from "../../components/icons";
 import { redirect } from "next/navigation";
 import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
@@ -114,7 +115,7 @@ export default async function FocusPage() {
                   <option value="">— libre —</option>
                   {todayTasks.map((t) => (
                     <option key={t.id} value={t.id}>
-                      {t.tier === "MAIN_QUEST" ? "⚡ " : ""}
+                      {t.tier === "MAIN_QUEST" ? "Quête · " : ""}
                       {t.title}
                     </option>
                   ))}
@@ -144,7 +145,10 @@ export default async function FocusPage() {
                     {sess.task?.title ?? "Session libre"}
                   </span>
                   <span className="shrink-0 tabular-nums">
-                    {min} min {sess.completed ? "✅" : ""}
+                    {min} min{" "}
+                    {sess.completed && (
+                      <IconCheck className="inline h-[12px] w-[12px] align-[-1.5px] text-mxp-green" />
+                    )}
                   </span>
                 </li>
               );

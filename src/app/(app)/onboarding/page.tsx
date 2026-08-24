@@ -23,7 +23,7 @@ export default async function OnboardingPage() {
       <p className="mxp-label text-mxp-purple">
         Apprends à me connaître
       </p>
-      <h1 className="mt-1 text-xl font-semibold">Quelques repères, {user.name}.</h1>
+      <h1 className="mt-1 mxp-display">Quelques repères, {user.name}.</h1>
       <p className="mt-1 text-sm text-mxp-muted">
         5 questions, pas 80. Le coach apprendra le reste naturellement, avec le temps.
         Ta bio aide l&apos;IA à comprendre ta vie — elle ne donne jamais d&apos;XP.

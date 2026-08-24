@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { IconCoin } from "../../../components/icons";
 import { redirect } from "next/navigation";
 import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
@@ -18,8 +19,8 @@ export default async function RewardsPage() {
 
   return (
     <main className="px-4 pt-5 pb-8">
-      <Link href="/me" className="text-xs text-mxp-muted">← Moi</Link>
-      <h1 className="mt-2 text-xl font-semibold">Récompenses</h1>
+      <Link href="/me" className="mxp-meta">← Moi</Link>
+      <h1 className="mt-3 mxp-display">Récompenses</h1>
       <p className="text-sm text-mxp-muted">
         Définis de vraies récompenses et achète-les avec les pièces gagnées par tes
         actions. L&apos;XP, les rangs et les titres ne s&apos;achètent jamais.
@@ -27,7 +28,7 @@ export default async function RewardsPage() {
 
       <section className="mt-4 flex items-center justify-between mxp-card mxp-goldc px-5 py-3">
         <span className="text-sm text-mxp-muted">Mes pièces</span>
-        <span className="text-lg font-bold tabular-nums text-mxp-gold">🪙 {totals.coins}</span>
+        <span className="flex items-center gap-1.5 text-lg font-bold tabular-nums text-mxp-gold"><IconCoin className="h-[18px] w-[18px]" /> {totals.coins}</span>
       </section>
 
       {rewards.length === 0 && (
@@ -46,7 +47,7 @@ export default async function RewardsPage() {
                 <div className="min-w-0">
                   <p className="text-sm font-medium">{r.title}</p>
                   <p className="text-xs text-mxp-muted tabular-nums">
-                    🪙 {r.costCoins}
+                    <IconCoin className="inline h-[12px] w-[12px] align-[-1.5px]" /> {r.costCoins}
                     {r.redeemedCount > 0 && ` · débloquée ${r.redeemedCount}×`}
                   </p>
                 </div>

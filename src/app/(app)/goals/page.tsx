@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { IconCheck } from "../../components/icons";
 import { redirect } from "next/navigation";
 import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
@@ -24,7 +25,7 @@ export default async function GoalsPage() {
 
   return (
     <main className="px-4 pt-5 pb-8">
-      <h1 className="text-xl font-semibold">Objectifs</h1>
+      <h1 className="mxp-display">Objectifs</h1>
       <p className="text-sm text-mxp-muted">
         Un objectif mesurable, avec un pourquoi et une échéance — le jeu fait le reste.
       </p>
@@ -94,7 +95,7 @@ export default async function GoalsPage() {
           <ul className="mt-2 space-y-2">
             {done.map((g) => (
               <li key={g.id} className="mxp-card px-4 py-2.5 text-sm text-mxp-muted">
-                ✅ {g.title}
+                <IconCheck className="inline h-[14px] w-[14px] align-[-2px] text-mxp-green" /> {g.title}
               </li>
             ))}
           </ul>

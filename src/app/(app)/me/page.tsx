@@ -9,7 +9,7 @@ import { earnedTitles, ROMAN } from "@/lib/mainxp/titles";
 import { GEAR_CATALOG } from "@/lib/mainxp/gear";
 import { BlockHero } from "../../components/BlockHero";
 import { providerNameForKey } from "@/lib/mainxp/ai/provider";
-import { IconCoin, IconLock } from "../../components/icons";
+import { IconCheck, IconCoin, IconLock } from "../../components/icons";
 import { buyGear, logout, removeAiKey, saveAiKey, toggleGear, toggleRestMode } from "./actions";
 
 // MOI — who you are BECOMING, then what you own, then where you're going.
@@ -220,7 +220,7 @@ export default async function MePage({
         {user.aiKey ? (
           <>
             <p className="mt-2 text-sm font-medium">
-              ✓ Coach actif — {providerNameForKey(user.aiKey)}
+              <IconCheck className="inline h-[13px] w-[13px] align-[-1.5px] text-mxp-green" /> Coach actif — {providerNameForKey(user.aiKey)}
             </p>
             <p className="mt-1 text-xs text-mxp-muted">
               Clé …{user.aiKey.slice(-4)} vérifiée et stockée côté serveur. Ta mémoire vit

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { IconCheck } from "../../../components/icons";
 import { notFound, redirect } from "next/navigation";
 import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
@@ -37,11 +38,11 @@ export default async function GoalDetailPage({ params }: { params: Promise<{ id:
       <Link href="/goals" className="text-xs text-mxp-muted">
         ← Objectifs
       </Link>
-      <h1 className="mt-2 text-xl font-semibold">{goal.title}</h1>
+      <h1 className="mt-3 mxp-display">{goal.title}</h1>
       {goal.why && <p className="mt-1 text-sm text-mxp-muted">Pourquoi : {goal.why}</p>}
       {goal.status === "COMPLETED" && (
         <p className="mt-2 inline-block rounded-full bg-mxp-green/15 px-3 py-1 text-xs font-semibold text-mxp-green">
-          Objectif atteint ✅
+          Objectif atteint <IconCheck className="inline h-[15px] w-[15px] align-[-2px]" />
         </p>
       )}
 

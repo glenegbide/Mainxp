@@ -323,6 +323,16 @@ export default async function TodayPage() {
         </section>
       ) : null}
 
+      {/* The won day: quest done + every commitment kept → the app says the
+          quietly radical thing it was built to say. */}
+      {mainQuest?.status === "DONE" &&
+        nonNegotiables.length > 0 &&
+        nnLogs.filter((l) => l.completed).length >= nonNegotiables.length && (
+          <p className="mt-3 rounded-2xl bg-mxp-purple-soft/40 px-4 py-3 text-center mxp-body font-medium text-mxp-purple-deep">
+            Journée pleine. Ferme l&apos;app, va vivre — c&apos;est exactement ça, gagner.
+          </p>
+        )}
+
       {/* ── L'ANCRE — la seule chose dominante de l'écran : ce qui compte
           maintenant, expliqué, avec UNE action pleine largeur. Quête
           principale et « et maintenant ? » ne font qu'un. ── */}
@@ -589,7 +599,7 @@ export default async function TodayPage() {
         {(
           [
             ["/today/morning", IconSunrise, "Matin", "text-mxp-orange bg-mxp-orange/10", !!dayPlan?.startedAt],
-            ["/focus", IconTimer, "Focus", "text-mxp-blue bg-mxp-blue/10", false],
+            ["/focus", IconTimer, "Arène", "text-mxp-blue bg-mxp-blue/10", false],
             ["/defis", IconFlag, "Défis", "text-mxp-gold bg-mxp-gold/10", false],
             ["/journal", IconPen, "Journal", "text-mxp-teal bg-mxp-teal/10", false],
             ["/dump", IconSpark, "Vide-tête", "text-mxp-purple bg-mxp-purple/10", false],

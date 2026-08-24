@@ -5,6 +5,7 @@ import { loadCircle, MAX_PARTNERS, receivedSupport } from "@/lib/mainxp/circle/s
 import { shareSummary } from "@/lib/mainxp/circle/visibility";
 import { FLAGS } from "@/lib/mainxp/flags";
 import { InviteLink } from "../../components/InviteLink";
+import { IconCheck } from "../../components/icons";
 import { SupportAction } from "../../components/SupportAction";
 import { blockPerson, cancelInvite, leaveCircle, newInvite, saveSharing, sendSupport, togglePause } from "./actions";
 
@@ -94,7 +95,9 @@ export default async function SocialPage({
                     <>
                       {c.mainQuest && (
                         <p className="mxp-body mt-1">
-                          {c.mainQuest.done ? "✓ " : ""}
+                          {c.mainQuest.done && (
+                            <IconCheck className="mr-1 inline h-[13px] w-[13px] align-[-2px] text-mxp-green" />
+                          )}
                           {c.mainQuest.title}
                           {c.mainQuest.goalTitle && (
                             <span className="mxp-meta"> · {c.mainQuest.goalTitle}</span>

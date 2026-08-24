@@ -39,7 +39,7 @@ export default async function NorthStarPage() {
   return (
     <main className="px-4 pt-5 pb-8">
       <p className="mxp-label text-mxp-purple">Mon North Star</p>
-      <h1 className="mt-1 text-xl font-semibold">Ce que je construis, et pourquoi.</h1>
+      <h1 className="mt-1 mxp-display">Ce que je construis, et pourquoi.</h1>
       <p className="mt-1 text-sm text-mxp-muted">
         Le coach s&apos;appuie sur cette page pour prioriser. Une ligne par élément dans les listes.
       </p>
