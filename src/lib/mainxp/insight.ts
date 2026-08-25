@@ -52,7 +52,7 @@ export async function birdsEyeView(user: Pick<MxUser, "id" | "timezone">) {
   const days7: string[] = [];
   for (let i = 6; i >= 0; i--) days7.push(addDays(today, -i));
 
-  const [tx, tasks14, nnLogs14, nnActive, focus14, openChronic, goals, memories] =
+  const [tx, tasks14, nnLogs14, nnActive, focus14, openChronic, goals, memories, trainings7] =
     await Promise.all([
       prisma.mxXpTransaction.findMany({
         where: { userId: user.id, createdAt: { gte: new Date(Date.now() - 15 * 86_400_000) } },
@@ -82,6 +82,10 @@ export async function birdsEyeView(user: Pick<MxUser, "id" | "timezone">) {
         where: { userId: user.id, type: "commitment", doNotUseInCoaching: false },
         orderBy: { createdAt: "desc" },
         take: 10,
+      }),
+      prisma.mxTrainingSession.findMany({
+        where: { userId: user.id, dayKey: { gte: addDays(today, -6) } },
+        select: { discipline: true, minutes: true, rounds: true },
       }),
     ]);
 
@@ -130,6 +134,12 @@ export async function birdsEyeView(user: Pick<MxUser, "id" | "timezone">) {
     nnKeepRate7: keepRate(nnKeptThisWeek, nnActive * 7),
     mainQuestDays7: last7.filter((l) => l.mainQuestDone).length,
     focusMin7: last7.reduce((s, l) => s + l.focusMin, 0),
+    // The body's week — the coach must see the mat, not just the desk.
+    training7: {
+      sessions: trainings7.length,
+      minutes: trainings7.reduce((s, t) => s + t.minutes, 0),
+      rounds: trainings7.reduce((s, t) => s + t.rounds, 0),
+    },
     chronicPostpones: openChronic.map((t) => ({
       title: t.title,
       tier: t.tier,

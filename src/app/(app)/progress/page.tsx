@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { xpTotals } from "@/lib/mainxp/xp/ledger";
 import { levelProgress } from "@/lib/mainxp/xp/curve";
 import { birdsEyeView } from "@/lib/mainxp/insight";
+import { elanReport } from "@/lib/mainxp/elan";
 import { IconGem } from "../../components/icons";
 import { BlockHero } from "../../components/BlockHero";
 import { dominantAttribute } from "@/lib/mainxp/xp/dominant";
@@ -32,7 +33,7 @@ export default async function ProgressPage() {
   const user = await getMxUser();
   if (!user) redirect("/login");
 
-  const [totals, recent, view, gearEquipped] = await Promise.all([
+  const [totals, recent, view, gearEquipped, elan] = await Promise.all([
     xpTotals(user.id),
     prisma.mxXpTransaction.findMany({
       where: { userId: user.id },
@@ -41,7 +42,25 @@ export default async function ProgressPage() {
     }),
     birdsEyeView(user),
     prisma.mxGearOwned.findMany({ where: { userId: user.id, equipped: true } }),
+    elanReport(user.id, user.timezone, user.restMode),
   ]);
+
+  // Élan, explained — the gauge must never move without saying why.
+  const elanWhy =
+    elan.value === null
+      ? "En récupération : l'élan est en pause et la flamme est protégée."
+      : elan.missedDays === 0 && elan.badTaps === 0
+        ? `Élan ${elan.value} — semaine pleine, rien ne le freine.`
+        : `Élan ${elan.value} — ${[
+            elan.missedDays > 0
+              ? `${elan.missedDays} jour${elan.missedDays > 1 ? "s" : ""} avec un engagement manqué (−10 chacun)`
+              : null,
+            elan.badTaps > 0
+              ? `${elan.badTaps} écart${elan.badTaps > 1 ? "s" : ""} d'habitude (−3 chacun)`
+              : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")}. Chaque jour sort du calcul au bout de 7 jours : il remonte tout seul.`;
   const lp = levelProgress(totals.main);
 
   const week = view.trend.thisWeekXp;
@@ -115,6 +134,8 @@ export default async function ProgressPage() {
             </dd>
           </div>
         </dl>
+
+        <p className="mxp-meta mt-4 border-t border-mxp-line pt-3 tabular-nums">{elanWhy}</p>
       </section>
 
       {/* ── Who you are becoming — the biography, worn by the character ── */}

@@ -99,4 +99,20 @@ describe("xpForEvent — centralized XP policy (system of record)", () => {
     expect(xpForEvent("focus_completed", { sessionId: "s1", blocks: 2 }))
       .toMatchObject({ mainDelta: 30, coinsDelta: 16, attributeDeltas: { FOCUS: 30 } });
   });
+  it("pays training honestly: attribute follows the discipline, repetition diminishes", () => {
+    expect(xpForEvent("training_completed", { sessionId: "s1", title: "BJJ gi — 90 min", discipline: "bjj", priorToday: 0 }))
+      .toMatchObject({ mainDelta: 15, coinsDelta: 7, attributeDeltas: { STRENGTH: 15 }, multiplier: 1 });
+    expect(xpForEvent("training_completed", { sessionId: "s2", title: "Course — 30 min", discipline: "cardio", priorToday: 0 }))
+      .toMatchObject({ attributeDeltas: { ENDURANCE: 15 } });
+    // Third same-day session decays (anti-farming), like habit taps.
+    expect(xpForEvent("training_completed", { sessionId: "s3", title: "X", discipline: "bjj", priorToday: 2 }))
+      .toMatchObject({ multiplier: 0.6 });
+    expect(xpForEvent("technique_mastered", { focusId: "f1", title: "Knee cut" }))
+      .toMatchObject({ mainDelta: 25, coinsDelta: 12, attributeDeltas: { STRENGTH: 20 } });
+  });
+
+  it("rest markers are facts, never rewards or debts", () => {
+    expect(xpForEvent("rest_started", {})).toBeNull();
+    expect(xpForEvent("rest_ended", {})).toBeNull();
+  });
 });

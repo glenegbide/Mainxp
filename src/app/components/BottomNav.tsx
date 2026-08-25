@@ -25,6 +25,16 @@ const ICONS: Record<string, React.ReactNode> = {
       <path d="M4 8l5-4 4 3.5L20 4" />
     </svg>
   ),
+  dojo: (
+    // Original MAINXP glyph: a tied belt — band, knot, two tails.
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2.5 10.5h7" />
+      <path d="M14.5 10.5h7" />
+      <rect x="9.3" y="8" width="5.4" height="5.4" rx="1.2" />
+      <path d="M10.6 13.6L8.4 19" />
+      <path d="M13.4 13.6l2.2 5.4" />
+    </svg>
+  ),
   social: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
       <circle cx="9" cy="8.5" r="3.2" />
@@ -43,6 +53,7 @@ const ICONS: Record<string, React.ReactNode> = {
 
 const TABS = [
   { href: "/today", label: "Jour", icon: "today" },
+  { href: "/dojo", label: "Dojo", icon: "dojo" },
   { href: "/coach", label: "Coach", icon: "coach" },
   { href: "/progress", label: "Progrès", icon: "progress" },
   { href: "/social", label: "Cercle", icon: "social" },

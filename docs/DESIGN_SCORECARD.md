@@ -33,6 +33,7 @@ Ten criteria, 10 points each.
 | `/coach` | 88 | Standing-position brief (visible facts) + teaching empty state + honest pending state. Missing: streaming. |
 | morning / night | 88 | Gratitude 01–10 (sunrise/moon), smart-tomorrow classification. Next: full bible order pass on morning. |
 | `/focus` | 89 | Training Arena: ring chamber + Block Hero; game energy concentrated here. |
+| `/dojo` | 90 | Belt band anchor + week discs + one-gesture log; work-list with notes. Next: per-discipline history view, skeleton. |
 
 ## Process
 

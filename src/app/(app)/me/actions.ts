@@ -14,13 +14,15 @@ export async function logout(): Promise<void> {
   redirect("/login");
 }
 
-/** Recovery mode (the "inn"): pauses Élan decay. Rest is part of the game, not a failure. */
+/** Recovery mode (the "inn"): pauses Élan decay AND shields the flame — the
+ *  rest_started/rest_ended events let the streak bridge every rested day. */
 export async function toggleRestMode(): Promise<void> {
   const user = await requireMxUser();
   await prisma.mxUser.update({
     where: { id: user.id },
     data: { restMode: !user.restMode },
   });
+  await emitEvent(user, user.restMode ? "rest_ended" : "rest_started", {});
   revalidatePath("/me");
   revalidatePath("/today");
 }

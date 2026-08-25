@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { addDays, dayKey, daysBetween } from "@/lib/mainxp/day";
+import { dayKey, daysBetween } from "@/lib/mainxp/day";
 import { goalPace, isGoalAtRisk } from "@/lib/mainxp/goals";
 import { whatNow } from "@/lib/mainxp/priority";
 import { contextFromRows } from "@/lib/mainxp/priority-context";
@@ -11,6 +11,7 @@ import { levelProgress } from "@/lib/mainxp/xp/curve";
 import { BlockHero } from "../../components/BlockHero";
 import { dominantAttribute } from "@/lib/mainxp/xp/dominant";
 import { elanReport } from "@/lib/mainxp/elan";
+import { streakForUser } from "@/lib/mainxp/streak";
 import {
   addNonNegotiable,
   addTask,
@@ -56,7 +57,7 @@ export default async function TodayPage() {
     nonNegotiables,
     nnLogs,
     totals,
-    recentTx,
+    streak,
     activeGoals,
     dayPlan,
     challenges,
@@ -77,12 +78,7 @@ export default async function TodayPage() {
     }),
     prisma.mxNonNegotiableLog.findMany({ where: { userId: user.id, periodKey: today } }),
     xpTotals(user.id),
-    prisma.mxXpTransaction.findMany({
-      where: { userId: user.id, mainDelta: { gt: 0 } },
-      select: { createdAt: true },
-      orderBy: { createdAt: "desc" },
-      take: 500,
-    }),
+    streakForUser(user),
     prisma.mxGoal.findMany({ where: { userId: user.id, status: "ACTIVE" } }),
     prisma.mxDayPlan.findUnique({ where: { userId_dayKey: { userId: user.id, dayKey: today } } }),
     prisma.mxChallenge.findMany({
@@ -156,16 +152,7 @@ export default async function TodayPage() {
   const doneByNn = new Map(nnLogs.map((l) => [l.nonNegotiableId, l.completed]));
   const noteByNn = new Map(nnLogs.map((l) => [l.nonNegotiableId, l.note]));
 
-  // Streak: consecutive days (user timezone) with at least one positive XP event.
-  const activeDays = new Set(recentTx.map((t) => dayKey(t.createdAt, user.timezone)));
-  let streak = 0;
-  let cursor = activeDays.has(today) ? today : addDays(today, -1);
-  while (activeDays.has(cursor)) {
-    streak++;
-    cursor = addDays(cursor, -1);
-  }
-
-  // WHAT NOW? — the Priority Engine (audit P2): one action + concrete WHY,
+// WHAT NOW? — the Priority Engine (audit P2): one action + concrete WHY,
   // same computation the coach's get_priorities tool sees.
   const recommendation = whatNow(
     contextFromRows({
@@ -227,7 +214,10 @@ export default async function TodayPage() {
               </span>
             )}
             {streak > 0 && (
-              <span className="flex items-center gap-0.5 font-semibold text-amber-200">
+              <span
+                className="flex items-center gap-0.5 font-semibold text-amber-200"
+                title="La flamme : des jours d'affilée avec au moins une action. Les jours de récupération ne la cassent pas, et agir avant 3 h du matin garde la veille allumée."
+              >
                 <IconBolt className="h-[11px] w-[11px]" /> {streak} j
               </span>
             )}

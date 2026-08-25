@@ -45,6 +45,7 @@ export const XP_VALUES = {
   NIGHT_REVIEW: { main: 15, mind: 10, coins: 8 },
   GOAL_COMPLETED: { main: 150, coins: 100 },
   MILESTONE: { main: 40, strategy: 30, coins: 20 },
+  TRAINING: { main: 15, attribute: 15, coins: 7 }, // a Dojo session, any discipline
 } as const;
 
 /**

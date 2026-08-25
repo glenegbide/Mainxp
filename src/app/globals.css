@@ -738,3 +738,58 @@ a.mxp-card:active {
   font-weight: 600;
   color: var(--mxp-purple-deep);
 }
+
+/* ── LE DOJO: the belt on the wall — original MAINXP rendering (a colored
+   band with a rank bar and stripes; no franchise imagery, just cloth). ── */
+.mxp-belt {
+  position: relative;
+  height: 14px;
+  border-radius: 7px;
+  border: 1px solid rgba(20, 18, 30, 0.14);
+  box-shadow:
+    inset 0 -3px 6px rgba(20, 18, 30, 0.16),
+    inset 0 2px 3px rgba(255, 255, 255, 0.28);
+}
+.mxp-belt-rank {
+  position: absolute;
+  right: 13%;
+  top: -1px;
+  bottom: -1px;
+  width: 21%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: #17171c;
+  border-radius: 3px;
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+}
+.mxp-belt-rank i {
+  display: block;
+  width: 3px;
+  height: 64%;
+  border-radius: 1px;
+  background: #f5f3ea;
+}
+
+/* Week discs: one per targeted session, filled as they are earned. */
+.mxp-dojo-disc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px dashed rgba(124, 58, 237, 0.35);
+  color: transparent;
+}
+.mxp-dojo-disc.on {
+  border: none;
+  background: linear-gradient(160deg, var(--mxp-purple), var(--mxp-purple-deep));
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.35);
+}
+.mxp-dojo-disc svg {
+  width: 15px;
+  height: 15px;
+}

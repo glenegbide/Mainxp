@@ -124,6 +124,21 @@ the thing: writing on a habit does not tap it and earns nothing.
   victory moments briefly more, then back to calm. `PixelHero` is legacy;
   new surfaces use BlockHero.
 - UI copy is French (tutoiement), concise, no exclamation-mark hype.
+- LA FLAMME (streak) is computed ONLY by `lib/mainxp/streak.ts`
+  (`streakForUser`): consecutive days with ≥1 real action, derived from
+  DISTINCT `MxEvent.dayKey`s (never a capped row fetch). Three fairness rules,
+  all unit-tested: today unacted is never a break (grace until midnight);
+  Récupération days BRIDGE the flame (`rest_started`/`rest_ended` events are
+  emitted by `toggleRestMode` — keep them paired); an action before 03:00
+  local also keeps the previous day alight (night-owl grace). Élan must never
+  move without the UI saying why (see the explainer on /progress).
+- LE DOJO (`/dojo`): physical training. Sessions are `MxTrainingSession`
+  facts logged via the `training_completed` event (STRENGTH; ENDURANCE for
+  cardio; same-day repetition diminishes). The work-list (`MxTrainingFocus`,
+  «ce que je travaille») caps at 5 active items; declaring one solid pays
+  once via `technique_mastered` (key `technique:<id>` — reopening never
+  double-pays). The belt (`MxSportProfile`) is DECLARED by the user and
+  rendered as an original CSS band — MAINXP never awards martial-arts grades.
 
 ## Design quality directive ($100K bar — non-negotiable)
 

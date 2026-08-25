@@ -40,7 +40,11 @@ export type MxEventType =
   | "challenge_accepted"
   | "challenge_tick"
   | "challenge_completed"
-  | "book_finished";
+  | "book_finished"
+  | "rest_started" // Récupération on — protects the flame from here
+  | "rest_ended"
+  | "training_completed" // a Dojo session — BJJ, strength, cardio…
+  | "technique_mastered"; // a Dojo work-item declared solid
 
 export interface EventPayload {
   [key: string]: string | number | boolean | null | undefined;
@@ -270,6 +274,32 @@ export function xpForEvent(
         mainDelta: 50,
         coinsDelta: 25,
         attributeDeltas: { KNOWLEDGE: 40 },
+      };
+    case "rest_started":
+    case "rest_ended":
+      return null; // rest is a state, not an achievement — and never a debt
+    case "training_completed": {
+      // Endurance work feeds ENDURANCE; everything else on the mat or under
+      // the bar feeds STRENGTH. Same-day repetition diminishes (anti-farming).
+      const attr = p.discipline === "cardio" ? "ENDURANCE" : "STRENGTH";
+      return {
+        sourceType: "training",
+        sourceId: String(p.sessionId ?? ""),
+        reason: `Entraînement : ${title}`,
+        mainDelta: XP_VALUES.TRAINING.main,
+        coinsDelta: XP_VALUES.TRAINING.coins,
+        attributeDeltas: { [attr]: XP_VALUES.TRAINING.attribute } as AwardInput["attributeDeltas"],
+        multiplier: diminishingFactor(Number(p.priorToday ?? 0)),
+      };
+    }
+    case "technique_mastered":
+      return {
+        sourceType: "technique",
+        sourceId: String(p.focusId ?? ""),
+        reason: `Technique acquise : ${title}`,
+        mainDelta: 25,
+        coinsDelta: 12,
+        attributeDeltas: { STRENGTH: 20 },
       };
     case "challenge_completed": {
       // The SURPRISE: never advertised upfront, scaled by the dare's length,

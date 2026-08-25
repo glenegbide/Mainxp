@@ -125,6 +125,9 @@ model MxUser {
   books             MxBook[]
   pushSubs          MxPushSubscription[]
   notifications     MxNotification[]
+  sportProfile      MxSportProfile?
+  trainingSessions  MxTrainingSession[]
+  trainingFocus     MxTrainingFocus[]
 
   invitesSent     MxCircleInvite[]  @relation("MxInvitesSent")
   invitesAccepted MxCircleInvite[]  @relation("MxInvitesAccepted")
@@ -802,4 +805,52 @@ model MxPasswordReset {
 
   @@index([userId, createdAt])
   @@map("mainxp_password_resets")
+}
+
+// ── LE DOJO — physical training. BJJ first (Glen's mat), every discipline
+// welcome. Sessions are facts; the work-list ("ce que je travaille") is the
+// craft; the profile is the belt on the wall.
+
+model MxSportProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  discipline   String   @default("Jiu-jitsu brésilien") // the art, in the user's words
+  grade        String   @default("blanche") // ceinture: blanche|bleue|violette|marron|noire
+  stripes      Int      @default(0) // 0–4 barrettes
+  weeklyTarget Int      @default(3) // séances visées par semaine
+  updatedAt    DateTime @updatedAt
+
+  @@map("mainxp_sport_profiles")
+}
+
+model MxTrainingSession {
+  id         String   @id @default(cuid())
+  userId     String
+  user       MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayKey     String // user-timezone day
+  discipline String // bjj | muscu | cardio | mobilite | autre
+  style      String? // bjj only: gi | nogi
+  minutes    Int
+  rounds     Int      @default(0) // sparring rounds
+  note       String   @default("") // what worked, what got you caught
+  createdAt  DateTime @default(now())
+
+  @@index([userId, dayKey])
+  @@index([userId, createdAt])
+  @@map("mainxp_training_sessions")
+}
+
+model MxTrainingFocus {
+  id        String    @id @default(cuid())
+  userId    String
+  user      MxUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String // "Passage de garde — knee cut"
+  note      String    @default("") // details, cues, what still fails
+  status    String    @default("working") // working | solid
+  createdAt DateTime  @default(now())
+  solidAt   DateTime?
+
+  @@index([userId, status])
+  @@map("mainxp_training_focus")
 }
