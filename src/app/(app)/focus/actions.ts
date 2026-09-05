@@ -30,10 +30,21 @@ export async function startFocus(formData: FormData): Promise<void> {
   revalidatePath("/focus");
 }
 
+const SOURCES = ["phone", "message", "thought", "person", "fatigue"] as const;
+
 export async function endFocus(formData: FormData): Promise<void> {
   const user = await requireMxUser();
   const id = String(formData.get("id") ?? "");
-  const interruptions = Math.max(0, Math.min(99, Number(formData.get("interruptions")) || 0));
+  // One tap per interruption, tagged by source; the total is their sum.
+  // (The legacy numeric field still counts when the chips are absent.)
+  const sources: Record<string, number> = {};
+  for (const key of SOURCES) {
+    const n = Math.max(0, Math.min(99, Number(formData.get(`src_${key}`)) || 0));
+    if (n > 0) sources[key] = n;
+  }
+  const tapped = Object.values(sources).reduce((s, n) => s + n, 0);
+  const interruptions =
+    tapped > 0 ? tapped : Math.max(0, Math.min(99, Number(formData.get("interruptions")) || 0));
   const session = await prisma.mxFocusSession.findFirst({
     where: { id, userId: user.id, endedAt: null },
   });
@@ -47,7 +58,7 @@ export async function endFocus(formData: FormData): Promise<void> {
 
   await prisma.mxFocusSession.update({
     where: { id: session.id },
-    data: { endedAt, interruptions, completed },
+    data: { endedAt, interruptions, interruptSources: sources, completed },
   });
 
   if (blocks > 0) {
@@ -61,4 +72,19 @@ export async function endFocus(formData: FormData): Promise<void> {
   }
   revalidatePath("/focus");
   revalidatePath("/today");
+}
+
+/** One tap after the arena: duration alone is not the whole truth. Optionally
+ *  one line of "what changed". Rating is reflection, never rewarded. */
+export async function rateFocus(formData: FormData): Promise<void> {
+  const user = await requireMxUser();
+  const id = String(formData.get("id") ?? "");
+  const quality = String(formData.get("quality") ?? "");
+  if (!["deep", "good", "fragmented"].includes(quality)) return;
+  const note = String(formData.get("note") ?? "").slice(0, 500).trim();
+  await prisma.mxFocusSession.updateMany({
+    where: { id, userId: user.id, endedAt: { not: null }, quality: null },
+    data: { quality, ...(note ? { notes: note } : {}) },
+  });
+  revalidatePath("/focus");
 }

@@ -109,7 +109,7 @@ export function whatNow(ctx: PriorityContext): Recommendation {
   // No Main Quest and the day is still alive → define it (with the most
   // urgent goal as suggested ammunition).
   if (!ctx.mainQuest && ctx.hourOfDay < 18) {
-    const why: string[] = ["Sans résultat n°1 défini, la journée se décide par défaut."];
+    const why: string[] = ["Aucun résultat n'est encore désigné."];
     const risky = ctx.goalsAtRisk[0];
     if (risky) {
       const pace = fmtPace(risky);
@@ -117,7 +117,7 @@ export function whatNow(ctx: PriorityContext): Recommendation {
     }
     return {
       kind: "define_main_quest",
-      action: "Définis ta Main Quest : le résultat le plus important du jour.",
+      action: "Choisis ce qui fera compter aujourd'hui.",
       why,
     };
   }

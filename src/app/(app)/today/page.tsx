@@ -24,6 +24,8 @@ import { CheckAction } from "../../components/CheckAction";
 import { NoteAction } from "../../components/NoteAction";
 import { noteOnCommitment, noteOnTask } from "../note-actions";
 import { IconBolt, IconCoin } from "../../components/icons";
+import { NextMove } from "../../components/NextMove";
+import { setNextAction } from "../note-actions";
 import { DayRing } from "../../components/DayRing";
 import {
   completeTaskRewarded,
@@ -166,6 +168,10 @@ export default async function TodayPage() {
     })
   );
 
+  const questGoal = mainQuest?.goalId
+    ? activeGoals.find((g) => g.id === mainQuest.goalId)
+    : undefined;
+
   const dateLabel = new Intl.DateTimeFormat(user.locale === "en" ? "en-GB" : "fr-CH", {
     weekday: "long",
     day: "numeric",
@@ -248,6 +254,21 @@ export default async function TodayPage() {
         <h1 className="mxp-display">Aujourd&apos;hui</h1>
         <p className="mxp-meta">{dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)}</p>
       </div>
+
+      {/* ── The command center follows the clock: before the day is launched,
+          the morning IS the next move. ── */}
+      {hourLocal >= 5 && hourLocal < 11 && !dayPlan?.startedAt && !showComeback && !minimum && (
+        <Link
+          href="/today/morning"
+          className="mt-3 flex items-center justify-between gap-3 rounded-2xl bg-mxp-orange/8 px-4 py-3"
+        >
+          <span className="mxp-body font-medium">
+            <IconSunrise className="mr-2 inline h-[15px] w-[15px] align-[-2px] text-mxp-orange" />
+            Lance la journée — 5 minutes
+          </span>
+          <span aria-hidden className="mxp-meta">→</span>
+        </Link>
+      )}
 
       {/* ── Comeback Quest ── */}
       {showComeback && (
@@ -345,20 +366,30 @@ export default async function TodayPage() {
 
         {mainQuest ? (
           <>
-            <p className="mt-2 mxp-title">{mainQuest.title}</p>
+            <p className="mt-2 font-displaymx text-[21px] leading-snug">{mainQuest.title}</p>
+            {questGoal && (
+              <p className="mxp-meta mt-1">
+                {questGoal.title}
+              </p>
+            )}
             {mainQuest.status === "OPEN" ? (
               <>
-                <ul className="mt-3 space-y-1">
-                  {recommendation.why.map((fact) => (
-                    <li key={fact} className="mxp-meta">
-                      {fact}
-                    </li>
-                  ))}
-                </ul>
+                <NextMove id={mainQuest.id} value={mainQuest.nextAction} save={setNextAction} />
+                {recommendation.why.slice(0, 2).map((fact) => (
+                  <p key={fact} className="mxp-meta mt-2">
+                    {fact}
+                  </p>
+                ))}
                 <form action={completeTask} className="mt-5">
                   <input type="hidden" name="id" value={mainQuest.id} />
                   <button className="mxp-btn w-full py-3 text-[15px]">C&apos;est fait</button>
                 </form>
+                <Link
+                  href="/focus"
+                  className="mt-2 block py-1.5 text-center text-[13px] font-semibold text-mxp-blue"
+                >
+                  Entrer dans l&apos;Arène →
+                </Link>
               </>
             ) : (
               <>
@@ -376,13 +407,11 @@ export default async function TodayPage() {
         ) : (
           <>
             <p className="mt-2 mxp-title">{recommendation.action}</p>
-            <ul className="mt-3 space-y-1">
-              {recommendation.why.map((fact) => (
-                <li key={fact} className="mxp-meta">
-                  {fact}
-                </li>
-              ))}
-            </ul>
+            {recommendation.why.slice(0, 2).map((fact) => (
+              <p key={fact} className="mxp-meta mt-2">
+                {fact}
+              </p>
+            ))}
             <form action={setMainQuest} className="mt-5 space-y-2">
               <input
                 type="text"
@@ -444,8 +473,9 @@ export default async function TodayPage() {
           );
         })}
 
-      {/* ── Daily Missions ── */}
-      <section className="mt-4 mxp-card p-4">
+      {/* ── Daily Missions — whitespace and a hairline, not another card:
+          nothing below competes with the quest for elevation. ── */}
+      <section className="mt-6 border-t border-mxp-line pt-4">
         <div className="flex items-baseline justify-between">
           <p className="mxp-label text-mxp-blue">Missions du jour</p>
         </div>
@@ -469,7 +499,7 @@ export default async function TodayPage() {
       </section>
 
       {/* ── Non-Negotiables ── */}
-      <section className="mt-4 mxp-card p-4">
+      <section className="mt-5 border-t border-mxp-line pt-4">
         <div className="flex items-baseline justify-between">
           <p className="mxp-label text-mxp-green">Non-négociables</p>
         </div>
@@ -526,7 +556,7 @@ export default async function TodayPage() {
 
       {/* ── Habit quick taps ── */}
       {goodHabits.length > 0 && (
-        <section className="mxp-card mt-4 p-4">
+        <section className="mt-5 border-t border-mxp-line pt-4">
           <div className="flex items-baseline justify-between">
             <p className="mxp-label text-mxp-green">Habitudes</p>
             <Link href="/habits" className="text-xs font-medium text-mxp-green">
@@ -563,7 +593,7 @@ export default async function TodayPage() {
       )}
 
       {/* ── Side Quests ── */}
-      <section className="mt-4 mb-6 mxp-card p-4">
+      <section className="mt-5 mb-6 border-t border-mxp-line pt-4">
         <div className="flex items-baseline justify-between">
           <p className="mxp-label text-mxp-muted">Side quests · optionnel</p>
         </div>

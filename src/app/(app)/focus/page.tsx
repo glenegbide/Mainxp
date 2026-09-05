@@ -7,14 +7,16 @@ import { dayKey } from "@/lib/mainxp/day";
 import { xpTotals } from "@/lib/mainxp/xp/ledger";
 import { levelProgress } from "@/lib/mainxp/xp/curve";
 import { dominantAttribute } from "@/lib/mainxp/xp/dominant";
-import { endFocus, startFocus } from "./actions";
+import { endFocus, rateFocus, startFocus } from "./actions";
 import { FocusTimer } from "./FocusTimer";
+import { InterruptionChips } from "./InterruptionChips";
 
 export default async function FocusPage() {
   const user = await getMxUser();
   if (!user) redirect("/login");
   const today = dayKey(new Date(), user.timezone);
 
+  const now = new Date();
   const [running, todayTasks, recentSessions, totals, gearEquipped] = await Promise.all([
     prisma.mxFocusSession.findFirst({ where: { userId: user.id, endedAt: null } }),
     prisma.mxTask.findMany({
@@ -34,21 +36,35 @@ export default async function FocusPage() {
   const equippedIds = gearEquipped.map((g) => g.gearId);
   const dominant = dominantAttribute(totals.attributes);
 
+  // The session that just ended and hasn't spoken yet — one tap of quality,
+  // one optional line, then it joins the log.
+  const justEnded =
+    !running &&
+    recentSessions.find(
+      (s) =>
+        s.quality === null &&
+        s.endedAt !== null &&
+        now.getTime() - s.endedAt.getTime() < 15 * 60_000
+    );
+  const runningTask = running?.taskId ? todayTasks.find((t) => t.id === running.taskId) : undefined;
+
   return (
     <main className="px-4 pt-5 pb-8">
       <Link href="/today" className="text-xs text-mxp-muted">← Aujourd&apos;hui</Link>
       <h1 className="mt-2 mxp-display">L&apos;Arène</h1>
-      <p className="mxp-meta mt-1">
-        Ici, ton personnage s&apos;entraîne en vrai : chaque bloc de 25 minutes réellement
-        écoulé est vérifié côté serveur.
-      </p>
+      <p className="mxp-meta mt-1">Un bloc commencé est un bloc vérifié.</p>
 
       {running ? (
         <section className="mxp-arena mt-5 p-5">
-          {running.taskId && (
-            <p className="mb-3 text-center mxp-body font-medium">
-              {todayTasks.find((t) => t.id === running.taskId)?.title ?? "Session en cours"}
-            </p>
+          {runningTask && (
+            <div className="mb-3 text-center">
+              <p className="mxp-body font-medium">{runningTask.title}</p>
+              {runningTask.nextAction && (
+                <p className="mt-0.5 text-[13px] font-medium text-white/80">
+                  → {runningTask.nextAction}
+                </p>
+              )}
+            </div>
           )}
           <FocusTimer
             startedAtIso={running.startedAt.toISOString()}
@@ -57,26 +73,57 @@ export default async function FocusPage() {
             gear={equippedIds}
             dominant={dominant}
           />
-          <form action={endFocus} className="mt-5 space-y-3">
+          <form action={endFocus} className="mt-5 space-y-4">
             <input type="hidden" name="id" value={running.id} />
-            <label className="block text-xs text-mxp-muted">
-              Interruptions
-              <input
-                type="number"
-                name="interruptions"
-                min={0}
-                max={99}
-                defaultValue={0}
-                className="mt-1 w-full mxp-input px-3 py-2 text-sm"
-              />
-            </label>
+            <InterruptionChips />
             <button className="w-full mxp-btn mxp-btn-blue px-4 py-3 text-sm">
               Terminer la session
             </button>
           </form>
         </section>
-      ) : (
-        <section className="mt-5 mxp-card p-4">
+      ) : justEnded ? (
+        <section className="mt-5 mxp-anchor">
+          <p className="mxp-label text-mxp-blue">Session terminée</p>
+          <p className="mt-2 font-displaymx text-[28px] tabular-nums">
+            {Math.round((justEnded.endedAt!.getTime() - justEnded.startedAt.getTime()) / 60_000)}{" "}
+            <span className="text-[15px]">min</span>
+          </p>
+          {justEnded.task && (
+            <p className="mxp-meta mt-1">Tu as fait avancer : {justEnded.task.title}</p>
+          )}
+          <form action={rateFocus} className="mt-4 space-y-3">
+            <input type="hidden" name="id" value={justEnded.id} />
+            <div className="grid grid-cols-3 gap-2">
+              {(
+                [
+                  ["deep", "Profond"],
+                  ["good", "Bon"],
+                  ["fragmented", "Fragmenté"],
+                ] as const
+              ).map(([v, label]) => (
+                <button
+                  key={v}
+                  name="quality"
+                  value={v}
+                  className="rounded-xl border border-mxp-line bg-white px-3 py-2.5 text-sm font-semibold text-mxp-ink transition active:scale-95"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <input
+              type="text"
+              name="note"
+              maxLength={500}
+              placeholder="Qu'est-ce qui a changé ? (facultatif)"
+              className="mxp-input w-full px-3 py-2 text-sm"
+            />
+          </form>
+        </section>
+      ) : null}
+
+      {!running && (
+        <section className={`mt-5 mxp-card p-4 ${justEnded ? "mt-4" : ""}`}>
           <p className="mxp-label text-mxp-blue">
             Nouvelle session
           </p>
@@ -128,6 +175,7 @@ export default async function FocusPage() {
           </form>
         </section>
       )}
+      {/* The just-ended card above never blocks the next block. */}
 
       {recentSessions.length > 0 && (
         <section className="mt-4 mxp-card p-4">

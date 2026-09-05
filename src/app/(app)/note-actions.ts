@@ -90,3 +90,16 @@ export async function noteOnGratitude(entryId: string, note: string): Promise<{ 
   revalidatePath("/journal");
   return { ok: count > 0 };
 }
+
+/** The Next Action engine's write: the smallest PHYSICAL next move on a task.
+ *  Setting it is planning, not achievement — it never pays. */
+export async function setNextAction(taskId: string, value: string): Promise<{ ok: boolean }> {
+  const user = await requireMxUser();
+  const { count } = await prisma.mxTask.updateMany({
+    where: { id: taskId, userId: user.id },
+    data: { nextAction: value.slice(0, 200).trim() },
+  });
+  revalidatePath("/today");
+  revalidatePath("/focus");
+  return { ok: count > 0 };
+}

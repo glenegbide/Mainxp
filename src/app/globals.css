@@ -109,7 +109,7 @@ dd {
 /* ── THE anchor: exactly one per screen (the day's dominant object) ── */
 .mxp-anchor {
   position: relative;
-  border-radius: 18px;
+  border-radius: 22px;
   padding: 16px 16px 17px;
   border: 1px solid rgba(124, 58, 237, 0.17);
   background:
@@ -130,7 +130,7 @@ dd {
 .mxp-card {
   background: var(--mxp-card);
   border: 1px solid var(--mxp-line);
-  border-radius: 14px;
+  border-radius: 16px;
   box-shadow: var(--mxp-shadow);
 }
 a.mxp-card {

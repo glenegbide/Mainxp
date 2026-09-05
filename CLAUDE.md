@@ -140,6 +140,19 @@ the thing: writing on a habit does not tap it and earns nothing.
   double-pays). The belt (`MxSportProfile`) is DECLARED by the user and
   rendered as an original CSS band — MAINXP never awards martial-arts grades.
 
+## Product North (first principles — referee for every wave)
+
+`docs/PRODUCT_NORTH.md` is the product constitution. Short form: MAINXP
+helps a person BECOME who they need to be — a decision-and-behavior engine,
+not a tracker. Three levels (NOW / DIRECTION / LEARNING); every feature
+belongs to exactly one. One question and ONE filled button per screen;
+whitespace over containers below the anchor; cut copy, never ask what the
+app already knows; numbers are the storytelling. The Next Action engine
+(`MxTask.nextAction`, `NextMove`) turns every quest into its smallest
+physical move. Future waves follow PRODUCT_NORTH's phase order (2:
+Season/missions/bottleneck/Not Now → 3: Reset/frequency/recovery → 4:
+coach cards/reviews → 5: Dojo mastery → 6: identity surfaces → 7: Promise).
+
 ## Design quality directive ($100K bar — non-negotiable)
 
 `docs/DESIGN_BIBLE.md` is the design law; `.claude/agents/` holds the expert
