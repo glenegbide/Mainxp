@@ -5,6 +5,7 @@ import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
 import { addDays, dayKey, dayStartUtc, weekKey } from "@/lib/mainxp/day";
 import { saveWeeklyReview } from "./actions";
+import { dropNotNow, promoteNotNow } from "../../goals/actions";
 
 export default async function WeeklyReviewPage() {
   const user = await getMxUser();
@@ -21,7 +22,7 @@ export default async function WeeklyReviewPage() {
   }
   const weekStartUtc = dayStartUtc(new Date(`${weekDays[0]}T12:00:00Z`), user.timezone);
 
-  const [txs, quests, nnLogs, nns, focusSessions, alreadyDone] = await Promise.all([
+  const [txs, quests, nnLogs, nns, focusSessions, alreadyDone, notNow] = await Promise.all([
     prisma.mxXpTransaction.findMany({
       where: { userId: user.id, createdAt: { gte: weekStartUtc } },
       select: { mainDelta: true, coinsDelta: true },
@@ -42,6 +43,7 @@ export default async function WeeklyReviewPage() {
     prisma.mxXpTransaction.findFirst({
       where: { idempotencyKey: `weekly:${user.id}:${week}` },
     }),
+    prisma.mxNotNow.findMany({ where: { userId: user.id }, orderBy: { createdAt: "asc" } }),
   ]);
 
   const xpWeek = txs.reduce((s, t) => s + t.mainDelta, 0);
@@ -74,6 +76,29 @@ export default async function WeeklyReviewPage() {
           <dd className="text-right tabular-nums">{focusMin} min</dd>
         </dl>
       </section>
+
+      {/* ── «Pas maintenant», revisité à froid — c'est ICI que ces idées ont
+          le droit de revenir, jamais au milieu d'une journée. ── */}
+      {notNow.length > 0 && (
+        <section className="mt-4 border-t border-mxp-line pt-4">
+          <p className="mxp-label text-mxp-muted">Pas maintenant — leur heure est-elle venue ?</p>
+          <ul className="mt-2 divide-y divide-mxp-line">
+            {notNow.map((i) => (
+              <li key={i.id} className="flex items-center gap-2 py-2.5">
+                <span className="mxp-body min-w-0 flex-1">{i.title}</span>
+                <form action={promoteNotNow} className="flex-none">
+                  <input type="hidden" name="id" value={i.id} />
+                  <button className="mxp-btn-ghost px-2.5 py-1 text-xs">C&apos;est l&apos;heure</button>
+                </form>
+                <form action={dropNotNow} className="flex-none">
+                  <input type="hidden" name="id" value={i.id} />
+                  <button className="mxp-quiet !w-auto px-2.5 py-1 text-xs">Lâcher</button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {alreadyDone ? (
         <section className="mxp-card mt-4 p-4 text-sm">

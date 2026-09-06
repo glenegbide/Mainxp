@@ -115,3 +115,105 @@ export async function addGoalTask(formData: FormData): Promise<void> {
   revalidatePath(`/goals/${goalId}`);
   revalidatePath("/today");
 }
+
+// ── DIRECTION (PRODUCT_NORTH phase 2) ──
+
+/** One season at a time — creating while one is active is refused, not merged. */
+export async function createSeason(formData: FormData): Promise<void> {
+  const user = await requireMxUser();
+  const title = s(formData.get("seasonTitle"), 120);
+  const endRaw = s(formData.get("endDay"), 10);
+  if (!title || !/^\d{4}-\d{2}-\d{2}$/.test(endRaw)) return;
+  const existing = await prisma.mxSeason.findFirst({
+    where: { userId: user.id, status: "active" },
+  });
+  if (existing) return;
+  const { dayKey } = await import("@/lib/mainxp/day");
+  const startDay = dayKey(new Date(), user.timezone);
+  if (endRaw <= startDay) return;
+  const primaryGoalId = s(formData.get("primaryGoalId"), 40) || null;
+  if (primaryGoalId) {
+    const owns = await prisma.mxGoal.findFirst({ where: { id: primaryGoalId, userId: user.id } });
+    if (!owns) return;
+  }
+  const season = await prisma.mxSeason.create({
+    data: {
+      userId: user.id,
+      title,
+      startDay,
+      endDay: endRaw,
+      primaryGoalId,
+      supportNote: s(formData.get("supportNote"), 300),
+    },
+  });
+  await emitEvent(user, "season_started", { seasonId: season.id, title });
+  revalidatePath("/goals");
+  revalidatePath("/today");
+}
+
+export async function closeSeason(formData: FormData): Promise<void> {
+  const user = await requireMxUser();
+  const id = s(formData.get("id"), 40);
+  const season = await prisma.mxSeason.findFirst({
+    where: { id, userId: user.id, status: "active" },
+  });
+  if (!season) return;
+  await prisma.mxSeason.update({
+    where: { id: season.id },
+    data: { status: "closed", closedAt: new Date() },
+  });
+  await emitEvent(user, "season_closed", { seasonId: season.id, title: season.title });
+  revalidatePath("/goals");
+  revalidatePath("/today");
+}
+
+/** «Pas maintenant» — the idea is saved, the priority is unchanged. */
+export async function addNotNow(formData: FormData): Promise<void> {
+  const user = await requireMxUser();
+  const title = s(formData.get("notNowTitle"), 300);
+  if (!title) return;
+  await prisma.mxNotNow.create({ data: { userId: user.id, title } });
+  revalidatePath("/goals");
+  revalidatePath("/progress/week");
+}
+
+export async function dropNotNow(formData: FormData): Promise<void> {
+  const user = await requireMxUser();
+  await prisma.mxNotNow.deleteMany({
+    where: { id: s(formData.get("id"), 40), userId: user.id },
+  });
+  revalidatePath("/goals");
+  revalidatePath("/progress/week");
+}
+
+/** Its time has come: the idea becomes a real goal, deliberately. */
+export async function promoteNotNow(formData: FormData): Promise<void> {
+  const user = await requireMxUser();
+  const id = s(formData.get("id"), 40);
+  const item = await prisma.mxNotNow.findFirst({ where: { id, userId: user.id } });
+  if (!item) return;
+  const goal = await prisma.mxGoal.create({
+    data: { userId: user.id, title: item.title },
+  });
+  await prisma.mxNotNow.delete({ where: { id: item.id } });
+  revalidatePath("/goals", "layout");
+  revalidatePath("/progress/week");
+  redirect(`/goals/${goal.id}`);
+}
+
+/** The goal's direction: where it's ACTUALLY blocked, and the input the user
+ *  controls. Declared in the user's words; the coach reads both. */
+export async function saveGoalDirection(formData: FormData): Promise<void> {
+  const user = await requireMxUser();
+  const id = s(formData.get("id"), 40);
+  await prisma.mxGoal.updateMany({
+    where: { id, userId: user.id },
+    data: {
+      bottleneck: s(formData.get("bottleneck"), 300),
+      leadingInput: s(formData.get("leadingInput"), 300),
+    },
+  });
+  revalidatePath(`/goals/${id}`);
+  revalidatePath("/goals");
+  revalidatePath("/today");
+}

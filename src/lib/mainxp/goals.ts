@@ -61,3 +61,41 @@ export function goalPace({ targetValue, currentValue, createdAt, deadline, now }
 export function isGoalAtRisk(report: PaceReport, daysToDeadline: number): boolean {
   return report.verdict === "behind" && daysToDeadline <= 14;
 }
+
+// ── Mission health (PRODUCT_NORTH phase 2): every direction is either moving,
+// slipping, or untouched — and the app must say WHICH, with the reason.
+
+export type MissionStatus = "on_track" | "at_risk" | "stalled";
+
+export interface MissionHealthInput {
+  paceVerdict: PaceVerdict | null; // null when the goal has no numbers
+  /** Days since the last linked action (task done, focus session, progress
+   *  logged). Null = never acted on. */
+  daysSinceAction: number | null;
+  ageDays: number;
+}
+
+export interface MissionHealth {
+  status: MissionStatus;
+  reason: string | null;
+}
+
+const STALL_DAYS = 5;
+
+/** Stalled beats at-risk: an untouched goal's problem is never its pace. */
+export function missionHealth(i: MissionHealthInput): MissionHealth {
+  const idle = i.daysSinceAction ?? i.ageDays;
+  if (idle >= STALL_DAYS) {
+    return {
+      status: "stalled",
+      reason:
+        i.daysSinceAction === null
+          ? "aucune action liée depuis sa création"
+          : `aucune action liée depuis ${idle} jours`,
+    };
+  }
+  if (i.paceVerdict === "behind") {
+    return { status: "at_risk", reason: "en retard sur le rythme requis" };
+  }
+  return { status: "on_track", reason: null };
+}

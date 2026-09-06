@@ -128,6 +128,8 @@ model MxUser {
   sportProfile      MxSportProfile?
   trainingSessions  MxTrainingSession[]
   trainingFocus     MxTrainingFocus[]
+  seasons           MxSeason[]
+  notNow            MxNotNow[]
 
   invitesSent     MxCircleInvite[]  @relation("MxInvitesSent")
   invitesAccepted MxCircleInvite[]  @relation("MxInvitesAccepted")
@@ -354,6 +356,8 @@ model MxGoal {
   priority     Int           @default(3) // 1 (top) – 5
   status       MxGoalStatus  @default(ACTIVE)
   reward       String? // user-defined real-life reward
+  bottleneck   String        @default("") // where progress is ACTUALLY blocked, in the user's words
+  leadingInput String        @default("") // the input metric the user controls («20 conversations/sem»)
   createdAt    DateTime      @default(now())
   completedAt  DateTime?
 
@@ -856,4 +860,36 @@ model MxTrainingFocus {
 
   @@index([userId, status])
   @@map("mainxp_training_focus")
+}
+
+// ── DIRECTION — one Season at a time. A season is the period's single cap;
+// it exists to keep life from becoming twenty equally-important goals.
+model MxSeason {
+  id            String    @id @default(cuid())
+  userId        String
+  user          MxUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title         String // «Revenus & Structure»
+  startDay      String // dayKey, user timezone
+  endDay        String
+  primaryGoalId String? // the one goal this season optimizes for
+  supportNote   String    @default("") // what stays alive alongside (BJJ, famille…)
+  status        String    @default("active") // active | closed
+  createdAt     DateTime  @default(now())
+  closedAt      DateTime?
+
+  @@index([userId, status])
+  @@map("mainxp_seasons")
+}
+
+// «Pas maintenant» — where new ideas go so the current priority survives
+// them. Captured in one line, resurfaced at the weekly review.
+model MxNotNow {
+  id        String   @id @default(cuid())
+  userId    String
+  user      MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("mainxp_not_now")
 }

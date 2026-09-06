@@ -52,7 +52,7 @@ export async function birdsEyeView(user: Pick<MxUser, "id" | "timezone">) {
   const days7: string[] = [];
   for (let i = 6; i >= 0; i--) days7.push(addDays(today, -i));
 
-  const [tx, tasks14, nnLogs14, nnActive, focus14, openChronic, goals, memories, trainings7] =
+  const [tx, tasks14, nnLogs14, nnActive, focus14, openChronic, goals, memories, trainings7, season] =
     await Promise.all([
       prisma.mxXpTransaction.findMany({
         where: { userId: user.id, createdAt: { gte: new Date(Date.now() - 15 * 86_400_000) } },
@@ -86,6 +86,10 @@ export async function birdsEyeView(user: Pick<MxUser, "id" | "timezone">) {
       prisma.mxTrainingSession.findMany({
         where: { userId: user.id, dayKey: { gte: addDays(today, -6) } },
         select: { discipline: true, minutes: true, rounds: true },
+      }),
+      prisma.mxSeason.findFirst({
+        where: { userId: user.id, status: "active" },
+        select: { title: true, endDay: true, supportNote: true, primaryGoalId: true },
       }),
     ]);
 
@@ -162,6 +166,12 @@ export async function birdsEyeView(user: Pick<MxUser, "id" | "timezone">) {
         requiredWeeklyPace: Math.round(g.pace.requiredWeeklyPace * 10) / 10,
         weeksLeft: Math.round(g.pace.weeksLeft * 10) / 10,
       })),
+    // Direction (phase 2): the season is the period's single cap, and every
+    // goal's declared bottleneck/input — the coach optimizes for the goulot.
+    season,
+    goalsDirection: goals
+      .filter((g) => g.status === "ACTIVE" && (g.bottleneck || g.leadingInput))
+      .map((g) => ({ title: g.title, bottleneck: g.bottleneck, leadingInput: g.leadingInput })),
     commitments: memories.filter((m) => isActiveMemory(m, now)).map((m) => m.content),
   };
 }

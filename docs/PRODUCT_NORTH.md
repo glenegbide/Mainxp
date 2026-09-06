@@ -47,16 +47,19 @@ tutoiement, no hype.
   hairlines below the anchor) · Arena interruption sources (one-tap chips →
   `interruptSources`) + focus quality (deep/good/fragmented, one tap) +
   "what changed" line · copy diet on Today/Arena · radius scale 10/16/22.
+- **Phase 2 (done)**: `/goals` is DIRECTION — one active `MxSeason` (cap,
+  end date, primary goal, «reste vivant à côté»; season events recorded) ·
+  mission health on every goal (`missionHealth`: en mouvement / à risque /
+  à l'arrêt, always with the reason; stalled beats at-risk) · every goal
+  declares its **goulot** (bottleneck) + **entrée pilote** (leading input) —
+  both shown on the goal, the goulot follows the Main Quest onto Today, and
+  the coach reads both (`birdsEyeView.season` / `goalsDirection`) ·
+  `MxNotNow` («Pas maintenant») captured on /goals, resurfaced ONLY at the
+  weekly review («C'est l'heure» promotes to a real goal, «Lâcher» drops).
+  Mission architecture note: Projects ARE missions (goalId, milestones,
+  nextAction, blockers already on `MxProject`) — no duplicate entity.
 
 ## Next waves (in order — do not skip ahead)
-
-- **Phase 2 — Direction**: Season (one per period, protects against goal
-  sprawl; large off-season additions get offered "Not Now") · mission
-  architecture Season→Goal→Mission→Milestone→Quest→Next action · mission
-  health (on track / at risk / stalled, with the reason) · bottleneck
-  detection (where is progress actually blocked; input vs output metrics —
-  daily behavior optimizes INPUTS) · Not Now list (capture any new idea,
-  priority unchanged; resurfaces at weekly review).
 - **Phase 3 — State**: 60-second Reset (what's happening → pattern → who do
   I choose to be → one tiny action → start) · frequency (≤3 morning states,
   each translated into one behavior) · old→new patterns with

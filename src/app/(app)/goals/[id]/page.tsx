@@ -5,7 +5,7 @@ import { getMxUser } from "@/lib/mainxp/auth";
 import { prisma } from "@/lib/prisma";
 import { dayKey, daysBetween } from "@/lib/mainxp/day";
 import { goalPace, isGoalAtRisk } from "@/lib/mainxp/goals";
-import { addGoalTask, completeGoal, logGoalProgress } from "../actions";
+import { addGoalTask, completeGoal, logGoalProgress, saveGoalDirection } from "../actions";
 
 export default async function GoalDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await getMxUser();
@@ -53,6 +53,45 @@ export default async function GoalDetailPage({ params }: { params: Promise<{ id:
             En retard sur le rythme, avec {daysLeft} jour{daysLeft === 1 ? "" : "s"} restants.
             Rythme requis : {pace!.requiredWeeklyPace.toFixed(1)} {goal.unit ?? ""}/semaine.
           </p>
+        </section>
+      )}
+
+      {/* ── Direction: the bottleneck and the input — the two lines that turn
+          a wish into a system. Both read by the coach. ── */}
+      {goal.status === "ACTIVE" && (
+        <section className="mt-4 mxp-card p-4">
+          <p className="mxp-label text-mxp-orange">Où ça se joue</p>
+          <form action={saveGoalDirection} className="mt-2 space-y-2.5">
+            <input type="hidden" name="id" value={goal.id} />
+            <label className="block text-xs text-mxp-muted">
+              Le goulot — où le progrès bloque VRAIMENT
+              <input
+                type="text"
+                name="bottleneck"
+                maxLength={300}
+                defaultValue={goal.bottleneck}
+                placeholder="Ex. pas assez de conversations qualifiées"
+                className="mt-1 w-full mxp-input px-3 py-2 text-sm"
+              />
+            </label>
+            <label className="block text-xs text-mxp-muted">
+              L&apos;entrée que tu contrôles — le comportement qui prédit le résultat
+              <input
+                type="text"
+                name="leadingInput"
+                maxLength={300}
+                defaultValue={goal.leadingInput}
+                placeholder="Ex. 20 conversations propriétaires / semaine"
+                className="mt-1 w-full mxp-input px-3 py-2 text-sm"
+              />
+            </label>
+            <button className="mxp-btn-ghost px-3 py-1.5 text-xs">Enregistrer</button>
+          </form>
+          {goal.bottleneck && (
+            <p className="mxp-meta mt-2.5">
+              Les 7 prochains jours s&apos;optimisent pour le goulot — pas pour le reste.
+            </p>
+          )}
         </section>
       )}
 

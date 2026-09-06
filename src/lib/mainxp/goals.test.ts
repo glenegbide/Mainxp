@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { goalPace, isGoalAtRisk } from "./goals";
+import { goalPace, isGoalAtRisk, missionHealth } from "./goals";
 
 const WEEK = 7 * 86_400_000;
 
@@ -75,5 +75,36 @@ describe("isGoalAtRisk", () => {
     expect(behindReport.verdict).toBe("behind");
     expect(isGoalAtRisk(behindReport, 10)).toBe(true);
     expect(isGoalAtRisk(behindReport, 30)).toBe(false);
+  });
+});
+
+describe("missionHealth — moving, slipping, or untouched (phase 2)", () => {
+  it("is stalled after 5 idle days, whatever the pace says", () => {
+    expect(missionHealth({ paceVerdict: "behind", daysSinceAction: 6, ageDays: 40 })).toEqual({
+      status: "stalled",
+      reason: "aucune action liée depuis 6 jours",
+    });
+  });
+
+  it("a goal never acted on stalls by age, with an honest reason", () => {
+    const h = missionHealth({ paceVerdict: null, daysSinceAction: null, ageDays: 9 });
+    expect(h.status).toBe("stalled");
+    expect(h.reason).toBe("aucune action liée depuis sa création");
+  });
+
+  it("recently touched but behind pace → at risk", () => {
+    expect(missionHealth({ paceVerdict: "behind", daysSinceAction: 1, ageDays: 30 })).toEqual({
+      status: "at_risk",
+      reason: "en retard sur le rythme requis",
+    });
+  });
+
+  it("touched and on pace (or without numbers) → on track, no reason needed", () => {
+    expect(missionHealth({ paceVerdict: "on_track", daysSinceAction: 0, ageDays: 30 }).status).toBe("on_track");
+    expect(missionHealth({ paceVerdict: null, daysSinceAction: 2, ageDays: 3 }).reason).toBeNull();
+  });
+
+  it("a brand-new goal is not stalled", () => {
+    expect(missionHealth({ paceVerdict: null, daysSinceAction: null, ageDays: 2 }).status).toBe("on_track");
   });
 });

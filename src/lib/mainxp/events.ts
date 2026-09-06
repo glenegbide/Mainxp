@@ -43,6 +43,8 @@ export type MxEventType =
   | "book_finished"
   | "rest_started" // Récupération on — protects the flame from here
   | "rest_ended"
+  | "season_started" // one cap per period (PRODUCT_NORTH phase 2)
+  | "season_closed"
   | "training_completed" // a Dojo session — BJJ, strength, cardio…
   | "technique_mastered"; // a Dojo work-item declared solid
 
@@ -278,6 +280,9 @@ export function xpForEvent(
     case "rest_started":
     case "rest_ended":
       return null; // rest is a state, not an achievement — and never a debt
+    case "season_started":
+    case "season_closed":
+      return null; // direction is structure; the season's WORK already paid
     case "training_completed": {
       // Endurance work feeds ENDURANCE; everything else on the mat or under
       // the bar feeds STRENGTH. Same-day repetition diminishes (anti-farming).

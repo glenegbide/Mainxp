@@ -69,6 +69,7 @@ export default async function TodayPage() {
     lastEvent,
     comebackDoneToday,
     focusToday,
+    season,
   ] = await Promise.all([
     prisma.mxTask.findMany({
       where: { userId: user.id, dayKey: today },
@@ -107,6 +108,10 @@ export default async function TodayPage() {
     prisma.mxFocusSession.findMany({
       where: { userId: user.id, endedAt: { not: null }, startedAt: { gte: new Date(now.getTime() - 20 * 3600_000) } },
       select: { startedAt: true, endedAt: true },
+    }),
+    prisma.mxSeason.findFirst({
+      where: { userId: user.id, status: "active" },
+      select: { title: true },
     }),
   ]);
   const equippedIds = gearEquipped.map((g) => g.gearId);
@@ -262,9 +267,12 @@ export default async function TodayPage() {
           href="/today/morning"
           className="mt-3 flex items-center justify-between gap-3 rounded-2xl bg-mxp-orange/8 px-4 py-3"
         >
-          <span className="mxp-body font-medium">
-            <IconSunrise className="mr-2 inline h-[15px] w-[15px] align-[-2px] text-mxp-orange" />
-            Lance la journée — 5 minutes
+          <span className="min-w-0">
+            <span className="mxp-body block font-medium">
+              <IconSunrise className="mr-2 inline h-[15px] w-[15px] align-[-2px] text-mxp-orange" />
+              Lance la journée — 5 minutes
+            </span>
+            {season && <span className="mxp-meta mt-0.5 block">Saison : {season.title}</span>}
           </span>
           <span aria-hidden className="mxp-meta">→</span>
         </Link>
@@ -370,6 +378,9 @@ export default async function TodayPage() {
             {questGoal && (
               <p className="mxp-meta mt-1">
                 {questGoal.title}
+                {questGoal.bottleneck && mainQuest.status === "OPEN" && (
+                  <span> · goulot : {questGoal.bottleneck}</span>
+                )}
               </p>
             )}
             {mainQuest.status === "OPEN" ? (
