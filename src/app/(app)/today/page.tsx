@@ -26,6 +26,7 @@ import { noteOnCommitment, noteOnTask } from "../note-actions";
 import { IconBolt, IconCoin } from "../../components/icons";
 import { NextMove } from "../../components/NextMove";
 import { setNextAction } from "../note-actions";
+import { parseFrequencies, STATES } from "@/lib/mainxp/reset-def";
 import { DayRing } from "../../components/DayRing";
 import {
   completeTaskRewarded,
@@ -45,9 +46,14 @@ import {
   IconTimer,
 } from "../../components/icons";
 
-export default async function TodayPage() {
+export default async function TodayPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reset?: string }>;
+}) {
   const user = await getMxUser();
   if (!user) redirect("/login");
+  const { reset } = await searchParams;
   const now = new Date();
   const today = dayKey(now, user.timezone);
 
@@ -176,6 +182,7 @@ export default async function TodayPage() {
   const questGoal = mainQuest?.goalId
     ? activeGoals.find((g) => g.id === mainQuest.goalId)
     : undefined;
+  const frequencies = parseFrequencies(dayPlan?.frequencies ?? "");
 
   const dateLabel = new Intl.DateTimeFormat(user.locale === "en" ? "en-GB" : "fr-CH", {
     weekday: "long",
@@ -259,6 +266,19 @@ export default async function TodayPage() {
         <h1 className="mxp-display">Aujourd&apos;hui</h1>
         <p className="mxp-meta">{dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)}</p>
       </div>
+
+      {reset === "ok" && (
+        <p className="mt-3 rounded-2xl bg-mxp-teal/8 px-4 py-2.5 mxp-body font-medium text-mxp-teal">
+          Reset fait. Un seul geste, maintenant.
+        </p>
+      )}
+
+      {/* The state you chose to operate from — worn all day, quietly. */}
+      {frequencies.length > 0 && (
+        <p className="mxp-meta mt-2">
+          Tu opères depuis : {frequencies.map((k) => STATES[k].label).join(" · ")}
+        </p>
+      )}
 
       {/* ── The command center follows the clock: before the day is launched,
           the morning IS the next move. ── */}
@@ -663,8 +683,12 @@ export default async function TodayPage() {
       </div>
 
 
+      <Link href="/reset" className="mxp-quiet mt-6 block text-center">
+        Tu as dérivé ? → Reset, 60 secondes
+      </Link>
+
       {!minimum && (
-        <form action={activateMinimumDay} className="mt-6 mb-2">
+        <form action={activateMinimumDay} className="mt-2 mb-2">
           <button className="mxp-quiet">
             Journée difficile ? → Passe en journée minimum
           </button>

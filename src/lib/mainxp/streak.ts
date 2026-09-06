@@ -44,6 +44,7 @@ export const ACTIVE_EVENT_TYPES = [
   "book_finished",
   "training_completed",
   "technique_mastered",
+  "reset_completed",
 ] as const;
 
 export interface StreakDays {

@@ -7,6 +7,7 @@ import { keepRate } from "@/lib/mainxp/insight";
 import { xpTotals } from "@/lib/mainxp/xp/ledger";
 import { ATTRIBUTE_LABEL, dominantAttribute } from "@/lib/mainxp/xp/dominant";
 import { saveIdentity } from "./actions";
+import { addPattern, dropPattern } from "../../reset/actions";
 
 // IDENTITÉ — the three layers, in the order they actually work:
 //
@@ -31,7 +32,7 @@ export default async function IdentityPage() {
   const today = dayKey(now, user.timezone);
   const since = addDays(today, -29);
 
-  const [northStar, totals, nnActive, nnKept, missionsDone, focusSessions, habitTaps, booksFinished, gratitudeDays] =
+  const [northStar, totals, nnActive, nnKept, missionsDone, focusSessions, habitTaps, booksFinished, gratitudeDays, patterns, resets30] =
     await Promise.all([
       prisma.mxNorthStar.findUnique({ where: { userId: user.id } }),
       xpTotals(user.id),
@@ -53,6 +54,13 @@ export default async function IdentityPage() {
       prisma.mxGratitudeEntry.groupBy({
         by: ["dayKey"],
         where: { userId: user.id, dayKey: { gte: since } },
+      }),
+      prisma.mxPattern.findMany({
+        where: { userId: user.id, active: true },
+        orderBy: { createdAt: "asc" },
+      }),
+      prisma.mxEvent.count({
+        where: { userId: user.id, type: "reset_completed", dayKey: { gte: since } },
       }),
     ]);
 
@@ -167,6 +175,89 @@ export default async function IdentityPage() {
             un engagement tenu, un matin à la fois — jusqu&apos;à ce que ton système nerveux
             l&apos;accepte comme chez lui, et que le monde te le confirme.
           </p>
+        )}
+      </section>
+
+      {/* ── Old self → new self: named patterns, armed with a new response.
+          The Reset (60 s) proposes exactly these when you drift. ── */}
+      <section className="mxp-card mt-4 p-4">
+        <p className="mxp-label text-mxp-orange">Ce que je laisse derrière</p>
+        <p className="mxp-meta mt-1.5">
+          Nomme le vieux pattern et sa nouvelle réponse — le Reset te les proposera au
+          moment exact où tu en auras besoin.
+          {resets30 > 0 &&
+            ` Ce mois-ci, tu es revenu ${resets30} fois par le Reset.`}
+        </p>
+
+        {patterns.length > 0 && (
+          <ul className="mt-3 space-y-3">
+            {patterns.map((p) => (
+              <li key={p.id} className="border-t border-mxp-line pt-2.5">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="mxp-body font-medium">
+                    {p.fromLabel} <span aria-hidden className="text-mxp-muted">→</span>{" "}
+                    <span className="text-mxp-teal">{p.toLabel}</span>
+                  </p>
+                  <form action={dropPattern} className="flex-none">
+                    <input type="hidden" name="id" value={p.id} />
+                    <button className="mxp-quiet !w-auto px-2 py-0.5 text-xs">Dépassé</button>
+                  </form>
+                </div>
+                {(p.trigger || p.oldResponse || p.newResponse) && (
+                  <p className="mxp-meta mt-1">
+                    {p.trigger && <>Déclencheur : {p.trigger}. </>}
+                    {p.oldResponse && <>Avant : {p.oldResponse}. </>}
+                    {p.newResponse && <>Maintenant : {p.newResponse}.</>}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {patterns.length < 6 && (
+          <form action={addPattern} className="mt-3 space-y-2 border-t border-mxp-line pt-3">
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                name="fromLabel"
+                required
+                maxLength={60}
+                placeholder="Je quitte… (Rareté)"
+                className="mxp-input px-3 py-2 text-sm"
+              />
+              <input
+                type="text"
+                name="toLabel"
+                required
+                maxLength={60}
+                placeholder="Je deviens… (Abondance)"
+                className="mxp-input px-3 py-2 text-sm"
+              />
+            </div>
+            <input
+              type="text"
+              name="trigger"
+              maxLength={200}
+              placeholder="Déclencheur — « angoisse d'argent »"
+              className="mxp-input w-full px-3 py-2 text-sm"
+            />
+            <input
+              type="text"
+              name="oldResponse"
+              maxLength={200}
+              placeholder="Vieille réponse — « figer et scroller »"
+              className="mxp-input w-full px-3 py-2 text-sm"
+            />
+            <input
+              type="text"
+              name="newResponse"
+              maxLength={200}
+              placeholder="Nouvelle réponse — « un appel qui crée une opportunité »"
+              className="mxp-input w-full px-3 py-2 text-sm"
+            />
+            <button className="mxp-btn-ghost px-3 py-2 text-xs">Nommer ce pattern</button>
+          </form>
         )}
       </section>
 

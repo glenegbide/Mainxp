@@ -11,6 +11,7 @@ import { wisdomForDay } from "@/lib/mainxp/wisdom";
 import { CheckAction } from "../../../components/CheckAction";
 import { NoteAction } from "../../../components/NoteAction";
 import { noteOnRoutineStep } from "../../note-actions";
+import { parseFrequencies, STATES } from "@/lib/mainxp/reset-def";
 
 function Scale({ name, label }: { name: string; label: string }) {
   return (
@@ -56,6 +57,7 @@ export default async function MorningPage() {
 
   const proposal =
     mainQuest?.title ?? yesterdayPlan?.tomorrowBigThing ?? "";
+  const chosenFrequencies = parseFrequencies(todayPlan?.frequencies ?? "");
   const wisdom = wisdomForDay(today);
 
   return (
@@ -172,6 +174,28 @@ export default async function MorningPage() {
           <Scale name="energy" label="Énergie" />
           <Scale name="stress" label="Stress" />
           <Scale name="focus" label="Clarté" />
+
+          {/* «La fréquence» — the state you choose to operate FROM, max 3,
+              each already translated into a behavior (reset-def). */}
+          <div className="border-t border-mxp-line pt-3">
+            <p className="mxp-meta">D&apos;où opères-tu aujourd&apos;hui ? (3 max)</p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {Object.entries(STATES).map(([key, st]) => (
+                <label key={key} className="cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="frequency"
+                    value={key}
+                    defaultChecked={chosenFrequencies.includes(key)}
+                    className="peer sr-only"
+                  />
+                  <span className="mxp-chip border border-mxp-line bg-white text-mxp-muted transition peer-checked:border-mxp-teal peer-checked:bg-mxp-teal/10 peer-checked:text-mxp-teal">
+                    {st.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
         </section>
 
         {(northStar?.why || northStar?.season) && (

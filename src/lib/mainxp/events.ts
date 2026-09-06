@@ -46,7 +46,8 @@ export type MxEventType =
   | "season_started" // one cap per period (PRODUCT_NORTH phase 2)
   | "season_closed"
   | "training_completed" // a Dojo session — BJJ, strength, cardio…
-  | "technique_mastered"; // a Dojo work-item declared solid
+  | "technique_mastered" // a Dojo work-item declared solid
+  | "reset_completed"; // drift → named → new state → one tiny action (phase 3)
 
 export interface EventPayload {
   [key: string]: string | number | boolean | null | undefined;
@@ -297,6 +298,17 @@ export function xpForEvent(
         multiplier: diminishingFactor(Number(p.priorToday ?? 0)),
       };
     }
+    case "reset_completed":
+      // Recovery pays — coming back IS the skill MAINXP trains. Small, with
+      // same-day diminishing so the reset never becomes a farm.
+      return {
+        sourceType: "reset",
+        reason: "Reset — retour à l'action choisie",
+        mainDelta: 8,
+        coinsDelta: 4,
+        attributeDeltas: { MIND: 6 },
+        multiplier: diminishingFactor(Number(p.priorToday ?? 0)),
+      };
     case "technique_mastered":
       return {
         sourceType: "technique",

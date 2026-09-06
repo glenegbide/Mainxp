@@ -24,12 +24,17 @@ export async function saveMorning(formData: FormData): Promise<void> {
   // mérite : 0 XP, mais elle nourrit le contexte du coach.
   const morningIntention = s(formData.get("intention"), 2000);
 
+  // «L'état d'où j'opère» — up to three, each already mapped to a behavior.
+  const { parseFrequencies } = await import("@/lib/mainxp/reset-def");
+  const frequencies = parseFrequencies(formData.getAll("frequency").map(String).join(","));
+
   const fields = {
     mood: scale10(formData.get("mood")),
     energy: scale10(formData.get("energy")),
     stress: scale10(formData.get("stress")),
     focus: scale10(formData.get("focus")),
     morningIntention,
+    frequencies: frequencies.join(","),
     startedAt: new Date(),
   };
   await prisma.mxDayPlan.upsert({

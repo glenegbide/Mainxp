@@ -6,6 +6,7 @@ import { xpTotals } from "@/lib/mainxp/xp/ledger";
 import { levelProgress } from "@/lib/mainxp/xp/curve";
 import { birdsEyeView } from "@/lib/mainxp/insight";
 import { elanReport } from "@/lib/mainxp/elan";
+import { recoveryStats } from "@/lib/mainxp/reset";
 import { IconGem } from "../../components/icons";
 import { BlockHero } from "../../components/BlockHero";
 import { dominantAttribute } from "@/lib/mainxp/xp/dominant";
@@ -33,7 +34,7 @@ export default async function ProgressPage() {
   const user = await getMxUser();
   if (!user) redirect("/login");
 
-  const [totals, recent, view, gearEquipped, elan] = await Promise.all([
+  const [totals, recent, view, gearEquipped, elan, recovery] = await Promise.all([
     xpTotals(user.id),
     prisma.mxXpTransaction.findMany({
       where: { userId: user.id },
@@ -43,6 +44,7 @@ export default async function ProgressPage() {
     birdsEyeView(user),
     prisma.mxGearOwned.findMany({ where: { userId: user.id, equipped: true } }),
     elanReport(user.id, user.timezone, user.restMode),
+    recoveryStats(user.id),
   ]);
 
   // Élan, explained — the gauge must never move without saying why.
@@ -136,6 +138,16 @@ export default async function ProgressPage() {
         </dl>
 
         <p className="mxp-meta mt-4 border-t border-mxp-line pt-3 tabular-nums">{elanWhy}</p>
+        {/* Recovery — the metric that matters more than perfection: how fast
+            you come back. Celebrated, never compared to zero drifts. */}
+        {recovery.resets30 > 0 && (
+          <p className="mxp-meta mt-2 tabular-nums">
+            Récupération : {recovery.resets30} reset{recovery.resets30 > 1 ? "s" : ""} en 30 jours
+            {recovery.medianReturnMin !== null &&
+              ` · retour à l'action en ${recovery.medianReturnMin} min (médiane)`}
+            . Revenir vite, c&apos;est ça la compétence.
+          </p>
+        )}
       </section>
 
       {/* ── Who you are becoming — the biography, worn by the character ── */}

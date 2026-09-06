@@ -130,6 +130,7 @@ model MxUser {
   trainingFocus     MxTrainingFocus[]
   seasons           MxSeason[]
   notNow            MxNotNow[]
+  patterns          MxPattern[]
 
   invitesSent     MxCircleInvite[]  @relation("MxInvitesSent")
   invitesAccepted MxCircleInvite[]  @relation("MxInvitesAccepted")
@@ -528,6 +529,7 @@ model MxDayPlan {
   stress    Int?
   focus     Int?
   morningIntention String @default("") // free morning writing — intention, pensées
+  frequencies      String @default("") // «l'état d'où j'opère» — up to 3 state keys, CSV
   startedAt DateTime? // morning flow completed
 
   // Minimum Day (addendum #7): protect the essentials on a bad day
@@ -892,4 +894,22 @@ model MxNotNow {
 
   @@index([userId, createdAt])
   @@map("mainxp_not_now")
+}
+
+// ── PATTERNS (PRODUCT_NORTH phase 3) — the old self, named so it can be
+// noticed; the new response, named so it can be chosen. Used by the Reset.
+model MxPattern {
+  id          String   @id @default(cuid())
+  userId      String
+  user        MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fromLabel   String // «Rareté»
+  toLabel     String // «Abondance»
+  trigger     String   @default("") // «angoisse d'argent»
+  oldResponse String   @default("") // «figer et scroller»
+  newResponse String   @default("") // «créer une opportunité»
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([userId, active])
+  @@map("mainxp_patterns")
 }

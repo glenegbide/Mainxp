@@ -59,13 +59,19 @@ tutoiement, no hype.
   Mission architecture note: Projects ARE missions (goalId, milestones,
   nextAction, blockers already on `MxProject`) — no duplicate entity.
 
+- **Phase 3 (done)**: the 60-second Reset (`/reset`: name what's happening
+  → the matching named pattern offers itself → choose the state → ONE tiny
+  action, suggested from the pattern's new response and the quest's next
+  move; pays small with same-day diminishing, keeps the flame) · morning
+  frequencies (≤3 STATES in the morning flow, each pre-translated into a
+  behavior — reset-def is the single source — worn on Today: «Tu opères
+  depuis…») · old→new patterns (`MxPattern`, max 6 active, named on
+  /me/identite with trigger/old response/new response, retired with
+  «Dépassé») · recovery measured on /progress («N resets · retour à
+  l'action en X min, médiane — revenir vite, c'est ça la compétence»).
+  Moved to phase 4: start latency, the coach's reality check.
+
 ## Next waves (in order — do not skip ahead)
-- **Phase 3 — State**: 60-second Reset (what's happening → pattern → who do
-  I choose to be → one tiny action → start) · frequency (≤3 morning states,
-  each translated into one behavior) · old→new patterns with
-  trigger/old-response/new-response · recovery metric (time to return, not
-  perfection) · start latency (defined→started gap) · reality check (the
-  coach compares intention to evidence, without shame).
 - **Phase 4 — Learning**: coach output as OBSERVATION → PATTERN → DECISION
   → ACTION cards (never a chat wall; "Pourquoi ?" expands reasoning;
   confidence stated) · "what actually works" (your best days correlate
