@@ -208,8 +208,9 @@ export default async function ProgressPage() {
       {/* ── Where the details live (quiet, never competing) ── */}
       <nav className="mt-6 divide-y divide-mxp-line border-y border-mxp-line">
         {[
+          ["/journey", "Mon parcours", "chaque jour, la preuve — le calendrier de ta vie"],
           ["/progress/week", "Revue hebdomadaire", "la semaine en chiffres, 3 questions"],
-          ["/goals", "Objectifs", "rythme et échéances"],
+          ["/goals", "Direction", "la saison, les objectifs, le goulot"],
           ["/projects", "Projets", "jalons et moteurs"],
         ].map(([href, title, sub]) => (
           <Link key={href} href={href} className="flex items-center justify-between gap-3 py-3.5">

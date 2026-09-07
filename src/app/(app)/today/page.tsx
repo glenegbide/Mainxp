@@ -264,7 +264,10 @@ export default async function TodayPage({
 
       <div className="mt-5 flex items-baseline justify-between gap-3">
         <h1 className="mxp-display">Aujourd&apos;hui</h1>
-        <p className="mxp-meta">{dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)}</p>
+        {/* The date opens the life calendar — today is one day of a journey. */}
+        <Link href="/journey" className="mxp-meta">
+          {dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)} →
+        </Link>
       </div>
 
       {reset === "ok" && (

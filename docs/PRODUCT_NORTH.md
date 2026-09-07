@@ -93,6 +93,39 @@ tutoiement, no hype.
 - **Phase 7 — Cercle**: Promise (one explicit commitment visible to one
   partner; missed = check-in, never shame) · shared challenges.
 
+## Calendar + identity intelligence directive (second founder brief)
+
+Goal: «MAINXP remembers what matters, notices what changes, shows me the
+proof, and helps me become the person my actions say I am becoming.» No
+repeated questions, no invented history, premium calm.
+
+- **Wave 1 (done)**: «Mon parcours» (`/journey`) — quiet month calendar,
+  ONE mark per day derived from canonical events (quest disc / neutral dot
+  / teal recovery ring / rare gold mark for a goal reached), month summary,
+  Day Replay (quest, proof, mind, earned, net XP) via `loadDayReplay` /
+  `loadMonthJourney` — a VIEW over real history, no second database, empty
+  days honest. Reached from Today's date and Progress. Coach policy
+  hardened: never re-ask what is known (resolution order: structured data →
+  memory → conversation → observed behavior; ONE personal question max,
+  with its reason), SU/OBSERVÉ/DÉDUIT language, 1–3 sentence default,
+  no repeating an observation until evidence materially changes.
+- **Wave 2**: gratitude 01–10 — already shipped earlier; nothing to do.
+- **Wave 3 (queued)**: identity directions in plain language («A consistent
+  athlete») + AI turns them into behavioral proof ONCE; identity feedback
+  strengthens only with evidence («building evidence» → «becoming a
+  pattern» → «12 weeks consistent»); Self-Trust aggregate (important
+  commitments made vs kept, realistic planning, comeback; never punishes
+  sickness/recovery/conscious cancels); monthly PROOF block.
+- **Wave 4 (queued)**: pattern insights with stable keys, confidence,
+  sample size, dedupe (firstSeen/lastSurfaced/dismissed/confirmed) —
+  confirmed insights become MY PLAYBOOK, which the coach uses for planning
+  and explanations; feedback dedupe layer across channels.
+- **Wave 5 (queued)**: monthly identity review / Journey Recap (private,
+  explicit preview before any share card; money/journal/gratitude/health
+  never included).
+- **Wave 6 (queued)**: character evolution hooks from identity proof —
+  thresholds, never from desired identity alone.
+
 ## Standing rules (apply to every wave)
 
 - The interface is simple; the intelligence is complex. Reduce decisions.
