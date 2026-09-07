@@ -7,6 +7,7 @@ import { levelProgress } from "@/lib/mainxp/xp/curve";
 import { birdsEyeView } from "@/lib/mainxp/insight";
 import { elanReport } from "@/lib/mainxp/elan";
 import { recoveryStats } from "@/lib/mainxp/reset";
+import { addDays, dayKey } from "@/lib/mainxp/day";
 import { IconGem } from "../../components/icons";
 import { BlockHero } from "../../components/BlockHero";
 import { dominantAttribute } from "@/lib/mainxp/xp/dominant";
@@ -34,7 +35,7 @@ export default async function ProgressPage() {
   const user = await getMxUser();
   if (!user) redirect("/login");
 
-  const [totals, recent, view, gearEquipped, elan, recovery] = await Promise.all([
+  const [totals, recent, view, gearEquipped, elan, recovery, proofEvents, nn30] = await Promise.all([
     xpTotals(user.id),
     prisma.mxXpTransaction.findMany({
       where: { userId: user.id },
@@ -45,7 +46,59 @@ export default async function ProgressPage() {
     prisma.mxGearOwned.findMany({ where: { userId: user.id, equipped: true } }),
     elanReport(user.id, user.timezone, user.restMode),
     recoveryStats(user.id),
+    prisma.mxEvent.findMany({
+      where: {
+        userId: user.id,
+        dayKey: { gte: addDays(dayKey(new Date(), user.timezone), -29) },
+        type: {
+          in: [
+            "main_quest_completed",
+            "training_completed",
+            "focus_completed",
+            "commitment_kept",
+            "gratitude_logged",
+            "journal_written",
+            "night_review_completed",
+            "reset_completed",
+            "challenge_tick",
+          ],
+        },
+      },
+      select: { type: true, dayKey: true },
+    }),
+    prisma.mxNonNegotiableLog.groupBy({
+      by: ["completed"],
+      where: {
+        userId: user.id,
+        periodKey: { gte: addDays(dayKey(new Date(), user.timezone), -29) },
+      },
+      _count: { _all: true },
+    }),
   ]);
+
+  // ── LA PREUVE, 30 jours — counts from canonical events, one honest
+  // conclusion computed from the data (never motivational filler). ──
+  const cnt = (types: string[]) => proofEvents.filter((e) => types.includes(e.type)).length;
+  const activeDaysOf = (types: string[]) =>
+    new Set(proofEvents.filter((e) => types.includes(e.type)).map((e) => e.dayKey)).size;
+  const proof = {
+    quests: cnt(["main_quest_completed"]),
+    trainings: cnt(["training_completed"]),
+    focus: cnt(["focus_completed"]),
+    ticks: cnt(["challenge_tick"]),
+    resets: cnt(["reset_completed"]),
+  };
+  const nnKept30 = nn30.find((r) => r.completed)?._count._all ?? 0;
+  const nnTotal30 = nn30.reduce((s, r) => s + r._count._all, 0);
+  const nnRate30 = nnTotal30 > 0 ? Math.round((nnKept30 / nnTotal30) * 100) : null;
+  const consistency = [
+    { label: "l'entraînement", days: activeDaysOf(["training_completed"]) },
+    { label: "la Main Quest", days: activeDaysOf(["main_quest_completed"]) },
+    { label: "le focus", days: activeDaysOf(["focus_completed"]) },
+    { label: "l'esprit", days: activeDaysOf(["gratitude_logged", "journal_written", "night_review_completed"]) },
+  ].sort((a, b) => b.days - a.days)[0];
+  const leak = view.chronicPostpones[0] ?? null;
+  const hasProof = proofEvents.length > 0;
 
   // Élan, explained — the gauge must never move without saying why.
   const elanWhy =
@@ -149,6 +202,50 @@ export default async function ProgressPage() {
           </p>
         )}
       </section>
+
+      {/* ── LA PREUVE — 30 days of recorded facts, one computed conclusion.
+          Real data, never motivational language. ── */}
+      {hasProof && (
+        <details className="mxp-card mt-4 p-4">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+            <span className="mxp-label text-mxp-gold">La preuve — 30 jours</span>
+            <span aria-hidden className="mxp-meta">Voir →</span>
+          </summary>
+          <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 tabular-nums">
+            {(
+              [
+                ["Main Quests accomplies", proof.quests],
+                ["Entraînements", proof.trainings],
+                ["Sessions de focus", proof.focus],
+                ["Défis cochés", proof.ticks],
+                ["Resets", proof.resets],
+              ] as const
+            )
+              .filter(([, v]) => v > 0)
+              .map(([label, v]) => (
+                <div key={label} className="flex items-baseline justify-between gap-2">
+                  <dt className="mxp-meta">{label}</dt>
+                  <dd className="font-displaymx text-[17px]">{v}</dd>
+                </div>
+              ))}
+            {nnRate30 !== null && (
+              <div className="flex items-baseline justify-between gap-2">
+                <dt className="mxp-meta">Engagements tenus</dt>
+                <dd className="font-displaymx text-[17px]">{nnRate30} %</dd>
+              </div>
+            )}
+          </dl>
+          {consistency.days >= 4 && (
+            <p className="mxp-meta mt-3 border-t border-mxp-line pt-3">
+              Ta constance la plus solide : <strong>{consistency.label}</strong> (
+              {consistency.days} jours sur 30).
+              {leak
+                ? ` Ta plus grande fuite : les actions reportées — « ${leak.title} » attend depuis ${leak.postponeCount} reports. Réduis-la ou clarifie-la avant d'ajouter quoi que ce soit.`
+                : " Aucune fuite majeure repérée — protège ce qui tient."}
+            </p>
+          )}
+        </details>
+      )}
 
       {/* ── Who you are becoming — the biography, worn by the character ── */}
       <section className="mt-6">

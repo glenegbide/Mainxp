@@ -110,12 +110,20 @@ repeated questions, no invented history, premium calm.
   with its reason), SU/OBSERVÉ/DÉDUIT language, 1–3 sentence default,
   no repeating an observation until evidence materially changes.
 - **Wave 2**: gratitude 01–10 — already shipped earlier; nothing to do.
-- **Wave 3 (queued)**: identity directions in plain language («A consistent
-  athlete») + AI turns them into behavioral proof ONCE; identity feedback
-  strengthens only with evidence («building evidence» → «becoming a
-  pattern» → «12 weeks consistent»); Self-Trust aggregate (important
-  commitments made vs kept, realistic planning, comeback; never punishes
-  sickness/recovery/conscious cancels); monthly PROOF block.
+- **Wave 3 (done)**: «Qui je deviens» (`MxIdentityDirection`, max 4) —
+  direction in the user's words + «ce que ça veut dire en vrai» asked ONCE
+  + an evidence stream (entraînement/quête/focus/engagements/esprit); the
+  voice strengthens only with weekly evidence (`proofStage`: début →
+  «Tu construis la preuve» → «Ça devient un pattern» → «Sur les 12
+  dernières semaines… c'est en train de devenir toi»), observed weeks
+  capped at real history so thin data is never judged on twelve weeks.
+  Self-Trust (`selfTrust`): last 10 past Main Quests kept/total + trend
+  (building/steady/rebuilding, ≥6 points) — cancelled quests excluded,
+  rest/Minimum days never counted against trust. «La preuve — 30 jours» on
+  /progress: real counts, strongest consistency (≥4 days), biggest leak
+  (chronic postpones) and one COMPUTED conclusion. The coach reads
+  identityDirections + selfTrust via birdsEyeView. Declaring pays zero and
+  unlocks nothing — E2E-enforced.
 - **Wave 4 (queued)**: pattern insights with stable keys, confidence,
   sample size, dedupe (firstSeen/lastSurfaced/dismissed/confirmed) —
   confirmed insights become MY PLAYBOOK, which the coach uses for planning

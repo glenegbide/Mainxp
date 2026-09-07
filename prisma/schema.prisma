@@ -131,6 +131,7 @@ model MxUser {
   seasons           MxSeason[]
   notNow            MxNotNow[]
   patterns          MxPattern[]
+  identityDirections MxIdentityDirection[]
 
   invitesSent     MxCircleInvite[]  @relation("MxInvitesSent")
   invitesAccepted MxCircleInvite[]  @relation("MxInvitesAccepted")
@@ -912,4 +913,22 @@ model MxPattern {
 
   @@index([userId, active])
   @@map("mainxp_patterns")
+}
+
+// ── QUI JE DEVIENS (calendar+identity directive, wave 3) — identity
+// directions in the user's own words, each translated ONCE into what it
+// looks like in real life. Proof comes from recorded behavior, never from
+// declaring; feedback strengthens only as evidence strengthens.
+model MxIdentityDirection {
+  id        String   @id @default(cuid())
+  userId    String
+  user      MxUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String // «Un athlète constant»
+  proofNote String   @default("") // what it means in real life, asked ONCE
+  source    String   @default("quete") // evidence stream: entrainement|quete|focus|engagements|esprit
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([userId, active])
+  @@map("mainxp_identity_directions")
 }

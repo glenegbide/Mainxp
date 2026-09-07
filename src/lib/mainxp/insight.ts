@@ -6,6 +6,7 @@
 import { prisma } from "@/lib/prisma";
 import type { MxUser } from "@/generated/prisma/client";
 import { addDays, dayKey } from "@/lib/mainxp/day";
+import { selfTrust } from "@/lib/mainxp/identity-proof";
 import { goalPace } from "@/lib/mainxp/goals";
 import { isActiveMemory } from "@/lib/mainxp/memory";
 
@@ -52,7 +53,7 @@ export async function birdsEyeView(user: Pick<MxUser, "id" | "timezone">) {
   const days7: string[] = [];
   for (let i = 6; i >= 0; i--) days7.push(addDays(today, -i));
 
-  const [tx, tasks14, nnLogs14, nnActive, focus14, openChronic, goals, memories, trainings7, season] =
+  const [tx, tasks14, nnLogs14, nnActive, focus14, openChronic, goals, memories, trainings7, season, identityDirections] =
     await Promise.all([
       prisma.mxXpTransaction.findMany({
         where: { userId: user.id, createdAt: { gte: new Date(Date.now() - 15 * 86_400_000) } },
@@ -90,6 +91,10 @@ export async function birdsEyeView(user: Pick<MxUser, "id" | "timezone">) {
       prisma.mxSeason.findFirst({
         where: { userId: user.id, status: "active" },
         select: { title: true, endDay: true, supportNote: true, primaryGoalId: true },
+      }),
+      prisma.mxIdentityDirection.findMany({
+        where: { userId: user.id, active: true },
+        select: { title: true, proofNote: true, source: true },
       }),
     ]);
 
@@ -169,6 +174,10 @@ export async function birdsEyeView(user: Pick<MxUser, "id" | "timezone">) {
     // Direction (phase 2): the season is the period's single cap, and every
     // goal's declared bottleneck/input — the coach optimizes for the goulot.
     season,
+    // Identity through evidence (wave 3): who they said they're becoming, and
+    // the last-10-promises trust line. Speak from proof, never from wishes.
+    identityDirections,
+    selfTrust: await selfTrust(user),
     goalsDirection: goals
       .filter((g) => g.status === "ACTIVE" && (g.bottleneck || g.leadingInput))
       .map((g) => ({ title: g.title, bottleneck: g.bottleneck, leadingInput: g.leadingInput })),

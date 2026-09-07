@@ -6,8 +6,14 @@ import { addDays, dayKey } from "@/lib/mainxp/day";
 import { keepRate } from "@/lib/mainxp/insight";
 import { xpTotals } from "@/lib/mainxp/xp/ledger";
 import { ATTRIBUTE_LABEL, dominantAttribute } from "@/lib/mainxp/xp/dominant";
-import { saveIdentity } from "./actions";
+import { saveIdentity, addDirection, dropDirection } from "./actions";
 import { addPattern, dropPattern } from "../../reset/actions";
+import {
+  directionProof,
+  MAX_DIRECTIONS,
+  PROOF_SOURCES,
+  selfTrust,
+} from "@/lib/mainxp/identity-proof";
 
 // IDENTITÉ — the three layers, in the order they actually work:
 //
@@ -63,6 +69,15 @@ export default async function IdentityPage() {
         where: { userId: user.id, type: "reset_completed", dayKey: { gte: since } },
       }),
     ]);
+
+  const [directions, trust] = await Promise.all([
+    prisma.mxIdentityDirection.findMany({
+      where: { userId: user.id, active: true },
+      orderBy: { createdAt: "asc" },
+    }),
+    selfTrust(user),
+  ]);
+  const proofs = await Promise.all(directions.map((d) => directionProof(user, d.source)));
 
   const focusMin = focusSessions.reduce(
     (s, f) => s + Math.round((f.endedAt!.getTime() - f.startedAt.getTime()) / 60_000),
@@ -175,6 +190,80 @@ export default async function IdentityPage() {
             un engagement tenu, un matin à la fois — jusqu&apos;à ce que ton système nerveux
             l&apos;accepte comme chez lui, et que le monde te le confirme.
           </p>
+        )}
+      </section>
+
+      {/* ── QUI JE DEVIENS: directions in the user's words, proved by weeks.
+          The voice strengthens only as the evidence does — declaring pays
+          nothing, unlocks nothing. ── */}
+      <section className="mxp-card mt-4 p-4">
+        <p className="mxp-label text-mxp-purple">Qui je deviens</p>
+        {trust.total >= 3 && (
+          <p className="mxp-meta mt-1.5 tabular-nums">
+            Confiance en soi : {trust.kept} de tes {trust.total} dernières quêtes importantes
+            tenues
+            {trust.trend === "building" && " · en construction ↑"}
+            {trust.trend === "rebuilding" && " · à reconstruire — une promesse réaliste à la fois"}
+            {trust.trend === "steady" && " · stable"}
+            . Les jours de récupération ne comptent jamais contre toi.
+          </p>
+        )}
+
+        {directions.length > 0 && (
+          <ul className="mt-3 space-y-3">
+            {directions.map((d, i) => (
+              <li key={d.id} className="border-t border-mxp-line pt-2.5">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="mxp-body font-medium">{d.title}</p>
+                  <form action={dropDirection} className="flex-none">
+                    <input type="hidden" name="id" value={d.id} />
+                    <button className="mxp-quiet !w-auto px-2 py-0.5 text-xs">Retirer</button>
+                  </form>
+                </div>
+                {d.proofNote && <p className="mxp-meta mt-0.5">En vrai : {d.proofNote}</p>}
+                <p className="mxp-meta mt-1 font-medium text-mxp-purple-deep">
+                  {proofs[i].sentence}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {directions.length < MAX_DIRECTIONS && (
+          <form action={addDirection} className="mt-3 space-y-2 border-t border-mxp-line pt-3">
+            <input
+              type="text"
+              name="directionTitle"
+              required
+              maxLength={80}
+              placeholder="Ex. Un athlète constant"
+              className="mxp-input w-full px-3 py-2 text-sm"
+            />
+            <input
+              type="text"
+              name="proofNote"
+              maxLength={300}
+              placeholder="Ce que ça veut dire en vrai — « 3 entraînements/semaine » (demandé une seule fois)"
+              className="mxp-input w-full px-3 py-2 text-sm"
+            />
+            <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Preuve suivie">
+              {Object.entries(PROOF_SOURCES).map(([key, src], i) => (
+                <label key={key} className="cursor-pointer">
+                  <input
+                    type="radio"
+                    name="source"
+                    value={key}
+                    defaultChecked={i === 0}
+                    className="peer sr-only"
+                  />
+                  <span className="mxp-chip border border-mxp-line bg-white text-mxp-muted transition peer-checked:border-mxp-purple peer-checked:bg-mxp-purple-soft peer-checked:text-mxp-purple-deep">
+                    {src.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+            <button className="mxp-btn-ghost px-3 py-2 text-xs">Suivre cette direction</button>
+          </form>
         )}
       </section>
 
